@@ -6,6 +6,12 @@ import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 
 type Status = "On track" | "At risk" | "Blocked";
+type UserProfile = {
+  full_name: string | null;
+  email: string | null;
+  role: "super_admin" | "project_manager" | "discipline_lead" | "viewer";
+  discipline_id: string | null;
+};
 
 const disciplines = [
   { name: "Architecture", code: "AR", color: "#ef8f64", progress: 72, status: "On track" as Status, due: "18 Sep" },
@@ -105,6 +111,7 @@ function LoginScreen({ onLogin }: { onLogin: (user: User) => void }) {
 export default function Home() {
   const supabase = useMemo(() => createClient(), []);
   const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeNav, setActiveNav] = useState("overview");
   const [filter, setFilter] = useState<"All tasks" | Status>("All tasks");
@@ -116,8 +123,16 @@ export default function Home() {
       return;
     }
 
-    supabase.auth.getUser().then(({ data }) => {
+    supabase.auth.getUser().then(async ({ data }) => {
       setUser(data.user);
+      if (data.user) {
+        const { data: userProfile } = await supabase
+          .from("profiles")
+          .select("full_name, email, role, discipline_id")
+          .eq("id", data.user.id)
+          .maybeSingle();
+        setProfile(userProfile as UserProfile | null);
+      }
       setIsLoading(false);
     });
 
@@ -138,8 +153,15 @@ export default function Home() {
     return <LoginScreen onLogin={setUser} />;
   }
 
-  const userInitials = (user.user_metadata?.full_name ?? user.email ?? "US").slice(0, 2).toUpperCase();
-  const userName = user.user_metadata?.full_name ?? user.email ?? "Signed-in user";
+  const userInitials = (profile?.full_name ?? user.user_metadata?.full_name ?? user.email ?? "US").slice(0, 2).toUpperCase();
+  const userName = profile?.full_name ?? user.user_metadata?.full_name ?? user.email ?? "Signed-in user";
+  const roleLabel = profile?.role === "discipline_lead"
+    ? "Discipline Lead"
+    : profile?.role === "project_manager"
+      ? "Project Manager"
+      : profile?.role === "super_admin"
+        ? "Super Admin"
+        : "Viewer";
 
   return (
     <main className="app-shell">
@@ -152,7 +174,7 @@ export default function Home() {
             <button key={key} className={`nav-item ${activeNav === key ? "active" : ""}`} onClick={() => setActiveNav(key)}><span className="nav-icon">{icons[key as keyof typeof icons]}</span>{label}</button>
           ))}
         </nav>
-        <div className="sidebar-foot"><div className="sync-line"><span className="live-dot" />Live sync active</div><div className="user-chip"><span className="avatar avatar-orange">{userInitials}</span><span><b>{userName}</b><small>{user.user_metadata?.role ?? "Authenticated user"}</small></span><button className="more logout-button" onClick={() => supabase?.auth.signOut()} aria-label="Sign out">↪</button></div></div>
+        <div className="sidebar-foot"><div className="sync-line"><span className="live-dot" />Live sync active</div><div className="user-chip"><span className="avatar avatar-orange">{userInitials}</span><span><b>{userName}</b><small>{roleLabel}{profile?.discipline_id ? " · Assigned discipline" : ""}</small></span><button className="more logout-button" onClick={() => supabase?.auth.signOut()} aria-label="Sign out">↪</button></div></div>
       </aside>
 
       <section className="content">
