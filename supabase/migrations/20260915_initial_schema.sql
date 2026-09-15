@@ -182,6 +182,14 @@ create policy tasks_lead_delete on public.tasks for delete to authenticated usin
 drop policy if exists task_history_view on public.task_history;
 create policy task_history_view on public.task_history for select to authenticated using (exists (select 1 from public.tasks t where t.id = task_id and public.can_view_project(t.project_id)));
 
+do $$
+begin
+  alter publication supabase_realtime add table public.tasks;
+exception
+  when duplicate_object then null;
+end;
+$$;
+
 insert into public.disciplines (name, color_code) values
   ('Architecture', '#ef8f64'), ('Interior Design', '#d6ad63'), ('Fire & Plumbing', '#df6c6c'),
   ('HVAC', '#77a8bc'), ('Electrical - High Current', '#a28bbd'), ('Electrical - Low Current', '#78ad91'),

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { FormEvent } from "react";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
+import TaskBoard from "./task-board";
 
 type Status = "On track" | "At risk" | "Blocked";
 type UserProfile = {
@@ -166,7 +167,7 @@ export default function Home() {
   return (
     <main className="app-shell">
       <aside className="sidebar">
-        <div className="brand"><span className="brand-mark">⌁</span><span>FIELD<span className="brand-accent">/</span>NOTE</span></div>
+        <div className="brand"><span className="brand-mark">⌁</span><span>Hamdan Studio<span className="brand-accent">/</span>Manila</span></div>
         <div className="workspace-label">WORKSPACE</div>
         <button className="project-switcher"><span className="project-dot" />Portside Residence<span className="chevron">⌄</span></button>
         <nav className="main-nav" aria-label="Main navigation">
@@ -180,7 +181,7 @@ export default function Home() {
       <section className="content">
         <header className="topbar"><div className="breadcrumbs"><span>Projects</span><b>/</b><strong>Portside Residence</strong></div><div className="top-actions"><button className="icon-button" aria-label="Search">⌕</button><button className="icon-button notification" aria-label="Notifications">♧<i /></button><span className="avatar avatar-orange">{userInitials}</span></div></header>
         <div className="page-body">
-          <div className="page-heading"><div><div className="eyebrow">PROJECT OVERVIEW <span className="status-pill live"><span className="live-dot" />ON TRACK</span></div><h1>Portside Residence</h1><p>Project dashboard <span>·</span> Updated just now</p></div><div className="heading-actions"><button className="button secondary">↥ <span>Export PDF</span></button><button className="button primary">＋ <span>New task</span></button></div></div>
+          <div className="page-heading"><div><div className="eyebrow">PROJECT OVERVIEW <span className="status-pill live"><span className="live-dot" />ON TRACK</span></div><h1>Portside Residence</h1><p>Project dashboard <span>·</span> Updated just now</p></div><div className="heading-actions"><button className="button secondary">↥ <span>Export PDF</span></button></div></div>
 
           <section className="stats-grid" aria-label="Project summary">
             <div className="stat-card accent-stat"><span className="stat-label">Overall progress</span><strong>68<span>%</span></strong><div className="progress-track"><div className="progress-fill" style={{ width: "68%" }} /></div><small>+4.2% from last week</small></div>
@@ -193,7 +194,7 @@ export default function Home() {
           <section className="discipline-grid">{disciplines.map((discipline) => <article className="discipline-card" key={discipline.code}><div className="discipline-top"><span className="discipline-code" style={{ background: discipline.color }}>{discipline.code}</span><span className={`status-dot ${discipline.status.toLowerCase().replace(" ", "-")}`} /> <span className="status-text">{discipline.status}</span></div><h3>{discipline.name}</h3><div className="discipline-progress"><strong>{discipline.progress}%</strong><span>Due {discipline.due}</span></div><div className="progress-track"><div className="progress-fill" style={{ width: `${discipline.progress}%`, background: discipline.color }} /></div></article>)}</section>
 
           <div className="section-heading task-heading"><div><h2>Task pulse</h2><p>Recent work requiring your attention</p></div><div className="view-toggle"><button className="selected">Table</button><button>Timeline</button></div></div>
-          <section className="task-panel"><div className="table-toolbar"><div className="filter-group">{(["All tasks", "On track", "At risk", "Blocked"] as const).map((item) => <button key={item} className={filter === item ? "selected" : ""} onClick={() => setFilter(item)}>{item}{item !== "All tasks" && <span className={`filter-count ${item.toLowerCase().replace(" ", "-")}`}>{item === "On track" ? 3 : item === "At risk" ? 5 : 3}</span>}</button>)}</div><label className="search-box">⌕<input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search tasks" /></label></div><div className="table-wrap"><table><thead><tr><th>TASK</th><th>DISCIPLINE</th><th>OWNER</th><th>STATUS</th><th>DUE DATE</th><th>PRIORITY</th><th>UPDATED</th></tr></thead><tbody>{visibleTasks.map((task) => <tr key={task.name}><td><span className="task-name">{task.name}</span></td><td><span className="discipline-cell"><span className="table-dot" />{task.discipline}</span></td><td><span className="avatar avatar-small">{task.owner}</span></td><td><span className={`table-status ${task.status.toLowerCase().replace(" ", "-")}`}><i />{task.status}</span></td><td>{task.due}</td><td><span className={`priority ${task.priority.toLowerCase()}`}>{task.priority}</span></td><td className="updated">{task.updated}</td></tr>)}</tbody></table></div></section>
+          <TaskBoard supabase={supabase!} role={profile?.role ?? "viewer"} disciplineId={profile?.discipline_id ?? null} />
           <footer className="footer-note"><span><span className="live-dot" /> Changes sync automatically across all disciplines</span><span>Last synced 14:32:08</span></footer>
         </div>
       </section>
