@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Field/Note — Project Monitor",
+  title: "Hamdan Studio Manila — Project Monitor",
   description: "Multi-discipline project tracking dashboard",
 };
 

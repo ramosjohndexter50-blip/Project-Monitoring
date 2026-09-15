@@ -90,7 +90,7 @@ function LoginScreen({ onLogin }: { onLogin: (user: User) => void }) {
   return (
     <main className="login-shell">
       <section className="login-panel">
-        <div className="brand login-brand"><span className="brand-mark">⌁</span><span>FIELD<span className="brand-accent">/</span>NOTE</span></div>
+        <div className="brand login-brand"><span className="brand-mark">⌁</span><span>HAMDAN STUDIO MANILA</span></div>
         <div className="login-copy"><div className="eyebrow">PROJECT OPERATIONS</div><h1>{mode === "signin" ? "Welcome back." : "Create your account."}</h1><p>{mode === "signin" ? "Sign in to see your project dashboard and keep every change attributed to the right person." : "Create an account to join the project workspace and appear in the audit trail."}</p></div>
         <form className="login-form" onSubmit={handleSubmit}>
           {mode === "signup" && <label>Full name<input type="text" value={fullName} onChange={(event) => setFullName(event.target.value)} placeholder="Juan Dela Cruz" required /></label>}
