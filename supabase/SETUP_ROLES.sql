@@ -3,12 +3,12 @@
 insert into public.profiles (id, email, full_name)
 select id, email, coalesce(raw_user_meta_data ->> 'full_name', email)
 from auth.users
-where email = 'jcramos@hamdan'
+where email = 'jcramos@hamdanstudiomanila.com'
 on conflict (id) do nothing;
 
 update public.profiles
 set role = 'super_admin', full_name = 'Project Director'
-where email = 'jcramos@hamdan';
+where email = 'jcramos@hamdanstudiomanila.com';
 
 -- View available disciplines before assigning a lead.
 select id, name from public.disciplines order by name;

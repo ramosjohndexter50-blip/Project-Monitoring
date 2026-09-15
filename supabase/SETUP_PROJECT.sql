@@ -5,9 +5,9 @@ declare
   admin_id uuid;
   project_id uuid;
 begin
-  select id into admin_id from public.profiles where email = 'jcramos@hamdan';
+  select id into admin_id from public.profiles where email = 'jcramos@hamdanstudiomanila.com';
   if admin_id is null then
-    raise exception 'Create the admin account first, then replace admin@example.com in this file.';
+    raise exception 'Create the admin account first, then verify the email in this file.';
   end if;
 
   if not exists (select 1 from public.projects where name = 'Portside Residence') then
