@@ -1,69 +1,151 @@
-import Image from "next/image";
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import type { FormEvent } from "react";
+import type { User } from "@supabase/supabase-js";
+import { createClient } from "@/lib/supabase/client";
+
+type Status = "On track" | "At risk" | "Blocked";
+
+const disciplines = [
+  { name: "Architecture", code: "AR", color: "#ef8f64", progress: 72, status: "On track" as Status, due: "18 Sep" },
+  { name: "Interior Design", code: "ID", color: "#d6ad63", progress: 58, status: "At risk" as Status, due: "23 Sep" },
+  { name: "Fire & Plumbing", code: "FP", color: "#df6c6c", progress: 41, status: "Blocked" as Status, due: "30 Sep" },
+  { name: "HVAC", code: "HV", color: "#77a8bc", progress: 64, status: "On track" as Status, due: "25 Sep" },
+  { name: "Electrical — High Current", code: "HC", color: "#a28bbd", progress: 86, status: "On track" as Status, due: "14 Sep" },
+  { name: "Electrical — Low Current", code: "LC", color: "#78ad91", progress: 49, status: "At risk" as Status, due: "02 Oct" },
+  { name: "BIM Coordination", code: "BM", color: "#73a6a0", progress: 67, status: "On track" as Status, due: "20 Sep" },
+];
+
+const tasks = [
+  { name: "Resolve reflected ceiling plan clashes", discipline: "Interior Design", owner: "MC", status: "At risk" as Status, due: "23 Sep", priority: "High", updated: "12 min ago" },
+  { name: "Issue coordinated ground floor plan", discipline: "Architecture", owner: "JL", status: "On track" as Status, due: "18 Sep", priority: "High", updated: "26 min ago" },
+  { name: "Confirm pump room equipment clearances", discipline: "Fire & Plumbing", owner: "RS", status: "Blocked" as Status, due: "30 Sep", priority: "High", updated: "1 hr ago" },
+  { name: "Update AHU sizing schedule", discipline: "HVAC", owner: "AT", status: "On track" as Status, due: "25 Sep", priority: "Medium", updated: "2 hrs ago" },
+  { name: "Complete single-line diagram review", discipline: "Electrical — High Current", owner: "NP", status: "On track" as Status, due: "14 Sep", priority: "Medium", updated: "3 hrs ago" },
+];
+
+const icons = { overview: "▦", disciplines: "◫", activity: "↗", settings: "⚙" };
+
+function LoginScreen({ onLogin }: { onLogin: (user: User) => void }) {
+  const supabase = createClient();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError("");
+
+    if (!supabase) {
+      setError("Supabase is not configured. Add the values from .env.example first.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    const { data, error: loginError } = await supabase.auth.signInWithPassword({ email, password });
+    setIsSubmitting(false);
+
+    if (loginError || !data.user) {
+      setError(loginError?.message ?? "Unable to sign in.");
+      return;
+    }
+
+    onLogin(data.user);
+  }
+
+  return (
+    <main className="login-shell">
+      <section className="login-panel">
+        <div className="brand login-brand"><span className="brand-mark">⌁</span><span>FIELD<span className="brand-accent">/</span>NOTE</span></div>
+        <div className="login-copy"><div className="eyebrow">PROJECT OPERATIONS</div><h1>Welcome back.</h1><p>Sign in to see your project dashboard and keep every change attributed to the right person.</p></div>
+        <form className="login-form" onSubmit={handleSubmit}>
+          <label>Email address<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@company.com" required /></label>
+          <label>Password<input type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Enter your password" required /></label>
+          {error && <p className="login-error" role="alert">{error}</p>}
+          <button className="login-submit" type="submit" disabled={isSubmitting}>{isSubmitting ? "Signing in..." : "Sign in"}<span>↗</span></button>
+        </form>
+        <p className="login-note">Your session is required for audit history and role-based access.</p>
+      </section>
+      <aside className="login-aside"><div className="aside-mark">⌁</div><p>ONE SOURCE<br /><em>OF TRUTH</em></p><span>Portside Residence · 2026</span></aside>
+    </main>
+  );
+}
 
 export default function Home() {
+  const supabase = useMemo(() => createClient(), []);
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [activeNav, setActiveNav] = useState("overview");
+  const [filter, setFilter] = useState<"All tasks" | Status>("All tasks");
+  const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    if (!supabase) {
+      setIsLoading(false);
+      return;
+    }
+
+    supabase.auth.getUser().then(({ data }) => {
+      setUser(data.user);
+      setIsLoading(false);
+    });
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => setUser(session?.user ?? null));
+    return () => listener.subscription.unsubscribe();
+  }, [supabase]);
+
+  const visibleTasks = useMemo(
+    () => tasks.filter((task) => (filter === "All tasks" || task.status === filter) && task.name.toLowerCase().includes(search.toLowerCase())),
+    [filter, search],
+  );
+
+  if (isLoading) {
+    return <main className="auth-loading"><span className="live-dot" />Checking your session...</main>;
+  }
+
+  if (!user) {
+    return <LoginScreen onLogin={setUser} />;
+  }
+
+  const userInitials = (user.user_metadata?.full_name ?? user.email ?? "US").slice(0, 2).toUpperCase();
+  const userName = user.user_metadata?.full_name ?? user.email ?? "Signed-in user";
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main className="app-shell">
+      <aside className="sidebar">
+        <div className="brand"><span className="brand-mark">⌁</span><span>FIELD<span className="brand-accent">/</span>NOTE</span></div>
+        <div className="workspace-label">WORKSPACE</div>
+        <button className="project-switcher"><span className="project-dot" />Portside Residence<span className="chevron">⌄</span></button>
+        <nav className="main-nav" aria-label="Main navigation">
+          {[["overview", "Overview"], ["disciplines", "Disciplines"], ["activity", "Activity log"], ["settings", "Project settings"]].map(([key, label]) => (
+            <button key={key} className={`nav-item ${activeNav === key ? "active" : ""}`} onClick={() => setActiveNav(key)}><span className="nav-icon">{icons[key as keyof typeof icons]}</span>{label}</button>
+          ))}
+        </nav>
+        <div className="sidebar-foot"><div className="sync-line"><span className="live-dot" />Live sync active</div><div className="user-chip"><span className="avatar avatar-orange">{userInitials}</span><span><b>{userName}</b><small>{user.user_metadata?.role ?? "Authenticated user"}</small></span><button className="more logout-button" onClick={() => supabase?.auth.signOut()} aria-label="Sign out">↪</button></div></div>
+      </aside>
+
+      <section className="content">
+        <header className="topbar"><div className="breadcrumbs"><span>Projects</span><b>/</b><strong>Portside Residence</strong></div><div className="top-actions"><button className="icon-button" aria-label="Search">⌕</button><button className="icon-button notification" aria-label="Notifications">♧<i /></button><span className="avatar avatar-orange">{userInitials}</span></div></header>
+        <div className="page-body">
+          <div className="page-heading"><div><div className="eyebrow">PROJECT OVERVIEW <span className="status-pill live"><span className="live-dot" />ON TRACK</span></div><h1>Portside Residence</h1><p>Project dashboard <span>·</span> Updated just now</p></div><div className="heading-actions"><button className="button secondary">↥ <span>Export PDF</span></button><button className="button primary">＋ <span>New task</span></button></div></div>
+
+          <section className="stats-grid" aria-label="Project summary">
+            <div className="stat-card accent-stat"><span className="stat-label">Overall progress</span><strong>68<span>%</span></strong><div className="progress-track"><div className="progress-fill" style={{ width: "68%" }} /></div><small>+4.2% from last week</small></div>
+            <div className="stat-card"><span className="stat-label">Open tasks</span><strong>42</strong><small className="muted-stat">Across 7 disciplines</small><div className="mini-bars"><i style={{ height: "50%" }} /><i style={{ height: "70%" }} /><i style={{ height: "42%" }} /><i style={{ height: "85%" }} /><i style={{ height: "62%" }} /><i style={{ height: "90%" }} /></div></div>
+            <div className="stat-card"><span className="stat-label">Needs attention</span><strong className="warm-number">8</strong><small className="muted-stat">5 at risk · 3 blocked</small><div className="attention-line"><span className="tiny-status risk" /><span className="tiny-status blocked" /><span className="tiny-status blocked" /><span className="tiny-status risk" /><span className="tiny-status risk" /></div></div>
+            <div className="stat-card"><span className="stat-label">Next milestone</span><strong className="date-stat">14 <span>SEP</span></strong><small className="muted-stat">Electrical design review</small><div className="milestone-line"><span />12 days remaining</div></div>
+          </section>
+
+          <div className="section-heading"><div><h2>Discipline progress</h2><p>Live status across the project team</p></div><button className="text-button">View all disciplines ↗</button></div>
+          <section className="discipline-grid">{disciplines.map((discipline) => <article className="discipline-card" key={discipline.code}><div className="discipline-top"><span className="discipline-code" style={{ background: discipline.color }}>{discipline.code}</span><span className={`status-dot ${discipline.status.toLowerCase().replace(" ", "-")}`} /> <span className="status-text">{discipline.status}</span></div><h3>{discipline.name}</h3><div className="discipline-progress"><strong>{discipline.progress}%</strong><span>Due {discipline.due}</span></div><div className="progress-track"><div className="progress-fill" style={{ width: `${discipline.progress}%`, background: discipline.color }} /></div></article>)}</section>
+
+          <div className="section-heading task-heading"><div><h2>Task pulse</h2><p>Recent work requiring your attention</p></div><div className="view-toggle"><button className="selected">Table</button><button>Timeline</button></div></div>
+          <section className="task-panel"><div className="table-toolbar"><div className="filter-group">{(["All tasks", "On track", "At risk", "Blocked"] as const).map((item) => <button key={item} className={filter === item ? "selected" : ""} onClick={() => setFilter(item)}>{item}{item !== "All tasks" && <span className={`filter-count ${item.toLowerCase().replace(" ", "-")}`}>{item === "On track" ? 3 : item === "At risk" ? 5 : 3}</span>}</button>)}</div><label className="search-box">⌕<input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search tasks" /></label></div><div className="table-wrap"><table><thead><tr><th>TASK</th><th>DISCIPLINE</th><th>OWNER</th><th>STATUS</th><th>DUE DATE</th><th>PRIORITY</th><th>UPDATED</th></tr></thead><tbody>{visibleTasks.map((task) => <tr key={task.name}><td><span className="task-name">{task.name}</span></td><td><span className="discipline-cell"><span className="table-dot" />{task.discipline}</span></td><td><span className="avatar avatar-small">{task.owner}</span></td><td><span className={`table-status ${task.status.toLowerCase().replace(" ", "-")}`}><i />{task.status}</span></td><td>{task.due}</td><td><span className={`priority ${task.priority.toLowerCase()}`}>{task.priority}</span></td><td className="updated">{task.updated}</td></tr>)}</tbody></table></div></section>
+          <footer className="footer-note"><span><span className="live-dot" /> Changes sync automatically across all disciplines</span><span>Last synced 14:32:08</span></footer>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+      </section>
+    </main>
   );
 }
