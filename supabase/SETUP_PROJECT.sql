@@ -20,5 +20,12 @@ begin
   insert into public.project_disciplines (project_id, discipline_id)
   select project_id, id from public.disciplines
   on conflict (project_id, discipline_id) do nothing;
+
+  update public.project_disciplines pd
+  set assigned_lead = p.id
+  from public.profiles p
+  where pd.project_id = project_id
+    and p.role = 'discipline_lead'
+    and p.discipline_id = pd.discipline_id;
 end;
 $$;
