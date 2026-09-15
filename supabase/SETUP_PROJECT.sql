@@ -5,7 +5,7 @@ declare
   admin_id uuid;
   project_id uuid;
 begin
-  select id into admin_id from public.profiles where email = 'admin@example.com';
+  select id into admin_id from public.profiles where email = 'jcramos@hamdan';
   if admin_id is null then
     raise exception 'Create the admin account first, then replace admin@example.com in this file.';
   end if;
