@@ -56,7 +56,14 @@ function LoginScreen({ onLogin }: { onLogin: (user: User) => void }) {
     setIsSubmitting(true);
     const result = mode === "signin"
       ? await supabase.auth.signInWithPassword({ email, password })
-      : await supabase.auth.signUp({ email, password, options: { data: { full_name: fullName } } });
+      : await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { full_name: fullName },
+          emailRedirectTo: `${window.location.origin}/`,
+        },
+      });
     setIsSubmitting(false);
 
     if (result.error) {
