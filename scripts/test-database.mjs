@@ -11,7 +11,7 @@ create table storage.objects(id uuid primary key default gen_random_uuid(),bucke
 alter table storage.objects enable row level security; grant select,insert,update,delete on storage.objects to authenticated;
 create publication supabase_realtime;`);
 for (const file of readdirSync("supabase/migrations")
-  .filter((f) => f.endsWith(".sql"))
+  .filter((f) => f.endsWith(".sql") && !f.includes("discipline_control"))
   .sort()) {
   const sql = readFileSync("supabase/migrations/" + file, "utf8").replace(
     "create extension if not exists pgcrypto;",
@@ -491,5 +491,164 @@ await as("member", async () => {
 });
 console.log(
   "PASS private privilege boundaries, metadata isolation and notification integrity",
+);
+// Validate the stricter discipline model as an upgrade of an existing database.
+await db.exec(
+  readFileSync(
+    "supabase/migrations/20260917033350_discipline_control.sql",
+    "utf8",
+  ),
+);
+await db.query(
+  "update public.profiles set discipline_id=$1,position='Designer' where role<>'super_admin'",
+  [d],
+);
+await db.query("delete from public.project_permission_overrides");
+await db.query(
+  "update public.tasks set owner=$1,status='in_progress' where id=$2",
+  [ids.member, t],
+);
+await denied(
+  "insert into auth.users(id,email,raw_user_meta_data) values(gen_random_uuid(),'public-signup@example.invalid','{\"role\":\"super_admin\"}')",
+);
+await as("member", async () => {
+  await denied(
+    "insert into public.employee_provisioning(email,full_name,role_key,discipline_id,position) values('attack@example.invalid','Attack','super_admin',$1,'Admin')",
+    [d],
+  );
+  await denied(
+    "update public.tasks set notes='changed instructions' where id=$1",
+    [t],
+  );
+  await denied("update public.tasks set owner=$1 where id=$2", [ids.viewer, t]);
+  await denied("update public.tasks set status='completed' where id=$1", [t]);
+  await db.query(
+    "update public.tasks set status='for_review',percent_complete=100,progress_note='Ready for review' where id=$1",
+    [t],
+  );
+  assert.equal(
+    (
+      await db.query("select percent_complete from public.tasks where id=$1", [
+        t,
+      ])
+    ).rows[0].percent_complete,
+    100,
+  );
+  assert.equal(
+    (
+      await db.query(
+        "select count(*) n from public.tasks where discipline_id=$1",
+        [d2],
+      )
+    ).rows[0].n,
+    0,
+  );
+});
+await as("orgadmin", async () => {
+  await denied("update public.profiles set position='Changed' where id=$1", [
+    ids.member,
+  ]);
+  await denied("insert into public.projects(name) values('Not allowed')");
+});
+await as("manager", async () => {
+  // Whole-project membership no longer opens other disciplines.
+  assert.equal(
+    (
+      await db.query(
+        "select count(*) n from public.tasks where discipline_id=$1",
+        [d2],
+      )
+    ).rows[0].n,
+    0,
+  );
+  await denied(
+    "insert into public.tasks(project_id,discipline_id,task_name) values($1,$2,'Unauthorized')",
+    [p, d],
+  );
+});
+await as("admin", async () => {
+  await denied(
+    "insert into public.tasks(project_id,discipline_id,task_name,owner) values($1,$2,'Wrong discipline',$3)",
+    [p, d2, ids.member],
+  );
+  const reservation = (
+    await db.query(
+      "insert into public.employee_provisioning(email,full_name,role_key,discipline_id,position) values('new-employee@example.invalid','New employee','employee',$1,'Designer') returning token",
+      [d],
+    )
+  ).rows[0];
+  await db.exec(
+    "reset role; select set_config('request.jwt.claim.sub','',false)",
+  );
+  await db.query(
+    "insert into auth.users(id,email,raw_user_meta_data) values(gen_random_uuid(),'new-employee@example.invalid',$1)",
+    [
+      JSON.stringify({
+        provisioning_token: reservation.token,
+        role: "super_admin",
+      }),
+    ],
+  );
+  const created = (
+    await db.query(
+      "select role,discipline_id,position from public.profiles where email='new-employee@example.invalid'",
+    )
+  ).rows[0];
+  assert.equal(created.role, "employee");
+  assert.equal(created.discipline_id, d);
+  assert.equal(created.position, "Designer");
+  assert.equal(
+    (await db.query("select count(*) n from public.employee_provisioning"))
+      .rows[0].n,
+    0,
+  );
+});
+await as("admin", async () => {
+  const created = (
+    await db.query(
+      "select public.save_project_contributors(null,$1,$2,null) id",
+      [
+        JSON.stringify({ name: "Integrated project", project_code: "INT-01" }),
+        [d, d2],
+      ],
+    )
+  ).rows[0].id;
+  assert.equal(
+    (
+      await db.query("select * from public.project_discipline_summary($1)", [
+        created,
+      ])
+    ).rows.length,
+    2,
+  );
+  await db.query("select public.set_project_contributors($1,$2)", [p, [d2]]);
+});
+await as("member", async () => {
+  assert.equal(
+    (await db.query("select * from public.projects where id=$1", [p])).rows
+      .length,
+    0,
+  );
+});
+await as("admin", async () => {
+  await db.query("select public.set_project_contributors($1,$2)", [p, [d, d2]]);
+});
+await db.query("update public.profiles set discipline_id=$1 where id=$2", [
+  d2,
+  ids.member,
+]);
+await as("member", async () => {
+  await denied("update public.tasks set percent_complete=50 where id=$1", [t]);
+});
+assert.ok(
+  (
+    await db.query(
+      "select * from public.task_history where task_id=$1 and field_changed='progress_note'",
+      [t],
+    )
+  ).rows.length > 0,
+);
+console.log(
+  "PASS invitation-only provisioning, discipline isolation, reserved assignments, 100% review progress, history, contributor revocation and profile-discipline changes",
 );
 await db.close();

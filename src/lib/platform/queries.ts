@@ -30,7 +30,7 @@ export async function choicesFor(
       const id = ["roles", "permissions"].includes(table) ? "key" : "id";
       let query = db
         .from(table)
-        .select(`${id},${label}`)
+        .select(`${id},${label}${table === "profiles" ? ",discipline_id" : ""}`)
         .order(label)
         .limit(1000);
       if (
@@ -49,21 +49,41 @@ export async function choicesFor(
         query = query.eq("project_id", project);
       if (ref === "project_roles")
         query = query.not("key", "in", "(super_admin,admin)");
+      if (table === "disciplines") query = query.eq("is_active", true);
       const result = await query;
       if (result.error) throw result.error;
       let rows = result.data as unknown as Record<string, string>[];
-      if (table === "disciplines" && project) {
+      if (table === "profiles" && project && config.table === "tasks") {
+        const members = await db
+          .from("project_members")
+          .select("user_id")
+          .eq("project_id", project);
+        if (members.error) throw members.error;
+        const ids = new Set(members.data.map((m) => m.user_id));
+        rows = rows.filter((r) => ids.has(r.id));
+      }
+      if (
+        table === "disciplines" &&
+        project &&
+        !["projects", "project_disciplines"].includes(config.table)
+      ) {
         const pd = await db
           .from("project_disciplines")
           .select("discipline_id")
-          .eq("project_id", project);
+          .eq("project_id", project)
+          .eq("is_active", true);
+        // Inactive contributors keep history but cannot receive new work.
         if (pd.error) throw pd.error;
         const allowed = new Set(pd.data.map((d) => d.discipline_id));
         rows = rows.filter((row) => allowed.has(row.id));
       }
       return [
         ref,
-        rows.map((row) => ({ value: row[id], label: row[label] || row[id] })),
+        rows.map((row) => ({
+          value: row[id],
+          label: row[label] || row[id],
+          ...(table === "profiles" ? { disciplineId: row.discipline_id } : {}),
+        })),
       ] as const;
     }),
   );

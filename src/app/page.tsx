@@ -1,7 +1,12 @@
 import { serverClient } from "@/lib/supabase/server";
 import LoginScreen from "./login-screen";
 import Workspace from "./workspace";
-export default async function Home() {
+import { redirect } from "next/navigation";
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{ view?: string }>;
+}) {
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return <LoginScreen />;
   const db = await serverClient();
   const {
@@ -32,5 +37,10 @@ export default async function Home() {
         <a href="/auth/signout">Sign out</a>
       </main>
     );
+  if (
+    result.data.role !== "super_admin" &&
+    (await searchParams).view !== "board"
+  )
+    redirect("/portal");
   return <Workspace user={user} />;
 }

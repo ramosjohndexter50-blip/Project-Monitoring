@@ -8,19 +8,14 @@ import { createClient } from "@/lib/supabase/client";
 export default function LoginScreen() {
   const router = useRouter();
   const supabase = createClient();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
-  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
-    setNotice("");
 
     if (!supabase) {
       setError(
@@ -29,35 +24,15 @@ export default function LoginScreen() {
       return;
     }
 
-    if (mode === "signup" && password !== confirmPassword) {
-      setError("Passwords do not match.");
-      return;
-    }
-
     setIsSubmitting(true);
     try {
-      const result =
-        mode === "signin"
-          ? await supabase.auth.signInWithPassword({ email, password })
-          : await supabase.auth.signUp({
-              email,
-              password,
-              options: {
-                data: { full_name: fullName },
-                emailRedirectTo: `${window.location.origin}/auth/callback`,
-              },
-            });
+      const result = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
       if (result.error) {
         setError(result.error.message);
-        return;
-      }
-
-      if (mode === "signup" && !result.data.session) {
-        setNotice(
-          "Account created. Check your email to confirm your account, then sign in.",
-        );
-        setMode("signin");
         return;
       }
 
@@ -85,28 +60,10 @@ export default function LoginScreen() {
         </div>
         <div className="login-copy">
           <div className="eyebrow">PROJECT OPERATIONS</div>
-          <h1>
-            {mode === "signin" ? "Welcome back." : "Create your account."}
-          </h1>
-          <p>
-            {mode === "signin"
-              ? "Sign in to see your project dashboard and keep every change attributed to the right person."
-              : "Create an account to join the project workspace and appear in the audit trail."}
-          </p>
+          <h1>Welcome back.</h1>
+          <p>Sign in with the account provided by your Super Admin.</p>
         </div>
         <form className="login-form" onSubmit={handleSubmit}>
-          {mode === "signup" && (
-            <label>
-              Full name
-              <input
-                type="text"
-                value={fullName}
-                onChange={(event) => setFullName(event.target.value)}
-                placeholder="Juan Dela Cruz"
-                required
-              />
-            </label>
-          )}
           <label>
             Email address
             <input
@@ -121,35 +78,16 @@ export default function LoginScreen() {
             Password
             <input
               type="password"
-              autoComplete={
-                mode === "signup" ? "new-password" : "current-password"
-              }
+              autoComplete="current-password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               placeholder="Enter your password"
               required
             />
           </label>
-          {mode === "signup" && (
-            <label>
-              Confirm password
-              <input
-                type="password"
-                value={confirmPassword}
-                onChange={(event) => setConfirmPassword(event.target.value)}
-                placeholder="Repeat your password"
-                required
-              />
-            </label>
-          )}
           {error && (
             <p className="login-error" role="alert">
               {error}
-            </p>
-          )}
-          {notice && (
-            <p className="login-notice" role="status">
-              {notice}
             </p>
           )}
           <button
@@ -157,26 +95,10 @@ export default function LoginScreen() {
             type="submit"
             disabled={isSubmitting}
           >
-            {isSubmitting
-              ? "Please wait..."
-              : mode === "signin"
-                ? "Sign in"
-                : "Create account"}
+            {isSubmitting ? "Please wait..." : "Sign in"}
             <span>↗</span>
           </button>
         </form>
-        <button
-          className="login-switch"
-          onClick={() => {
-            setMode(mode === "signin" ? "signup" : "signin");
-            setError("");
-            setNotice("");
-          }}
-        >
-          {mode === "signin"
-            ? "Need an account? Create one"
-            : "Already have an account? Sign in"}
-        </button>
         <p className="login-note">
           Your session is required for audit history and role-based access.
         </p>

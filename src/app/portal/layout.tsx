@@ -17,7 +17,7 @@ export default async function PortalLayout({
       "OVERVIEW",
       [
         ["/portal", "Dashboard"],
-        ["/", "Task board"],
+        ["/?view=board", "Task board"],
         ["/portal/projects", "Projects"],
         ["/portal/notifications", "Notifications"],
         ["/portal/search", "Global search"],

@@ -25,6 +25,17 @@ export async function saveRecord(
       );
     if (config.readOnly) throw new Error("This register is read-only.");
     const context = await session();
+    if (
+      [
+        "users",
+        "projects",
+        "teams",
+        "project_disciplines",
+        "disciplines",
+      ].includes(moduleKey) &&
+      context.profile.role !== "super_admin"
+    )
+      throw new Error("Only Super Admin can manage accounts and assignments.");
     if (config.admin) await permission("admin.access");
     let project = projectId;
     let existing: Record<string, unknown> | null = null;
@@ -59,6 +70,12 @@ export async function saveRecord(
     await permission(permissionKey, config.admin ? null : project, discipline);
     const values: Record<string, unknown> = {};
     for (const field of config.fields) {
+      if (
+        moduleKey === "tasks" &&
+        context.profile.role !== "super_admin" &&
+        !["status", "percent_complete", "progress_note"].includes(field.key)
+      )
+        continue;
       if (
         id &&
         (field.immutable ||
@@ -143,7 +160,18 @@ export async function saveRecord(
       String(values.start_date) > String(values.due_date || values.target_date)
     )
       throw new Error("End date must be on or after start date.");
-    if (id) {
+    if (moduleKey === "projects") {
+      const contributors = form.getAll("contributors").map(String);
+      if (contributors.some((value) => !uuid.test(value)))
+        throw new Error("Invalid contributing discipline.");
+      const result = await context.db.rpc("save_project_contributors", {
+        target_project: id,
+        fields: values,
+        contributors,
+        expected_updated: form.get("_updated_at") || null,
+      });
+      if (result.error) throw result.error;
+    } else if (id) {
       let query = context.db
         .from(config.table)
         .update(values)
@@ -269,15 +297,27 @@ export async function markNotification(id: string): Promise<ActionResult> {
 }
 export async function createAccount(form: FormData): Promise<ActionResult> {
   try {
-    const { db, user } = await permission("users.create");
-    const email = String(form.get("email") || "").trim();
+    const { db, profile } = await permission("users.create");
+    if (profile.role !== "super_admin")
+      throw new Error("Super Admin required.");
+    const origin = process.env.APP_ORIGIN;
+    if (!origin)
+      throw new Error("Set APP_ORIGIN before creating employee accounts.");
+    const email = String(form.get("email") || "")
+      .trim()
+      .toLowerCase();
     const name = String(form.get("full_name") || "").trim();
+    const role = String(form.get("role") || "");
+    const discipline = String(form.get("discipline_id") || "");
+    const position = String(form.get("position") || "").trim();
+    if (!role || !uuid.test(discipline) || !position)
+      throw new Error("Role, discipline and position are required.");
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !name)
       throw new Error("Enter a valid name and email.");
     const existing = await db
       .from("profiles")
       .select("id")
-      .eq("email", email)
+      .ilike("email", email)
       .maybeSingle();
     if (existing.error) throw existing.error;
     if (existing.data)
@@ -285,29 +325,31 @@ export async function createAccount(form: FormData): Promise<ActionResult> {
         "An account already exists for this email. Use Reset access.",
       );
     const admin = authAdmin();
+    const reservation = await db
+      .from("employee_provisioning")
+      .insert({
+        email,
+        full_name: name,
+        role_key: role,
+        discipline_id: discipline,
+        position,
+        is_active: form.get("is_active") === "on",
+      })
+      .select("token")
+      .single();
+    if (reservation.error) throw reservation.error;
     const result = await admin.auth.admin.generateLink({
       type: "invite",
       email,
-      options: { data: { full_name: name } },
+      options: {
+        data: { full_name: name, provisioning_token: reservation.data.token },
+      },
     });
+    await db
+      .from("employee_provisioning")
+      .delete()
+      .eq("token", reservation.data.token);
     if (result.error) throw result.error;
-    const log = await admin
-      .from("audit_logs")
-      .insert({
-        actor_id: user.id,
-        action: "account_created",
-        entity: "profiles",
-        entity_id: result.data.user.id,
-      });
-    if (log.error)
-      throw new Error(
-        "Account created, but audit insert failed. Contact system administrator.",
-      );
-    const origin = process.env.APP_ORIGIN;
-    if (!origin)
-      throw new Error(
-        "Account created. Set APP_ORIGIN before generating its access link.",
-      );
     const link = new URL("/auth/callback", origin);
     link.searchParams.set("token_hash", result.data.properties.hashed_token);
     link.searchParams.set("type", "invite");
@@ -317,7 +359,7 @@ export async function createAccount(form: FormData): Promise<ActionResult> {
     return {
       ok: true,
       message:
-        "Account created as Viewer. Share this one-time setup link privately; no email was sent.",
+        "Employee account created with the selected role and discipline. Share this one-time setup link privately; no email was sent.",
       link: link.toString(),
     };
   } catch (error) {
@@ -328,6 +370,8 @@ export async function createAccount(form: FormData): Promise<ActionResult> {
 export async function resetAccount(id: string): Promise<ActionResult> {
   try {
     const { db, user, profile } = await permission("users.update");
+    if (profile.role !== "super_admin")
+      throw new Error("Super Admin required.");
     const target = await db
       .from("profiles")
       .select("email,role,is_active")
@@ -346,14 +390,12 @@ export async function resetAccount(id: string): Promise<ActionResult> {
       email: target.data.email,
     });
     if (result.error) throw result.error;
-    const log = await admin
-      .from("audit_logs")
-      .insert({
-        actor_id: user.id,
-        action: "access_reset_link_created",
-        entity: "profiles",
-        entity_id: id,
-      });
+    const log = await admin.from("audit_logs").insert({
+      actor_id: user.id,
+      action: "access_reset_link_created",
+      entity: "profiles",
+      entity_id: id,
+    });
     if (log.error) throw log.error;
     const link = new URL("/auth/callback", origin);
     link.searchParams.set("token_hash", result.data.properties.hashed_token);

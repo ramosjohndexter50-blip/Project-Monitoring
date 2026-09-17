@@ -101,7 +101,7 @@ export default function Workspace({ user }: { user: User }) {
           <Link className="nav-item" href="/portal/notifications">
             <span className="nav-icon">+</span>Notifications
           </Link>
-          {["super_admin", "admin"].includes(profile?.role ?? "") && (
+          {profile?.role === "super_admin" && (
             <Link className="nav-item" href="/admin">
               <span className="nav-icon">+</span>Control center
             </Link>
@@ -246,7 +246,7 @@ function WorkflowGuide() {
           [
             "01",
             "Plan & assign",
-            "Admin o discipline lead: gumawa ng task, pumili ng discipline at owner, ilagay ang due date at priority.",
+            "Super Admin: gumawa ng task, pumili ng discipline at owner, ilagay ang due date at priority.",
           ],
           [
             "02",

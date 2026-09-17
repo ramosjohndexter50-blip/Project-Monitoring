@@ -24,6 +24,7 @@ type Task = {
   due_date: string | null;
   percent_complete: number;
   notes: string | null;
+  progress_note: string | null;
   updated_at: string;
 };
 type Discipline = { id: string; name: string };
@@ -44,7 +45,7 @@ type Props = {
   onlyMine: boolean;
 };
 const labels: Record<Status, string> = {
-  not_started: "Not started",
+  not_started: "Assigned",
   in_progress: "In progress",
   for_review: "For review",
   revision_required: "Revision required",
@@ -55,7 +56,7 @@ const labels: Record<Status, string> = {
 };
 const statuses = Object.keys(labels) as Status[];
 const fields =
-  "id, task_name, discipline_id, owner, status, priority, due_date, percent_complete, notes, updated_at";
+  "id, task_name, discipline_id, owner, status, priority, due_date, percent_complete, notes, progress_note, updated_at";
 const errorText = (error: unknown) =>
   error && typeof error === "object" && "message" in error
     ? String(error.message)
@@ -112,6 +113,7 @@ export default function TaskBoard({
   const [capabilities, setCapabilities] = useState<{
     editable_tasks: string[];
     create_disciplines: string[];
+    review_disciplines?: string[];
   }>({ editable_tasks: [], create_disciplines: [] });
   const canEdit = (task?: Task) =>
     task
@@ -298,11 +300,24 @@ export default function TaskBoard({
         disabled={!canEdit(task) || saving}
         onChange={(e) => void changeStatus(task, e.target.value as Status)}
       >
-        {statuses.map((status) => (
-          <option value={status} key={status}>
-            {labels[status]}
-          </option>
-        ))}
+        {statuses
+          .filter(
+            (status) =>
+              role === "super_admin" ||
+              capabilities.review_disciplines?.includes(task.discipline_id) ||
+              ![
+                "approved",
+                "completed",
+                "revision_required",
+                "cancelled",
+              ].includes(status) ||
+              status === task.status,
+          )
+          .map((status) => (
+            <option value={status} key={status}>
+              {labels[status]}
+            </option>
+          ))}
       </select>
     );
   }
@@ -437,6 +452,11 @@ export default function TaskBoard({
                 ? capabilities.create_disciplines.includes(d.id)
                 : canEdit(editor) && d.id === editor.discipline_id,
             )}
+            superAdmin={role === "super_admin"}
+            canReview={
+              editor !== "new" &&
+              !!capabilities.review_disciplines?.includes(editor.discipline_id)
+            }
             people={people}
             disciplineId={disciplineId}
             saving={saving}
@@ -660,7 +680,7 @@ export default function TaskBoard({
             ? "Admin access"
             : role === "discipline_lead"
               ? "Edit your discipline"
-              : "Read-only access"}
+              : "Access follows task permissions"}
         </span>
       </footer>
     </>
@@ -669,6 +689,8 @@ export default function TaskBoard({
 
 function TaskEditor({
   task,
+  superAdmin,
+  canReview,
   disciplines,
   people,
   disciplineId,
@@ -677,6 +699,8 @@ function TaskEditor({
   onSave,
 }: {
   task: Task | null;
+  superAdmin: boolean;
+  canReview: boolean;
   disciplines: Discipline[];
   people: Profile[];
   disciplineId: string | null;
@@ -693,6 +717,7 @@ function TaskEditor({
     status: task?.status ?? "not_started",
     percent_complete: task?.percent_complete ?? 0,
     notes: task?.notes ?? "",
+    progress_note: task?.progress_note ?? "",
   });
   const editable =
     disciplines.some((d) => d.id === draft.discipline_id) ||
@@ -700,6 +725,14 @@ function TaskEditor({
   async function submit(event: FormEvent) {
     event.preventDefault();
     if (!draft.task_name.trim() || !editable) return;
+    if (!superAdmin) {
+      await onSave({
+        status: draft.status,
+        percent_complete: draft.percent_complete,
+        progress_note: draft.progress_note,
+      });
+      return;
+    }
     await onSave({
       ...draft,
       task_name: draft.task_name.trim(),
@@ -733,6 +766,7 @@ function TaskEditor({
             autoFocus
             required
             maxLength={300}
+            readOnly={!superAdmin}
             value={draft.task_name}
             onChange={(e) => setDraft({ ...draft, task_name: e.target.value })}
           />
@@ -761,6 +795,7 @@ function TaskEditor({
         <label>
           Owner
           <select
+            disabled={!superAdmin}
             value={draft.owner}
             onChange={(e) => setDraft({ ...draft, owner: e.target.value })}
           >
@@ -768,17 +803,20 @@ function TaskEditor({
             {draft.owner && !people.some((p) => p.id === draft.owner) && (
               <option value={draft.owner}>Assigned team member</option>
             )}
-            {people.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.full_name ?? p.id}
-              </option>
-            ))}
+            {people
+              .filter((p) => p.discipline_id === draft.discipline_id)
+              .map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.full_name ?? p.id}
+                </option>
+              ))}
           </select>
         </label>
         <label>
           Due date
           <input
             type="date"
+            readOnly={!superAdmin}
             value={draft.due_date}
             onChange={(e) => setDraft({ ...draft, due_date: e.target.value })}
           />
@@ -786,6 +824,7 @@ function TaskEditor({
         <label>
           Priority
           <select
+            disabled={!superAdmin}
             value={draft.priority}
             onChange={(e) =>
               setDraft({
@@ -817,11 +856,24 @@ function TaskEditor({
               });
             }}
           >
-            {statuses.map((s) => (
-              <option key={s} value={s}>
-                {labels[s]}
-              </option>
-            ))}
+            {statuses
+              .filter(
+                (s) =>
+                  superAdmin ||
+                  canReview ||
+                  ![
+                    "approved",
+                    "completed",
+                    "revision_required",
+                    "cancelled",
+                  ].includes(s) ||
+                  s === task?.status,
+              )
+              .map((s) => (
+                <option key={s} value={s}>
+                  {labels[s]}
+                </option>
+              ))}
           </select>
         </label>
         <label>
@@ -829,7 +881,7 @@ function TaskEditor({
           <input
             type="number"
             min="0"
-            max="99"
+            max="100"
             required
             disabled={
               draft.status === "completed" || draft.status === "not_started"
@@ -844,12 +896,23 @@ function TaskEditor({
           Notes / blocker
           <textarea
             rows={3}
+            readOnly={!superAdmin}
             value={draft.notes}
             onChange={(e) => setDraft({ ...draft, notes: e.target.value })}
             placeholder="Scope, next steps, or what is blocking this task"
           />
         </label>
       </fieldset>
+      <label>
+        Progress note
+        <textarea
+          value={draft.progress_note}
+          disabled={saving || !editable}
+          onChange={(e) =>
+            setDraft({ ...draft, progress_note: e.target.value })
+          }
+        />
+      </label>
       <p className="editor-hint">
         Owners listed here follow your current profile access. Contact an admin
         to assign another team member.

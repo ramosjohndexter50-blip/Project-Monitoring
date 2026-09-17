@@ -6,6 +6,24 @@ export default async function Dashboard({
   admin?: boolean;
 }) {
   const { db, profile, user } = await session();
+  const homeDiscipline = profile.discipline_id
+    ? await db
+        .from("disciplines")
+        .select("name")
+        .eq("id", profile.discipline_id)
+        .maybeSingle()
+    : null;
+  const recentProgress = !admin
+    ? await db
+        .from("task_history")
+        .select("id,task_id,field_changed,old_value,new_value,changed_at")
+        .order("changed_at", { ascending: false })
+        .limit(8)
+    : null;
+  if (homeDiscipline?.error || recentProgress?.error)
+    throw new Error(
+      homeDiscipline?.error?.message || recentProgress?.error?.message,
+    );
   const today = new Date().toISOString().slice(0, 10);
   const queries = [
     db.from("projects").select("id", { count: "exact", head: true }),
@@ -78,7 +96,7 @@ export default async function Dashboard({
       .limit(8),
     db
       .from("tasks")
-      .select("id,task_name,due_date,status,project_id")
+      .select("id,task_name,due_date,status,project_id,percent_complete")
       .eq("owner", user.id)
       .not("status", "in", "(completed,cancelled)")
       .order("due_date", { nullsFirst: false })
@@ -107,7 +125,18 @@ export default async function Dashboard({
               ? "ADMINISTRATION / CONTROL CENTER"
               : "CONSULTANCY OPERATIONS"}
           </p>
-          <h1>{admin ? "Organization overview" : "Your project overview"}</h1>
+          <h1>
+            {admin
+              ? "Super Admin Control Center"
+              : (homeDiscipline?.data?.name ?? "Discipline assignment pending")}
+          </h1>
+          {!admin && (
+            <p>
+              You are viewing{" "}
+              {homeDiscipline?.data?.name ?? "your assigned discipline"}. Access
+              follows your discipline and project assignments.
+            </p>
+          )}
           <p>
             {profile.full_name ?? "Welcome"} ·{" "}
             {profile.role.replaceAll("_", " ")} · Results reflect your
@@ -138,6 +167,24 @@ export default async function Dashboard({
         {admin ? ` ? ${aggregate.total_users} total users` : ""}
       </p>
       <div className="dashboard-grid">
+        {recentProgress && (
+          <section className="register-card">
+            <h2>Recent discipline activity</h2>
+            {recentProgress.data?.length ? (
+              recentProgress.data.map((h) => (
+                <p key={h.id}>
+                  <Link href={`/portal/tasks?edit=${h.task_id}`}>
+                    {h.field_changed.replaceAll("_", " ")}
+                  </Link>
+                  : {h.old_value ?? "Empty"} → {h.new_value ?? "Empty"}
+                  <small> · {new Date(h.changed_at).toLocaleString()}</small>
+                </p>
+              ))
+            ) : (
+              <p>No recent progress changes.</p>
+            )}
+          </section>
+        )}
         <section className="register-card">
           <h2>Project portfolio</h2>
           {projects.data?.length ? (
@@ -145,7 +192,7 @@ export default async function Dashboard({
               <Link
                 className="summary-row"
                 key={p.id}
-                href={`/portal/tasks?project=${p.id}`}
+                href={`/portal/projects?edit=${p.id}`}
               >
                 <b>{p.name}</b>
                 <span className="status-badge">
@@ -190,6 +237,7 @@ export default async function Dashboard({
               >
                 <b>{t.task_name}</b>
                 <span>{t.status.replaceAll("_", " ")}</span>
+                <strong>{t.percent_complete}%</strong>
                 <small>{t.due_date ?? "No due date"}</small>
               </Link>
             ))

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { session, permission } from "@/lib/platform/auth";
 import { modules, label, type DataRow } from "@/lib/platform/modules";
 import { choicesFor, recordLabel } from "@/lib/platform/queries";
+import ProjectOverview from "@/components/platform/project-overview";
 import {
   RecordForm,
   ActionButton,
@@ -22,6 +23,8 @@ type Params = {
   page?: string;
   edit?: string;
   new?: string;
+  role?: string;
+  position?: string;
 };
 export default async function RegisterPage({
   params,
@@ -34,7 +37,7 @@ export default async function RegisterPage({
   const config = modules[moduleKey];
   if (!config) notFound();
   const filters = await searchParams;
-  const { db, user } = await session();
+  const { db, user, profile } = await session();
   if (config.admin) {
     await permission("admin.access");
     await permission(
@@ -48,7 +51,7 @@ export default async function RegisterPage({
     const refresh = await db.rpc("refresh_deadline_notifications");
     if (refresh.error) throw new Error(refresh.error.message);
   }
-  const choices = await choicesFor(
+  let choices = await choicesFor(
     db,
     moduleKey === "approvals"
       ? {
@@ -94,6 +97,16 @@ export default async function RegisterPage({
     );
   if (filters.status && config.columns.includes("status"))
     query = query.eq("status", filters.status);
+  if (moduleKey === "users") {
+    if (filters.role) query = query.eq("role", filters.role);
+    if (filters.position)
+      query = query.ilike(
+        "position",
+        `%${filters.position.replace(/[%_\\]/g, "")}%`,
+      );
+    if (filters.status === "active" || filters.status === "inactive")
+      query = query.eq("is_active", filters.status === "active");
+  }
   if (filters.discipline && config.columns.includes("discipline_id"))
     query = query.eq("discipline_id", filters.discipline);
   if (filters.owner && config.columns.includes("owner"))
@@ -117,6 +130,8 @@ export default async function RegisterPage({
     if (!row.data) notFound();
     selected = row.data;
   }
+  if (!project && selected?.project_id)
+    choices = await choicesFor(db, config, String(selected.project_id));
   const scopedProject =
     moduleKey === "projects" && selected
       ? String(selected.id)
@@ -131,7 +146,37 @@ export default async function RegisterPage({
     project: config.admin ? null : scopedProject,
     discipline: selected?.discipline_id ?? filters.discipline ?? null,
   });
-  const editable = !config.readOnly && rights.data === true;
+  let editable = !config.readOnly && rights.data === true;
+  if (moduleKey === "tasks" && selected) {
+    const caps = await db.rpc("task_capabilities", { project: scopedProject });
+    if (caps.error) throw new Error(caps.error.message);
+    editable = caps.data.editable_tasks.includes(selected.id);
+  }
+  const review =
+    moduleKey === "tasks"
+      ? await db.rpc("has_permission", {
+          permission: "approvals.review",
+          project: scopedProject,
+          discipline: selected?.discipline_id ?? profile.discipline_id,
+        })
+      : null;
+  const contributors =
+    moduleKey === "projects" && selected
+      ? await db
+          .from("project_disciplines")
+          .select("discipline_id")
+          .eq("project_id", String(selected.id))
+          .eq("is_active", true)
+      : null;
+  if (contributors?.error) throw new Error(contributors.error.message);
+  const assignments =
+    moduleKey === "users" && selected
+      ? await db
+          .from("project_members")
+          .select("id,project_id,role_key,discipline_id")
+          .eq("user_id", String(selected.id))
+      : null;
+  if (assignments?.error) throw new Error(assignments.error.message);
   const link = (extra: Record<string, string>) => {
     const qs = new URLSearchParams(
       Object.fromEntries(
@@ -248,6 +293,33 @@ export default async function RegisterPage({
             </label>
           </>
         )}
+        {moduleKey === "users" && (
+          <>
+            <label>
+              Role
+              <select name="role" defaultValue={filters.role ?? ""}>
+                <option value="">All roles</option>
+                {choices.roles?.map((r) => (
+                  <option key={r.value} value={r.value}>
+                    {r.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Position
+              <input name="position" defaultValue={filters.position} />
+            </label>
+            <label>
+              Account status
+              <select name="status" defaultValue={filters.status ?? ""}>
+                <option value="">All accounts</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </label>
+          </>
+        )}
         <button className="button secondary">Apply filters</button>
         <Link href={`/portal/${moduleKey}`}>Clear</Link>
       </form>
@@ -257,7 +329,35 @@ export default async function RegisterPage({
           below includes only authorized records.
         </p>
       )}
-      {moduleKey === "users" && <AccountForm />}
+      {moduleKey === "users" && profile.role === "super_admin" && (
+        <AccountForm choices={choices} />
+      )}
+      {moduleKey === "projects" && selected && (
+        <ProjectOverview projectId={String(selected.id)} />
+      )}
+      {assignments && (
+        <section className="register-card">
+          <h2>Employee project assignments</h2>
+          {assignments.data?.length ? (
+            assignments.data.map((a) => (
+              <p key={a.id}>
+                <Link href={`/portal/teams?project=${a.project_id}`}>
+                  {recordLabel("project_id", a.project_id, choices)}
+                </Link>{" "}
+                · {recordLabel("discipline_id", a.discipline_id, choices)} ·{" "}
+                {a.role_key.replaceAll("_", " ")}
+              </p>
+            ))
+          ) : (
+            <p>No project assignments.</p>
+          )}
+        </section>
+      )}
+      {moduleKey === "disciplines" && selected && (
+        <Link href={`/portal/users?discipline=${selected.id}`}>
+          View employees in this discipline
+        </Link>
+      )}
       {(selected || (filters.new && moduleKey !== "users")) &&
         !config.readOnly && (
           <RecordForm
@@ -267,6 +367,11 @@ export default async function RegisterPage({
             project={scopedProject}
             choices={choices}
             editable={editable}
+            superAdmin={profile.role === "super_admin"}
+            canReview={review?.data === true}
+            contributorIds={
+              contributors?.data?.map((d) => d.discipline_id) ?? []
+            }
           />
         )}
       {moduleKey === "approvals" && project && (

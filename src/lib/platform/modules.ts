@@ -121,7 +121,7 @@ export const modules: Record<string, Module> = {
     ],
   },
   users: {
-    title: "People & consultants",
+    title: "Employee management",
     table: "profiles",
     permission: "users",
     admin: true,
@@ -130,19 +130,20 @@ export const modules: Record<string, Module> = {
       "full_name",
       "email",
       "role",
-      "company",
+      "discipline_id",
+      "position",
       "is_active",
       "last_login_at",
     ],
     fields: [
       f("full_name", "Full name", "text", { required: true }),
       f("employee_code", "Employee / consultant ID"),
-      f("position", "Position"),
+      f("position", "Position", "text", { required: true }),
       f("company", "Company"),
       f("department", "Department"),
       f("phone", "Phone"),
       f("avatar_url", "Avatar URL"),
-      ref("discipline_id", "Discipline", "disciplines"),
+      ref("discipline_id", "Discipline", "disciplines", true),
       ref("role", "Global role", "roles", true),
       f("is_active", "Active account", "checkbox"),
     ],
@@ -225,7 +226,7 @@ export const modules: Record<string, Module> = {
       project,
       ref("user_id", "Team member", "profiles", true),
       ref("role_key", "Project role", "project_roles", true),
-      ref("discipline_id", "Discipline (blank = whole project)", "disciplines"),
+      ref("discipline_id", "Employee discipline", "disciplines", true),
     ],
     removable: true,
   },
@@ -239,6 +240,7 @@ export const modules: Record<string, Module> = {
       "project_id",
       "discipline_id",
       "assigned_lead",
+      "is_active",
       "status",
       "progress",
       "target_date",
@@ -247,6 +249,7 @@ export const modules: Record<string, Module> = {
       project,
       discipline,
       ref("assigned_lead", "Discipline lead", "profiles"),
+      f("is_active", "Active contributor", "checkbox"),
       status(["planning", "in_progress", "on_hold", "completed"]),
       f("progress", "Progress %", "number", { min: 0, max: 100 }),
       f("target_date", "Target date", "date"),
@@ -285,6 +288,7 @@ export const modules: Record<string, Module> = {
     fields: [
       f("task_name", "Task title", "text", { required: true }),
       f("notes", "Description / notes", "textarea"),
+      f("progress_note", "Progress note", "textarea"),
       discipline,
       owner,
       priority,
@@ -314,7 +318,7 @@ export const modules: Record<string, Module> = {
     fields: [
       f("name", "Milestone name", "text", { required: true }),
       f("description", "Description", "textarea"),
-      ref("discipline_id", "Discipline", "disciplines"),
+      ref("discipline_id", "Discipline", "disciplines", true),
       ref("phase_id", "Phase", "project_phases"),
       owner,
       f("due_date", "Target date", "date"),
@@ -563,4 +567,7 @@ export const label = (value: string) =>
   )[value] ??
   value.replaceAll("_", " ").replace(/\b\w/g, (c) => c.toUpperCase());
 export type DataRow = Record<string, string | number | boolean | null | object>;
-export type Choices = Record<string, { value: string; label: string }[]>;
+export type Choices = Record<
+  string,
+  { value: string; label: string; disciplineId?: string }[]
+>;

@@ -13,7 +13,7 @@ create table storage.objects(id uuid primary key default gen_random_uuid(),bucke
 alter table storage.objects enable row level security; grant select,insert,update,delete on storage.objects to authenticated;
 create publication supabase_realtime;`);
 for (const file of readdirSync("supabase/migrations")
-  .filter((f) => f.endsWith(".sql"))
+  .filter((f) => f.endsWith(".sql") && !f.includes("discipline_control"))
   .sort())
   await db.exec(
     readFileSync("supabase/migrations/" + file, "utf8").replace(
@@ -76,6 +76,16 @@ await db.query(
 await db.query(
   "insert into public.deliverables(project_id,discipline_id,title,owner) values($1,$2,'Concept drawing package',$3)",
   [project, discipline, ids.manager],
+);
+await db.exec(
+  readFileSync(
+    "supabase/migrations/20260917033350_discipline_control.sql",
+    "utf8",
+  ),
+);
+await db.query(
+  "update public.profiles set discipline_id=$1,position='Designer'",
+  [discipline],
 );
 const user = (id) => ({
   id,
