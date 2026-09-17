@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import projectIcon from "../../image/project.png";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -16,9 +17,9 @@ export const metadata: Metadata = {
   title: "Hamdan Studio Manila — Project Monitor",
   description: "Multi-discipline project tracking dashboard",
   icons: {
-    icon: "/image/project.png",
-    shortcut: "/image/project.png",
-    apple: "/image/project.png",
+    icon: projectIcon.src,
+    shortcut: projectIcon.src,
+    apple: projectIcon.src,
   },
 };
 
