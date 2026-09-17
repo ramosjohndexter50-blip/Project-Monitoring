@@ -15,6 +15,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Hamdan Studio Manila — Project Monitor",
   description: "Multi-discipline project tracking dashboard",
+  icons: {
+    icon: "/image/project.png",
+    shortcut: "/image/project.png",
+    apple: "/image/project.png",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
