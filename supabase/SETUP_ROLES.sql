@@ -1,30 +1,10 @@
--- Run this after creating the first account in the app.
--- Replace the email with the account that should manage users and projects.
-insert into public.profiles (id, email, full_name)
-select id, email, coalesce(raw_user_meta_data ->> 'full_name', email)
-from auth.users
-where email = 'jcramos@hamdanstudiomanila.com'
-on conflict (id) do nothing;
-
-update public.profiles
-set role = 'super_admin', full_name = 'Project Director'
-where email = 'jcramos@hamdanstudiomanila.com';
-
--- View available disciplines before assigning a lead.
-select id, name from public.disciplines order by name;
-
--- Assign an employee to one discipline.
--- Replace the email and discipline name with real values.
-insert into public.profiles (id, email, full_name)
-select id, email, coalesce(raw_user_meta_data ->> 'full_name', email)
-from auth.users
-where email = 'employee@example.com'
-on conflict (id) do nothing;
-
-update public.profiles
-set role = 'discipline_lead',
-    discipline_id = (select id from public.disciplines where name = 'Architecture')
-where email = 'employee@example.com';
-
--- Other valid role values:
--- project_manager, viewer
+﻿-- Superseded by the controlled bootstrap and Control Center.
+-- 1. Create the initial account through Supabase Auth and confirm its email.
+-- 2. Apply all repository migrations in order to the verified target database.
+-- 3. From a trusted operator terminal with the server-only key configured:
+--      npm run bootstrap:admin -- confirmed-admin@your-company.example
+-- The bootstrap refuses to run if a Super Admin already exists and logs its action.
+-- Existing Super Admin accounts are preserved by the platform migration.
+-- Assign other roles through Control Center -> People & consultants.
+-- Assign project access through Project teams; a global role alone grants no project membership.
+select key, name from public.roles order by name;

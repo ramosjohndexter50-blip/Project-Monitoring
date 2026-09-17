@@ -1,151 +1,870 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { FormEvent } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Profile } from "./workspace";
 
-type Role = "super_admin" | "project_manager" | "discipline_lead" | "viewer";
-type DbStatus = "not_started" | "working_on_it" | "stuck" | "done";
-type Filter = "All tasks" | "Working on it" | "Stuck" | "Done";
-
+type Status =
+  | "not_started"
+  | "in_progress"
+  | "for_review"
+  | "revision_required"
+  | "approved"
+  | "completed"
+  | "blocked"
+  | "cancelled";
 type Task = {
   id: string;
   task_name: string;
   discipline_id: string;
-  discipline_name: string;
-  status: DbStatus;
-  priority: "low" | "medium" | "high";
+  owner: string | null;
+  status: Status;
+  priority: "low" | "medium" | "high" | "critical";
   due_date: string | null;
   percent_complete: number;
+  notes: string | null;
   updated_at: string;
 };
-
 type Discipline = { id: string; name: string };
-
+type History = {
+  id: string;
+  field_changed: string;
+  old_value: string | null;
+  new_value: string | null;
+  changed_at: string;
+  changed_by: string | null;
+};
 type Props = {
   supabase: SupabaseClient;
-  role: Role;
+  role: Profile["role"];
   disciplineId: string | null;
+  projectId: string;
+  userId: string;
+  onlyMine: boolean;
 };
-
-const statusLabels: Record<DbStatus, string> = {
+const labels: Record<Status, string> = {
   not_started: "Not started",
-  working_on_it: "Working on it",
-  stuck: "Stuck",
-  done: "Done",
+  in_progress: "In progress",
+  for_review: "For review",
+  revision_required: "Revision required",
+  approved: "Approved",
+  completed: "Completed",
+  blocked: "Blocked",
+  cancelled: "Cancelled",
 };
-
-function relativeTime(value: string) {
-  const minutes = Math.max(1, Math.round((Date.now() - new Date(value).getTime()) / 60000));
-  if (minutes < 60) return `${minutes} min ago`;
-  const hours = Math.round(minutes / 60);
-  return `${hours} hr${hours === 1 ? "" : "s"} ago`;
+const statuses = Object.keys(labels) as Status[];
+const fields =
+  "id, task_name, discipline_id, owner, status, priority, due_date, percent_complete, notes, updated_at";
+const errorText = (error: unknown) =>
+  error && typeof error === "object" && "message" in error
+    ? String(error.message)
+    : "Unable to reach the server. Please try again.";
+function today() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
-export default function TaskBoard({ supabase, role, disciplineId }: Props) {
-  const [projectId, setProjectId] = useState<string | null>(null);
+async function readProjectTasks(supabase: SupabaseClient, projectId: string) {
+  const data: Task[] = [];
+  for (let offset = 0; ; offset += 500) {
+    const result = await supabase
+      .from("tasks")
+      .select(fields)
+      .eq("project_id", projectId)
+      .order("due_date", { ascending: true, nullsFirst: false })
+      .order("id")
+      .range(offset, offset + 499);
+    if (result.error) return { data: null, error: result.error };
+    data.push(...(result.data as Task[]));
+    if (result.data.length < 500) return { data, error: null };
+  }
+}
+
+export default function TaskBoard({
+  supabase,
+  role,
+  disciplineId,
+  projectId,
+  userId,
+  onlyMine,
+}: Props) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [disciplines, setDisciplines] = useState<Discipline[]>([]);
-  const [filter, setFilter] = useState<Filter>("All tasks");
-  const [search, setSearch] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
+  const [people, setPeople] = useState<Profile[]>([]);
+  const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [newTask, setNewTask] = useState({ task_name: "", discipline_id: disciplineId ?? "", due_date: "", priority: "medium" as Task["priority"] });
-
-  const canEdit = role === "super_admin" || role === "discipline_lead";
-
-  async function loadTasks(targetProjectId: string) {
-    const [{ data: rows, error: taskError }, { data: disciplineRows }] = await Promise.all([
-      supabase.from("tasks").select("id, task_name, discipline_id, status, priority, due_date, percent_complete, updated_at").eq("project_id", targetProjectId).order("updated_at", { ascending: false }),
-      supabase.from("disciplines").select("id, name").order("name"),
-    ]);
-
-    if (taskError) {
-      setMessage(taskError.message);
-      return;
+  const [sync, setSync] = useState("Connecting...");
+  const [view, setView] = useState("table");
+  const [filter, setFilter] = useState<Status | "all">("all");
+  const [disciplineFilter, setDisciplineFilter] = useState("");
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [editor, setEditor] = useState<Task | "new" | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [historyTask, setHistoryTask] = useState<Task | null>(null);
+  const [history, setHistory] = useState<History[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyError, setHistoryError] = useState("");
+  const request = useRef(0);
+  const historyRequest = useRef(0);
+  const mutation = useRef(false);
+  const [capabilities, setCapabilities] = useState<{
+    editable_tasks: string[];
+    create_disciplines: string[];
+  }>({ editable_tasks: [], create_disciplines: [] });
+  const canEdit = (task?: Task) =>
+    task
+      ? capabilities.editable_tasks.includes(task.id)
+      : capabilities.create_disciplines.length > 0;
+  const load = useCallback(async () => {
+    const version = ++request.current;
+    try {
+      const [taskRows, disciplineRows, profileRows, rights] = await Promise.all(
+        [
+          readProjectTasks(supabase, projectId),
+          supabase.from("disciplines").select("id, name").order("name"),
+          supabase
+            .from("profiles")
+            .select("id, full_name, role, discipline_id")
+            .order("full_name"),
+          supabase.rpc("task_capabilities", { project: projectId }),
+        ],
+      );
+      if (version !== request.current) return;
+      if (
+        taskRows.error ||
+        disciplineRows.error ||
+        profileRows.error ||
+        rights.error
+      )
+        throw (
+          taskRows.error ??
+          disciplineRows.error ??
+          profileRows.error ??
+          rights.error
+        );
+      setCapabilities(rights.data);
+      setTasks((taskRows.data ?? []) as Task[]);
+      setDisciplines(disciplineRows.data ?? []);
+      setPeople((profileRows.data ?? []) as Profile[]);
+      setMessage("");
+    } catch (error) {
+      if (version === request.current) setMessage(errorText(error));
+    } finally {
+      if (version === request.current) setLoading(false);
     }
-
-    const names = new Map((disciplineRows ?? []).map((discipline) => [discipline.id, discipline.name]));
-    setDisciplines(disciplineRows ?? []);
-    setTasks((rows ?? []).map((task) => ({ ...task, discipline_name: names.get(task.discipline_id) ?? "Unassigned" })) as Task[]);
-  }
-
+  }, [supabase, projectId]);
   useEffect(() => {
-    let active = true;
-    async function initialize() {
-      const { data: project, error } = await supabase.from("projects").select("id").eq("name", "Portside Residence").limit(1).maybeSingle();
-      if (!active) return;
-      if (error) {
-        setMessage(error.message);
-      } else if (!project) {
-        setMessage("No Portside Residence project exists yet. Run supabase/SETUP_PROJECT.sql first.");
-      } else {
-        setProjectId(project.id);
-        await loadTasks(project.id);
-      }
-      setIsLoading(false);
+    const requests = request;
+    const historyRequests = historyRequest;
+    // Fetching external data updates state only after the awaited database response.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void load();
+    const channel = supabase
+      .channel(`board-${projectId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "tasks",
+          filter: `project_id=eq.${projectId}`,
+        },
+        () => {
+          void load();
+        },
+      )
+      .subscribe((state) =>
+        setSync(
+          state === "SUBSCRIBED"
+            ? "Live updates connected"
+            : "Live updates unavailable · use Refresh",
+        ),
+      );
+    return () => {
+      requests.current++;
+      historyRequests.current++;
+      void supabase.removeChannel(channel);
+    };
+  }, [load, supabase, projectId]);
+
+  const personName = (id: string | null) =>
+    id
+      ? (people.find((p) => p.id === id)?.full_name ??
+        (id === userId ? "You" : "Assigned team member"))
+      : "Unassigned";
+  const disciplineName = (id: string) =>
+    disciplines.find((d) => d.id === id)?.name ?? "Unknown discipline";
+  const overdue = (task: Task) =>
+    !["completed", "cancelled"].includes(task.status) &&
+    !!task.due_date &&
+    task.due_date < today();
+  const scoped = tasks.filter((task) => !onlyMine || task.owner === userId);
+  const visible = scoped.filter(
+    (task) =>
+      (filter === "all" || task.status === filter) &&
+      (!disciplineFilter || task.discipline_id === disciplineFilter) &&
+      `${task.task_name} ${disciplineName(task.discipline_id)} ${personName(task.owner)}`
+        .toLowerCase()
+        .includes(search.toLowerCase()),
+  );
+  const pageCount = Math.max(1, Math.ceil(visible.length / 25));
+  const currentPage = Math.min(page, pageCount);
+  const displayed = visible.slice((currentPage - 1) * 25, currentPage * 25);
+  const done = scoped.filter((task) => task.status === "completed").length;
+  const progress = scoped.length
+    ? Math.round(
+        scoped.reduce((sum, task) => sum + task.percent_complete, 0) /
+          scoped.length,
+      )
+    : 0;
+
+  async function persist(task: Task | null, values: Partial<Task>) {
+    if (mutation.current || !canEdit(task ?? undefined)) return false;
+    mutation.current = true;
+    setSaving(true);
+    setMessage("");
+    try {
+      const result = task
+        ? await supabase
+            .from("tasks")
+            .update(values)
+            .eq("id", task.id)
+            .eq("project_id", projectId)
+            .eq("updated_at", task.updated_at)
+            .select(fields)
+            .maybeSingle()
+        : await supabase
+            .from("tasks")
+            .insert({ ...values, project_id: projectId })
+            .select(fields)
+            .single();
+      if (result.error) throw result.error;
+      if (!result.data)
+        throw new Error(
+          "Task changed or you no longer have access. Refresh and try again.",
+        );
+      await load();
+      return true;
+    } catch (error) {
+      setMessage(errorText(error));
+      return false;
+    } finally {
+      mutation.current = false;
+      setSaving(false);
     }
-    initialize();
-    return () => { active = false; };
-  }, [supabase]);
-
-  useEffect(() => {
-    if (!projectId) return;
-    const channel = supabase.channel(`tasks-${projectId}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "tasks", filter: `project_id=eq.${projectId}` }, () => loadTasks(projectId))
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [projectId, supabase]);
-
-  const visibleTasks = useMemo(() => tasks.filter((task) => {
-    const matchesFilter = filter === "All tasks"
-      || (filter === "Working on it" && task.status === "working_on_it")
-      || (filter === "Stuck" && task.status === "stuck")
-      || (filter === "Done" && task.status === "done");
-    return matchesFilter && task.task_name.toLowerCase().includes(search.toLowerCase());
-  }), [filter, search, tasks]);
-
-  async function updateTask(id: string, values: Partial<Pick<Task, "status" | "percent_complete">>) {
-    setMessage("");
-    const { error } = await supabase.from("tasks").update(values).eq("id", id);
-    if (error) setMessage(error.message);
-    else if (projectId) await loadTasks(projectId);
   }
-
-  async function createTask(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!projectId || !newTask.task_name || !newTask.discipline_id) return;
-    setIsSaving(true);
-    setMessage("");
-    const { error } = await supabase.from("tasks").insert({
-      project_id: projectId,
-      task_name: newTask.task_name,
-      discipline_id: newTask.discipline_id,
-      due_date: newTask.due_date || null,
-      priority: newTask.priority,
-      status: "not_started",
-      percent_complete: 0,
+  async function changeStatus(task: Task, status: Status) {
+    await persist(task, {
+      status,
+      percent_complete:
+        status === "completed"
+          ? 100
+          : status === "not_started" || task.status === "completed"
+            ? 0
+            : task.percent_complete,
     });
-    setIsSaving(false);
-    if (error) {
-      setMessage(error.message);
-      return;
+  }
+  async function showHistory(task: Task) {
+    const version = ++historyRequest.current;
+    setHistoryTask(task);
+    setHistory([]);
+    setHistoryError("");
+    setHistoryLoading(true);
+    try {
+      const result = await supabase
+        .from("task_history")
+        .select(
+          "id, field_changed, old_value, new_value, changed_at, changed_by",
+        )
+        .eq("task_id", task.id)
+        .order("changed_at", { ascending: false })
+        .limit(50);
+      if (result.error) throw result.error;
+      if (version === historyRequest.current) setHistory(result.data ?? []);
+    } catch (error) {
+      if (version === historyRequest.current) setHistoryError(errorText(error));
+    } finally {
+      if (version === historyRequest.current) setHistoryLoading(false);
     }
-    setNewTask({ task_name: "", discipline_id: disciplineId ?? "", due_date: "", priority: "medium" });
-    setIsFormOpen(false);
-    if (projectId) await loadTasks(projectId);
+  }
+  function statusControl(task: Task) {
+    return (
+      <select
+        aria-label={`Status for ${task.task_name}`}
+        className={`status-select ${task.status}`}
+        value={task.status}
+        disabled={!canEdit(task) || saving}
+        onChange={(e) => void changeStatus(task, e.target.value as Status)}
+      >
+        {statuses.map((status) => (
+          <option value={status} key={status}>
+            {labels[status]}
+          </option>
+        ))}
+      </select>
+    );
   }
 
   return (
-    <section className="task-panel">
-      <div className="table-toolbar">
-        <div className="filter-group">{(["All tasks", "Working on it", "Stuck", "Done"] as Filter[]).map((item) => <button key={item} className={filter === item ? "selected" : ""} onClick={() => setFilter(item)}>{item}<span className="filter-count">{item === "All tasks" ? tasks.length : tasks.filter((task) => (item === "Working on it" ? task.status === "working_on_it" : task.status === item.toLowerCase())).length}</span></button>)}</div>
-        <div className="task-tools"><label className="search-box">⌕<input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search tasks" /></label>{canEdit && projectId && <button className="button primary compact" onClick={() => setIsFormOpen((open) => !open)}>＋ New task</button>}</div>
+    <>
+      <section className="stats-grid" aria-label="Live task summary">
+        <div className="stat-card accent-stat">
+          <span className="stat-label">Overall progress</span>
+          <strong>
+            {loading ? "—" : progress}
+            <span>%</span>
+          </strong>
+          <div className="progress-track">
+            <div className="progress-fill" style={{ width: `${progress}%` }} />
+          </div>
+          <small>Average task completion</small>
+        </div>
+        <div className="stat-card">
+          <span className="stat-label">Open tasks</span>
+          <strong>{loading ? "—" : scoped.length - done}</strong>
+          <small>Ready and in progress</small>
+        </div>
+        <div className="stat-card">
+          <span className="stat-label">Needs attention</span>
+          <strong className="warm-number">
+            {loading
+              ? "—"
+              : scoped.filter(
+                  (task) => task.status === "blocked" || overdue(task),
+                ).length}
+          </strong>
+          <small>
+            {scoped.filter(overdue).length} overdue ·{" "}
+            {scoped.filter((task) => task.status === "blocked").length} stuck
+          </small>
+        </div>
+        <div className="stat-card">
+          <span className="stat-label">Completed</span>
+          <strong>{loading ? "—" : done}</strong>
+          <small>of {scoped.length} tasks</small>
+        </div>
+      </section>
+      <div className="section-heading">
+        <div>
+          <h2>{onlyMine ? "Assigned to me" : "Project tasks"}</h2>
+          <p>One task, one owner, a clear next step.</p>
+        </div>
+        <div className="view-toggle">
+          {["table", "board"].map((item) => (
+            <button
+              key={item}
+              aria-pressed={view === item}
+              className={view === item ? "selected" : ""}
+              onClick={() => setView(item)}
+            >
+              {item === "table" ? "Main table" : "Kanban board"}
+            </button>
+          ))}
+        </div>
       </div>
-      {isFormOpen && <form className="task-form" onSubmit={createTask}><input value={newTask.task_name} onChange={(event) => setNewTask({ ...newTask, task_name: event.target.value })} placeholder="Task name" required /><select value={newTask.discipline_id} onChange={(event) => setNewTask({ ...newTask, discipline_id: event.target.value })} required><option value="">Discipline</option>{disciplines.map((discipline) => <option key={discipline.id} value={discipline.id}>{discipline.name}</option>)}</select><input type="date" value={newTask.due_date} onChange={(event) => setNewTask({ ...newTask, due_date: event.target.value })} /><select value={newTask.priority} onChange={(event) => setNewTask({ ...newTask, priority: event.target.value as Task["priority"] })}><option value="low">Low priority</option><option value="medium">Medium priority</option><option value="high">High priority</option></select><button className="button primary compact" disabled={isSaving}>{isSaving ? "Saving..." : "Save task"}</button></form>}
-      {message && <p className="task-message" role="status">{message}</p>}
-      {isLoading ? <p className="task-empty">Loading project tasks...</p> : visibleTasks.length === 0 ? <p className="task-empty">{projectId ? "No tasks match this filter." : message}</p> : <div className="table-wrap"><table><thead><tr><th>TASK</th><th>DISCIPLINE</th><th>STATUS</th><th>PROGRESS</th><th>DUE DATE</th><th>PRIORITY</th><th>UPDATED</th></tr></thead><tbody>{visibleTasks.map((task) => { const editable = canEdit && (role === "super_admin" || task.discipline_id === disciplineId); return <tr key={task.id}><td><span className="task-name">{task.task_name}</span></td><td><span className="discipline-cell"><span className="table-dot" />{task.discipline_name}</span></td><td>{editable ? <select className="inline-select" value={task.status} onChange={(event) => updateTask(task.id, { status: event.target.value as DbStatus })}>{Object.entries(statusLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select> : <span className={`table-status ${task.status}`}><i />{statusLabels[task.status]}</span>}</td><td>{editable ? <input className="progress-input" type="number" min="0" max="100" value={task.percent_complete} onChange={(event) => updateTask(task.id, { percent_complete: Number(event.target.value) })} /> : `${task.percent_complete}%`}</td><td>{task.due_date ?? "-"}</td><td><span className={`priority ${task.priority}`}>{task.priority}</span></td><td className="updated">{relativeTime(task.updated_at)}</td></tr>; })}</tbody></table></div>}
-    </section>
+      <section className="task-panel">
+        <div className="board-toolbar">
+          <label className="search-box">
+            <input
+              aria-label="Search tasks"
+              placeholder="Search tasks or people"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </label>
+          <select
+            aria-label="Filter discipline"
+            value={disciplineFilter}
+            onChange={(e) => setDisciplineFilter(e.target.value)}
+          >
+            <option value="">All disciplines</option>
+            {disciplines.map((d) => (
+              <option key={d.id} value={d.id}>
+                {d.name}
+              </option>
+            ))}
+          </select>
+          <button
+            className="button secondary compact"
+            disabled={saving}
+            onClick={() => void load()}
+          >
+            Refresh
+          </button>
+          {canEdit() && (
+            <button
+              className="button primary compact"
+              disabled={loading || saving}
+              onClick={() => {
+                setEditor("new");
+                setHistoryTask(null);
+              }}
+            >
+              + New task
+            </button>
+          )}
+        </div>
+        <div className="filter-group board-filters">
+          {(["all", ...statuses] as const).map((status) => (
+            <button
+              key={status}
+              aria-pressed={filter === status}
+              className={filter === status ? "selected" : ""}
+              onClick={() => setFilter(status)}
+            >
+              {status === "all" ? "All tasks" : labels[status]}
+              <span className="filter-count">
+                {status === "all"
+                  ? scoped.length
+                  : scoped.filter((task) => task.status === status).length}
+              </span>
+            </button>
+          ))}
+        </div>
+        {message && (
+          <p className="task-message" role="alert">
+            {message}
+          </p>
+        )}
+        {editor && (
+          <TaskEditor
+            key={editor === "new" ? "new" : editor.id}
+            task={editor === "new" ? null : editor}
+            disciplines={disciplines.filter((d) =>
+              editor === "new"
+                ? capabilities.create_disciplines.includes(d.id)
+                : canEdit(editor) && d.id === editor.discipline_id,
+            )}
+            people={people}
+            disciplineId={disciplineId}
+            saving={saving}
+            onCancel={() => setEditor(null)}
+            onSave={async (values) => {
+              if (await persist(editor === "new" ? null : editor, values))
+                setEditor(null);
+            }}
+          />
+        )}
+        {loading ? (
+          <p className="task-empty" role="status">
+            Loading project tasks...
+          </p>
+        ) : visible.length === 0 ? (
+          <div className="empty-board">
+            <h3>
+              {scoped.length
+                ? "No matching tasks"
+                : onlyMine
+                  ? "No tasks assigned to you yet"
+                  : "Your board is ready"}
+            </h3>
+            <p>
+              {scoped.length
+                ? "Try another search or filter."
+                : "Create tasks and assign owners to get started."}
+            </p>
+          </div>
+        ) : view === "table" ? (
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  {[
+                    "Task",
+                    "Discipline",
+                    "Owner",
+                    "Status",
+                    "Progress",
+                    "Due date",
+                    "Priority",
+                    "History",
+                  ].map((title) => (
+                    <th key={title}>{title}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {displayed.map((task) => (
+                  <tr key={task.id}>
+                    <td>
+                      <button
+                        className="task-title"
+                        onClick={() => {
+                          setEditor(task);
+                          setHistoryTask(null);
+                        }}
+                      >
+                        {task.task_name}
+                      </button>
+                      {task.notes && (
+                        <span className="task-note" title={task.notes}>
+                          {task.notes}
+                        </span>
+                      )}
+                    </td>
+                    <td>{disciplineName(task.discipline_id)}</td>
+                    <td>{personName(task.owner)}</td>
+                    <td>{statusControl(task)}</td>
+                    <td>
+                      <span>{task.percent_complete}%</span>
+                    </td>
+                    <td className={overdue(task) ? "overdue" : ""}>
+                      {task.due_date ?? "No date"}
+                      {overdue(task) && <small>Overdue</small>}
+                    </td>
+                    <td>
+                      <span className={`priority ${task.priority}`}>
+                        {task.priority}
+                      </span>
+                    </td>
+                    <td>
+                      <button
+                        className="text-button"
+                        onClick={() => void showHistory(task)}
+                      >
+                        History
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="kanban">
+            {statuses.map((status) => (
+              <section key={status} className={`kanban-column ${status}`}>
+                <h3>
+                  {labels[status]}{" "}
+                  <span>
+                    {visible.filter((task) => task.status === status).length}
+                  </span>
+                </h3>
+                {displayed
+                  .filter((task) => task.status === status)
+                  .map((task) => (
+                    <article className="kanban-card" key={task.id}>
+                      <span className="eyebrow">
+                        {disciplineName(task.discipline_id)}
+                      </span>
+                      <button
+                        className="task-title"
+                        onClick={() => {
+                          setEditor(task);
+                          setHistoryTask(null);
+                        }}
+                      >
+                        {task.task_name}
+                      </button>
+                      <p>{personName(task.owner)}</p>
+                      <div className="card-meta">
+                        <span className={overdue(task) ? "overdue" : ""}>
+                          {task.due_date ?? "No date"}
+                          {overdue(task) ? " · Overdue" : ""}
+                        </span>
+                        <span className={`priority ${task.priority}`}>
+                          {task.priority}
+                        </span>
+                      </div>
+                      {statusControl(task)}
+                      <div className="card-meta">
+                        <span>{task.percent_complete}% complete</span>
+                        <button
+                          className="text-button"
+                          onClick={() => void showHistory(task)}
+                        >
+                          History
+                        </button>
+                      </div>
+                    </article>
+                  ))}
+                {!displayed.some((task) => task.status === status) && (
+                  <p className="task-empty">No tasks here</p>
+                )}
+              </section>
+            ))}
+          </div>
+        )}
+      </section>
+      {historyTask && (
+        <section className="history-panel" aria-label="Task history">
+          <div className="section-heading">
+            <h2>History · {historyTask.task_name}</h2>
+            <button
+              className="text-button"
+              onClick={() => {
+                historyRequest.current++;
+                setHistoryTask(null);
+              }}
+            >
+              Close history
+            </button>
+          </div>
+          {historyLoading ? (
+            <p role="status">Loading history...</p>
+          ) : historyError ? (
+            <p role="alert">{historyError}</p>
+          ) : history.length ? (
+            <ol>
+              {history.map((item) => (
+                <li key={item.id}>
+                  <strong>{item.field_changed.replaceAll("_", " ")}</strong>
+                  <p>
+                    {item.field_changed === "owner"
+                      ? personName(item.old_value)
+                      : item.old_value || "Empty"}{" "}
+                    →{" "}
+                    {item.field_changed === "owner"
+                      ? personName(item.new_value)
+                      : item.new_value || "Empty"}
+                  </p>
+                  <small>
+                    {personName(item.changed_by)} ·{" "}
+                    {new Date(item.changed_at).toLocaleString()}
+                  </small>
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <p>No changes recorded yet.</p>
+          )}
+          <small>
+            Latest 50 field changes. New tasks have no update history until
+            edited.
+          </small>
+        </section>
+      )}
+      <nav className="pagination" aria-label="Task board pagination">
+        <button
+          disabled={currentPage <= 1}
+          onClick={() => setPage(currentPage - 1)}
+        >
+          Previous
+        </button>
+        <span>
+          Page {currentPage} of {pageCount} ? {visible.length} matching tasks
+        </span>
+        <button
+          disabled={currentPage >= pageCount}
+          onClick={() => setPage(currentPage + 1)}
+        >
+          Next
+        </button>
+      </nav>
+      <footer className="footer-note">
+        <span>{sync}</span>
+        <span>
+          {role === "super_admin"
+            ? "Admin access"
+            : role === "discipline_lead"
+              ? "Edit your discipline"
+              : "Read-only access"}
+        </span>
+      </footer>
+    </>
+  );
+}
+
+function TaskEditor({
+  task,
+  disciplines,
+  people,
+  disciplineId,
+  saving,
+  onCancel,
+  onSave,
+}: {
+  task: Task | null;
+  disciplines: Discipline[];
+  people: Profile[];
+  disciplineId: string | null;
+  saving: boolean;
+  onCancel: () => void;
+  onSave: (values: Partial<Task>) => Promise<void>;
+}) {
+  const [draft, setDraft] = useState({
+    task_name: task?.task_name ?? "",
+    discipline_id: task?.discipline_id ?? disciplineId ?? "",
+    owner: task?.owner ?? "",
+    due_date: task?.due_date ?? "",
+    priority: task?.priority ?? "medium",
+    status: task?.status ?? "not_started",
+    percent_complete: task?.percent_complete ?? 0,
+    notes: task?.notes ?? "",
+  });
+  const editable =
+    disciplines.some((d) => d.id === draft.discipline_id) ||
+    (!task && disciplines.length > 0);
+  async function submit(event: FormEvent) {
+    event.preventDefault();
+    if (!draft.task_name.trim() || !editable) return;
+    await onSave({
+      ...draft,
+      task_name: draft.task_name.trim(),
+      owner: draft.owner || null,
+      due_date: draft.due_date || null,
+      percent_complete:
+        draft.status === "completed"
+          ? 100
+          : draft.status === "not_started"
+            ? 0
+            : draft.percent_complete,
+    });
+  }
+  return (
+    <form className="task-editor" onSubmit={submit}>
+      <div className="editor-heading">
+        <h3>{task ? "Task details" : "Create a task"}</h3>
+        <button
+          type="button"
+          className="text-button"
+          disabled={saving}
+          onClick={onCancel}
+        >
+          Close
+        </button>
+      </div>
+      <fieldset disabled={saving || !editable}>
+        <label className="wide">
+          Task name
+          <input
+            autoFocus
+            required
+            maxLength={300}
+            value={draft.task_name}
+            onChange={(e) => setDraft({ ...draft, task_name: e.target.value })}
+          />
+        </label>
+        <label>
+          Discipline
+          <select
+            required
+            disabled={!!task}
+            value={draft.discipline_id}
+            onChange={(e) =>
+              setDraft({ ...draft, discipline_id: e.target.value })
+            }
+          >
+            <option value="">Choose discipline</option>
+            {task && !disciplines.some((d) => d.id === task.discipline_id) && (
+              <option value={task.discipline_id}>Assigned discipline</option>
+            )}
+            {disciplines.map((d) => (
+              <option key={d.id} value={d.id}>
+                {d.name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Owner
+          <select
+            value={draft.owner}
+            onChange={(e) => setDraft({ ...draft, owner: e.target.value })}
+          >
+            <option value="">Unassigned</option>
+            {draft.owner && !people.some((p) => p.id === draft.owner) && (
+              <option value={draft.owner}>Assigned team member</option>
+            )}
+            {people.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.full_name ?? p.id}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Due date
+          <input
+            type="date"
+            value={draft.due_date}
+            onChange={(e) => setDraft({ ...draft, due_date: e.target.value })}
+          />
+        </label>
+        <label>
+          Priority
+          <select
+            value={draft.priority}
+            onChange={(e) =>
+              setDraft({
+                ...draft,
+                priority: e.target.value as Task["priority"],
+              })
+            }
+          >
+            {["low", "medium", "high", "critical"].map((p) => (
+              <option key={p}>{p}</option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Status
+          <select
+            value={draft.status}
+            onChange={(e) => {
+              const status = e.target.value as Status;
+              setDraft({
+                ...draft,
+                status,
+                percent_complete:
+                  status === "completed"
+                    ? 100
+                    : status === "not_started" || draft.status === "completed"
+                      ? 0
+                      : draft.percent_complete,
+              });
+            }}
+          >
+            {statuses.map((s) => (
+              <option key={s} value={s}>
+                {labels[s]}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Progress (%)
+          <input
+            type="number"
+            min="0"
+            max="99"
+            required
+            disabled={
+              draft.status === "completed" || draft.status === "not_started"
+            }
+            value={draft.percent_complete}
+            onChange={(e) =>
+              setDraft({ ...draft, percent_complete: Number(e.target.value) })
+            }
+          />
+        </label>
+        <label className="wide">
+          Notes / blocker
+          <textarea
+            rows={3}
+            value={draft.notes}
+            onChange={(e) => setDraft({ ...draft, notes: e.target.value })}
+            placeholder="Scope, next steps, or what is blocking this task"
+          />
+        </label>
+      </fieldset>
+      <p className="editor-hint">
+        Owners listed here follow your current profile access. Contact an admin
+        to assign another team member.
+      </p>
+      {editable ? (
+        <button
+          className="button primary compact"
+          disabled={saving}
+          type="submit"
+        >
+          {saving ? "Saving..." : task ? "Save changes" : "Create task"}
+        </button>
+      ) : (
+        <p>Read-only task details.</p>
+      )}
+    </form>
   );
 }

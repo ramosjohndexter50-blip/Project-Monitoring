@@ -1,36 +1,42 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+﻿# Architectural Consultancy Project Monitor
 
-## Getting Started
+Next.js 16 + Supabase platform for project-based architectural and engineering consultancy work.
 
-First, run the development server:
+- `/`: original table/Kanban task board, My work and workflow guide.
+- `/portal`: scoped dashboards, registers, notifications, search and reporting.
+- `/admin`: server-protected control center.
 
-```bash
+Read [WORKFLOW.md](WORKFLOW.md) for operating procedures, [audit](docs/AUDIT.md) for the original architecture and findings, [implementation](docs/IMPLEMENTATION.md) for feature/test coverage, and [deployment](docs/DEPLOYMENT.md) for migration and bootstrap instructions.
+
+## Local development
+
+```powershell
+npm ci
+# Configure .env.local from .env.example without committing credentials.
+# Apply verified migrations to a staging/local Supabase project first.
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+This application version requires the consultancy platform migration. The connected production database has not been migrated by this implementation session.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Verification
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```powershell
+npm run lint
+npm run build
+npm run test:db
+```
 
-## Learn More
+Database tests use embedded PostgreSQL and fixture Auth/Storage schemas. See the deployment guide for isolated browser verification and the remaining live-environment checks.
 
-To learn more about Next.js, take a look at the following resources:
+## Architecture
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `src/lib/supabase`: browser, cookie SSR and server-only Auth admin clients.
+- `src/proxy.ts`: session refresh and private cache headers.
+- `src/lib/platform`: authorization, allowlisted module definitions, queries, validated mutations.
+- `src/components/platform`: reusable dashboard and management forms.
+- `src/app/portal`: server-rendered registers, search and reports; row access remains enforced by RLS.
+- `supabase/migrations`: data-preserving schema/status migration, project permissions, immutable histories, approvals and private Storage policies.
+- `scripts`: controlled Super Admin bootstrap and isolated verification tooling.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Secrets belong only in server-side environment configuration. The service-role client is protected by `server-only` and used only after authenticated permission checks or by the trusted bootstrap operator.
