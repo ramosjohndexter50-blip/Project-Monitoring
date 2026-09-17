@@ -1,16 +1,19 @@
 import Link from "next/link";
 import { session } from "@/lib/platform/auth";
+
 export default async function PortalLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const { db, profile } = await session();
-  const access = await db.rpc("has_permission", { permission: "admin.access" });
-  const grants = await db
-    .from("role_permissions")
-    .select("permission_key")
-    .eq("role_key", profile.role);
+  const [access, grants] = await Promise.all([
+    db.rpc("has_permission", { permission: "admin.access" }),
+    db
+      .from("role_permissions")
+      .select("permission_key")
+      .eq("role_key", profile.role),
+  ]);
   const allowed = new Set((grants.data ?? []).map((g) => g.permission_key));
   const groups = [
     [
