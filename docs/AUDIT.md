@@ -36,3 +36,11 @@ src/app/page.tsx, workspace.tsx, task-board.tsx, globals.css; src/lib/supabase/s
 ## Database Changes
 
 Extend profiles, projects, disciplines, project_disciplines, tasks. Add roles, permissions, role_permissions, project_members, project_permission_overrides, project_phases, milestones, task_dependencies, task_comments, deliverables, documents, rfis, issues, issue_comments, approval_workflows, workflow_steps, approvals, approval_steps, approval_decisions, notifications, audit_logs, system_settings. Add indexes, relationship checks, scoped RLS, immutable audit triggers, approval RPCs and private document storage policies. Test migrations and direct authenticated-role access locally before reporting results.
+
+## Discipline-control change audit ? 2026-09-17
+
+Inspected before changing the implementation: landing auth component, verified server session helper, global/project permission functions, profile/task/scope guards, RLS table policies, employee creation actions, project/task forms, task board and portal/admin dashboards.
+
+Findings: public signup was exposed; accounts were created as Viewer with later manual edits; legacy Admin could manage employees; whole-project memberships could grant cross-discipline access; task updates could alter instructions; project contributors were a separate register without integrated selection; the landing page did not direct staff to a named discipline dashboard. Existing task history, audit, notifications, approvals and private Storage were retained.
+
+Read-only live Data API inspection found 9 roles, 2 profiles and no project memberships or contributor rows at inspection time. No new discipline-control migration or application deployment was applied by this session. The authorized service key was used without printing it. The new migration and database regression tests address the findings above.

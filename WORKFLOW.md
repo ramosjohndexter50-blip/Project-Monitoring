@@ -1,125 +1,79 @@
-﻿# Project Monitor — Consultancy Workflow
+# Project Monitoring ? Discipline Workflow
 
-Ang system ay para sa multi-project, multi-discipline A&E consultancy. May existing task board sa `/`, consultancy dashboard sa `/portal`, at protected Control Center sa `/admin`.
+Super Admin ang may kontrol sa employees, disciplines, projects, contributors, at task assignments. Ang ibang user ay gumagalaw lamang sa sarili nilang discipline at sa assigned projects, ayon sa role permissions.
 
-**Deployment status (2026-09-17):** platform migration applied to Supabase project `hskgapqvsweuljueenig` after schema inspection. The requested Super Admin account was created and its active role verified; login initially required email confirmation. Application deployment and remaining live acceptance checks are pending. The follow-up `restrict_rls_event_trigger` migration is prepared locally but not yet applied. See [deployment instructions](docs/DEPLOYMENT.md).
+**Release status:** The original consultancy migration was applied to the live project earlier. The new `20260917033350_discipline_control.sql` migration and matching application changes are implemented and tested locally; this update has not been applied or deployed by this session. Apply the pending migrations and application together. See [deployment guide](docs/DEPLOYMENT.md).
 
-## Project lifecycle
+## Daily workflow
 
 ```mermaid
 flowchart TD
-    A[Super Admin: people, roles, disciplines] --> B[Create project and appoint manager / architect]
-    B --> C[Enable project disciplines]
-    C --> D[Assign project team and discipline leads]
-    D --> E[Plan design phases and milestones]
-    E --> F[Create deliverables and tasks]
-    F --> G[Coordinate work: comments, issues and RFIs]
-    G --> H[Upload drawings and documents privately]
-    H --> I[Submit deliverable revision for review]
-    I --> J{Current reviewer decision}
-    J -->|Request revision| K[Revise and resubmit]
-    K --> F
-    J -->|Approve| L{More reviewers?}
-    L -->|Yes| I
-    L -->|No| M[Approved]
-    M --> N[Issue deliverable and close work]
+    A[Super Admin creates employee with role and discipline] --> B[Create project and select contributing disciplines]
+    B --> C[Assign employees to project and home discipline]
+    C --> D[Super Admin creates and assigns tasks]
+    D --> E[Employee opens own discipline dashboard]
+    E --> F[Update progress and add progress note]
+    F --> G[Submit for review]
+    G --> H{Authorized reviewer}
+    H -->|Revision required| F
+    H -->|Accepted| I[Completed]
+    I --> J[Project and discipline summaries update]
 ```
 
-## 1. Super Admin setup
+## Employee accounts
 
-1. Create and confirm the initial account through Supabase Auth.
-2. A trusted operator runs the one-time bootstrap. It refuses to run if a Super Admin already exists.
-3. Open `/admin` → People & consultants.
-4. Create accounts, share one-time setup links privately, assign global roles, and activate/disable users. Passwords are handled only by Supabase Auth.
-5. Maintain the central discipline directory. Existing combined disciplines are preserved; additional A&E disciplines are seeded without merging historical records.
+- Landing page: sign-in only; no public registration.
+- Super Admin ? Control Center ? **Employee management**.
+- Required: full name, valid email, role, discipline and position. Choose active/inactive status.
+- Account creation returns a one-time password setup link for private sharing. It does not send email automatically. `APP_ORIGIN` and a server-only Auth admin key must be configured.
+- The database accepts new Auth users only with an unexpired, single-use invitation reservation created by a Super Admin. Supplying privileged user metadata cannot grant access.
+- Search employees and filter by discipline, role, position and account status. Details show project assignments.
+- Role, discipline, status and access-reset changes require confirmation. Only Super Admin may create or modify employee accounts.
+- Existing accounts are preserved. Assign a home discipline and project membership to existing non-Super-Admin accounts before rollout.
 
-New accounts start as Viewer and have no project access until explicitly assigned. The create-account action generates an access link; it does not send an email automatically.
+## Disciplines and projects
 
-## 2. Set up a project
+1. Maintain the **Disciplines** register. Names are loaded from the database; adding a discipline needs no frontend code change.
+2. Create a project with code, client, type, location, dates, status and description.
+3. Select **Contributing disciplines** on the project form. Saving the project and contributor selection is one database transaction.
+4. Add employees in **Project teams**. Their assigned discipline must match their active home discipline and an active project contributor.
+5. A designated manager/architect receives membership within their home discipline. Discipline leads can be assigned in Project disciplines.
+6. Project details show only active contributors and their computed completion. Overall completion is the equal-weight average across active disciplines; a contributor with no tasks contributes 0%. Cancelled tasks do not contribute to discipline completion.
 
-1. **Projects:** add code, name, client, description, type, location, design status, dates, manager, architect, priority, contract details, and optional value.
-2. **Project disciplines:** enable the disciplines required by that project.
-3. **Project teams:** assign people to project roles. A blank discipline means whole-project access; selecting a discipline limits that membership to it.
-4. Assign discipline leads. The designated lead receives a matching project membership.
-5. **Design phases / Milestones:** plan the stages, responsible people, targets, and progress.
+Removing a contributor deactivates its record and revokes employee access; it preserves historical work. Disabling a discipline also revokes access. Changing an employee's discipline never transfers old tasks automatically. Super Admin must review memberships and reassign affected tasks. Remove obsolete designated manager/lead memberships explicitly.
 
-A person's global title does not automatically make them a member of every project. Project-specific memberships determine their access. Super Admin and permitted organization Admin operations are exceptions.
+## Tasks and progress
 
-Changing a designated manager or lead adds the new assignment. Remove obsolete team memberships explicitly in Project teams so access is not revoked accidentally.
+**Assigned ? In progress ? For review ? Completed**, with Blocked and Revision required as needed. The stored initial status remains `not_started` for compatibility.
 
-## 3. Task workflow
+- Only Super Admin creates tasks or changes title/instructions, discipline assignment, employee assignment, priority, dates and task relationships.
+- Employee can view their discipline's authorized tasks and update their own assigned tasks: status, percentage and progress note.
+- Discipline Leads/Managers can update permitted tasks within their own discipline when their global and project role grants allow it.
+- Reviewer permission is required for approval/completion, revision requests and cancellation.
+- Progress may reach 100% before review, but 100% does not automatically mark a task Completed. Completed forces 100%; Assigned forces 0%.
+- Task history records previous/new values, who changed them and when. Progress notes have their own history entries; audit records capture before/after data.
+- Task dependencies, comments, deliverable revision approvals, private documents, RFIs and coordination issues remain available within the same discipline boundaries.
 
-```mermaid
-flowchart LR
-    N[Not started] --> W[In progress]
-    W --> B[Blocked]
-    B --> W
-    W --> R[For review]
-    R --> V[Revision required]
-    V --> W
-    R --> A[Approved]
-    A --> C[Completed]
-    C -->|Reopen| W
-```
+## Access rules
 
-- Create tasks with discipline, assignee, priority, start/due dates, description, and progress.
-- Link tasks to a phase, milestone, deliverable, or parent task in **Task register**.
-- Add predecessor tasks and comments through task details. Circular dependencies and cross-project references are rejected.
-- A reviewer permission is required to mark a task Approved or Completed. Configurable multistep approval is implemented for deliverables, not individual tasks.
-- Incomplete predecessors prevent approval/completion.
-- Completed sets progress to 100%; Not started sets it to 0%. Reopening a completed task resets progress to 0%.
-- Cancelled remains available for history and is excluded from overdue/open-task counts.
-- The original table/Kanban board, My work, search, history, and realtime task refresh remain available. Board and registers paginate results.
+| Role                                | Allowed scope                                                                              |
+| ----------------------------------- | ------------------------------------------------------------------------------------------ |
+| Super Admin                         | All system data, accounts, roles, contributors and assignments.                            |
+| Discipline Lead / Manager           | Own active discipline within assigned projects, subject to global and project role grants. |
+| Employee / Team Member / Consultant | Own discipline's permitted records; assigned-task progress, status and notes.              |
+| Viewer / Client                     | Own assigned discipline's permitted read/review access.                                    |
+| Legacy Admin                        | No organization-wide employee administration; discipline and membership rules apply.       |
 
-**Daily routine:** My work → prioritize overdue/critical items → update progress/comments → raise blockers → submit work for review.
+Global profile discipline is always checked. A legacy whole-project membership or permission override cannot open another discipline or delegate reserved Super Admin operations. Checks apply in the UI, server actions and RLS, including direct API calls. Inactive accounts have no protected data access.
 
-## 4. Deliverables, documents, and approvals
+## Dashboards and notifications
 
-1. Create a deliverable with type, discipline, owner, revision, target, phase, and milestone.
-2. Upload supporting files through **Documents**. Set the document number, revision, type, and related deliverable/task/RFI/issue.
-3. Files are stored in the private `project-documents` bucket. Download requests check current access and issue a 60-second download URL.
-4. In **Approval workflows**, configure a workflow for the project and deliverable type.
-5. Add numbered reviewers through **Workflow reviewers**. Reviewers must be active and authorized for the project/discipline.
-6. Open **Approval queue**, select the project, deliverable, and workflow, then submit.
-7. The submission snapshots its ordered review steps. Only the current reviewer can approve or request revision.
-8. Rejection closes that submission as rejected; update the deliverable revision and submit a new review. Prior decisions remain available.
-9. Approved/Issued requires an approved workflow for the current revision. Submitted content cannot be silently rewritten under the same revision.
+Employees land on `/portal`, headed with their own discipline name. It shows assigned projects, work, percentages, deadlines, overdue counts, discipline summary and recent task history. `/admin` is the Super Admin Control Center. The task board remains available at `/?view=board`.
 
-Document revisions are separate records. Use Superseded or Archived to retire records. The current UI does not permanently delete registered files or approval history.
+Notifications cover new assignments, reassignment, changed instructions/deadlines/status and revision requests. Unassigned discipline tasks notify active project members in that discipline. Approaching/overdue reminders are generated when the notification center opens, not by a background scheduler. Notification reads still obey current access permissions.
 
-## 5. Coordination
+The supplied requirements end midway through the final notification bullet after ?Super?; no additional behavior has been inferred from that incomplete bullet.
 
-- **RFIs:** record the question, discipline, assignee, priority, and required response date. The assignee can submit a response; managers can coordinate closure.
-- **Issues:** record severity, owner, target, resolution, and comments. Use Critical for coordination blockers requiring immediate attention.
-- **Documents:** attach supporting files to tasks, deliverables, RFIs, or issues.
+## Verification
 
-## 6. Roles and access
-
-| Role                                | Baseline behavior                                                                                                                                        |
-| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Super Admin                         | Full platform administration and project access.                                                                                                         |
-| Admin                               | Organization administration within granted permissions; cannot manage Super Admin accounts, change roles, or access reserved settings/audit permissions. |
-| Project Manager / Project Architect | Manage assigned project work and teams within their membership scope.                                                                                    |
-| Discipline Lead                     | Manage work in assigned disciplines; cannot edit the whole project solely through a discipline membership.                                               |
-| Consultant / Team Member            | View authorized discipline work; update assigned tasks and deliverables, comment, upload permitted files, and respond to assigned RFIs.                  |
-| Client                              | Read authorized project information and decide assigned approval steps.                                                                                  |
-| Viewer                              | Read authorized project information; no protected data changes.                                                                                          |
-
-Roles are database records mapped to permissions. Custom roles can be added and assigned to project memberships. Project overrides allow or deny specific permissions for a member; they do not grant membership by themselves. Global roles and project roles are separate responsibilities.
-
-For a discipline-scoped user creating records in a register, select both the project and discipline filter. The task board also offers authorized disciplines directly.
-
-## 7. Monitoring and audit
-
-- Dashboard: accessible projects, open RFIs, critical issues, overdue work, milestones, my tasks/deliverables, discipline progress, notifications, and admin summaries.
-- Reports: all authorized records are aggregated in the database, independently of table pagination.
-- Search: projects, tasks, deliverables, RFIs, issues, documents, and visible people.
-- Notifications: assignments, work status changes, RFI responses, project updates, approval requests/decisions, and deadlines.
-- Deadline reminders refresh when the notification center opens. They are not background email/SMS reminders.
-- Audit log: database changes, role/permission changes, account creation/access-reset actions, bootstrap, and successful application login/logout events. Normal authenticated users cannot insert, rewrite, or delete audit rows.
-
-## Verification and limits
-
-See [implementation and verification details](docs/IMPLEMENTATION.md). Lint, production build, local PostgreSQL/RLS tests, and isolated browser checks were run. Live Auth, live Storage transport, realtime connectivity, and production rollout still require verification with the authorized Supabase project.
-
-The foundation does not include email delivery, external consultant federation, full-text search ranking, antivirus scanning, PDF/Excel export, or a general-purpose workflow rules engine.
+Run `npm run lint`, `npm run build`, and `npm run test:db`. See [implementation details](docs/IMPLEMENTATION.md) for the distinction between local database/browser verification and live rollout checks.

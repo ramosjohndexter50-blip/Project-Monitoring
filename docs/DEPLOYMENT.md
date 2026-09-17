@@ -1,5 +1,17 @@
 ﻿# Deployment and migration runbook
 
+## Discipline-control release (2026-09-17)
+
+The new application requires `20260917033350_discipline_control.sql`. Apply it after the consultancy platform migration and the pending event-trigger hardening migration. This session has not applied this new migration or deployed the new application.
+
+Before release, preserve the existing Super Admin and assign home disciplines, positions and appropriate project memberships to existing staff. The new policy intentionally closes cross-discipline access from legacy whole-project memberships and removes employee administration from the legacy Admin role. A role override cannot delegate reserved Super Admin operations. Do not invent staff disciplines to satisfy this requirement.
+
+Public signup is removed from the UI and rejected by the Auth-user database trigger. For a fresh installation, create/confirm and bootstrap the initial Super Admin **before** applying the discipline-control migration. Thereafter, create employees only from the authenticated control center: its expiring invitation reservation carries the approved role/discipline/position. The setup action requires `SUPABASE_SERVICE_ROLE_KEY` and `APP_ORIGIN`; it returns a private setup link. Public Auth signup can also be disabled in Supabase settings as an additional control; do not disable administrator invitations.
+
+Coordinate the application and migration release: the old account-creation action does not create invitation reservations, and the new UI calls newly added contributor/summary functions. Verify account provisioning with real Supabase Auth, employee login, discipline reassignment, contributor removal, progress history and private Storage after rollout. Existing public APIs must reject public registration and cross-discipline updates.
+
+The original sections below describe the earlier foundation rollout. The discipline-control rules above supersede its public-signup, Admin and whole-project membership behavior.
+
 ## Before rollout
 
 1. Obtain authorized access to the Supabase project referenced by `NEXT_PUBLIC_SUPABASE_URL`. The connected tool currently denied schema inspection; no production migration was applied.

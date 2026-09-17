@@ -4,6 +4,14 @@
 
 Implemented in the local repository. On 2026-09-17, access to `hskgapqvsweuljueenig` was restored, the existing schema was inspected, and the consultancy platform migration was applied successfully. The requested account was created through Supabase Auth and its active Super Admin profile verified. Login initially returned `Email not confirmed`. Application deployment and remaining live acceptance checks are pending. Security advisors identified an existing publicly executable `rls_auto_enable` helper; a follow-up migration is prepared locally, not yet applied. Leaked-password protection is disabled in the test project's Auth settings.
 
+## Discipline-control update
+
+The new discipline-control migration is pending live application. The matching code removes public signup, adds Super Admin employee provisioning and filtering, contributor selection, discipline landing dashboards and project completion summaries. Existing working registers are retained under stricter permissions.
+
+Security uses the profile's current active discipline, active project contributors, membership and role grants. Super Admin alone controls accounts, project settings, contributors and task assignments. Employee task mutations accept only progress/status/progress-note changes; ownership and review checks remain database-enforced. Invitation reservations prevent direct public Auth signup, including forged role metadata. Existing users are preserved without guessing their discipline.
+
+Validation: PostgreSQL/RLS tests cover public signup rejection, trusted invite consumption, forged metadata, cross-discipline access despite whole-project membership, legacy Admin account-edit denial, task assignment denial, progress at 100% while awaiting review, progress notes/history, contributor deactivation and discipline changes. Browser checks with isolated Auth/API fixtures cover sign-in-only landing, employee creation with role/discipline/position, project creation with selected contributors and designated manager, project overview, discipline landing and progress update/history. Live Auth invitation transport and rollout remain unverified for this update.
+
 ## Coverage
 
 | Phase                  | Implementation                                                                                                                                                                                                                                                     |
@@ -27,7 +35,7 @@ The existing Supabase Auth accounts, projects, tasks, discipline records and tas
 
 - Route guards and server mutations re-validate the authenticated user and active account.
 - Generic register actions accept only declared modules/fields, validate values, and use the caller's session client; they do not bypass RLS.
-- Membership and discipline checks are enforced in database policies. Organization Admin has a limited global permission set; it cannot edit Super Admin identities or grant roles.
+- Membership and discipline checks are enforced in database policies. Only Super Admin has global administration access; legacy Admin and other roles require matching home discipline and project membership.
 - A discipline-scoped membership cannot modify the whole project just because its role includes a project permission.
 - Project override denial takes precedence over regular grants, except for Super Admin. An override alone does not create membership.
 - Assignees and related records are checked against project/discipline boundaries. Creator/uploader identity fields are protected.
@@ -79,7 +87,7 @@ The harness omits the initial pgcrypto extension declaration because UUID genera
 
 ## Operational limits / deferred extensions
 
-- Run target-schema preflight, Supabase advisors and live acceptance tests before deployment. No live writes were performed here.
+- Run target-schema preflight, Supabase advisors and live acceptance tests before deploying the discipline-control update. The earlier consultancy migration was applied live; this new update remains local.
 - Account setup and reset actions return one-time links for private sharing; no outbound email integration is configured.
 - Deadline reminders are generated on notification-center access, not by a scheduled/background worker.
 - Permanent project/task/document deletion is intentionally absent from the UI; statuses/activation preserve relationships and history.

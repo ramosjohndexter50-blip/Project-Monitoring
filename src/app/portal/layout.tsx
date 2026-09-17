@@ -66,7 +66,7 @@ export default async function PortalLayout({
             <h2>CONTROL CENTER</h2>
             <Link href="/admin">Admin overview</Link>
             {[
-              ["users", "People & consultants", "users.view"],
+              ["users", "Employee management", "users.view"],
               ["roles", "Roles", "roles.view"],
               ["permissions", "Permission catalog", "roles.view"],
               ["role_permissions", "Role permissions", "roles.view"],

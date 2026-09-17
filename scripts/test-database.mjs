@@ -608,11 +608,24 @@ await as("admin", async () => {
     await db.query(
       "select public.save_project_contributors(null,$1,$2,null) id",
       [
-        JSON.stringify({ name: "Integrated project", project_code: "INT-01" }),
+        JSON.stringify({
+          name: "Integrated project",
+          project_code: "INT-01",
+          project_manager: ids.manager,
+        }),
         [d, d2],
       ],
     )
   ).rows[0].id;
+  assert.equal(
+    (
+      await db.query(
+        "select discipline_id from public.project_members where project_id=$1 and user_id=$2",
+        [created, ids.manager],
+      )
+    ).rows[0].discipline_id,
+    d,
+  );
   assert.equal(
     (
       await db.query("select * from public.project_discipline_summary($1)", [
@@ -632,6 +645,24 @@ await as("member", async () => {
 });
 await as("admin", async () => {
   await db.query("select public.set_project_contributors($1,$2)", [p, [d, d2]]);
+  await db.query(
+    "update public.tasks set notes='Revised instructions',due_date=current_date+1 where id=$1",
+    [t],
+  );
+});
+await as("member", async () => {
+  assert.ok(
+    (
+      await db.query(
+        "select id from public.notifications where entity_id=$1 and title like 'Task instructions changed:%'",
+        [t],
+      )
+    ).rows.length > 0,
+  );
+  const caps = (await db.query("select public.task_capabilities($1) c", [p]))
+    .rows[0].c;
+  assert.equal(caps.create_disciplines.length, 0);
+  assert.equal(caps.review_disciplines.length, 0);
 });
 await db.query("update public.profiles set discipline_id=$1 where id=$2", [
   d2,

@@ -217,6 +217,14 @@ const server = createServer((req, res) => {
         ]);
         if (parts[1] === "rest" && parts[3] === "rpc") {
           const keys = Object.keys(body);
+          if (parts[4] === "project_discipline_summary") {
+            const result = await db.query(
+              "select * from public.project_discipline_summary($1)",
+              [body.target_project],
+            );
+            send(result.rows);
+            return;
+          }
           const sql = `select public.${quote(parts[4])}(${keys.map((k, i) => `${quote(k)} => $${i + 1}`).join(",")}) as value`;
           const result = await db.query(sql, Object.values(body));
           send(result.rows[0]?.value ?? null);

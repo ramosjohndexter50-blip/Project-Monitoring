@@ -74,6 +74,10 @@ export function RecordForm({
                 ? (field.min ?? 0)
                 : ""),
     );
+  const locked = (field: Field) =>
+    moduleKey === "tasks" &&
+    !superAdmin &&
+    !["status", "percent_complete", "progress_note"].includes(field.key);
   return (
     <form
       className="register-form"
@@ -137,113 +141,107 @@ export function RecordForm({
         />
       )}
       <fieldset disabled={!editable || busy}>
-        {config.fields
-          .filter(
-            (field) =>
-              moduleKey !== "tasks" ||
-              superAdmin ||
-              ["status", "percent_complete", "progress_note"].includes(
-                field.key,
-              ),
-          )
-          .map((field) => (
-            <label
-              key={field.key}
-              className={field.type === "textarea" ? "span-all" : ""}
-            >
-              {field.label}
-              {field.required ? " *" : ""}
-              {field.type === "textarea" ? (
-                <textarea
-                  name={field.key}
-                  defaultValue={defaultValue(field)}
-                  rows={3}
-                  required={field.required}
-                  maxLength={10000}
-                />
-              ) : field.type === "checkbox" ? (
-                <input
-                  name={field.key}
-                  type="checkbox"
-                  defaultChecked={
-                    row
-                      ? Boolean(row[field.key])
-                      : ["is_active", "allowed"].includes(field.key)
-                  }
-                />
-              ) : field.type === "select" ? (
-                <select
-                  name={field.key}
-                  onChange={
-                    field.key === "discipline_id"
-                      ? (e) => setSelectedDiscipline(e.target.value)
-                      : undefined
-                  }
-                  disabled={
-                    !!row &&
+        {config.fields.map((field) => (
+          <label
+            key={field.key}
+            className={field.type === "textarea" ? "span-all" : ""}
+          >
+            {field.label}
+            {field.required ? " *" : ""}
+            {field.type === "textarea" ? (
+              <textarea
+                name={field.key}
+                defaultValue={defaultValue(field)}
+                readOnly={locked(field)}
+                rows={3}
+                required={field.required}
+                maxLength={10000}
+              />
+            ) : field.type === "checkbox" ? (
+              <input
+                name={field.key}
+                type="checkbox"
+                disabled={locked(field)}
+                defaultChecked={
+                  row
+                    ? Boolean(row[field.key])
+                    : ["is_active", "allowed"].includes(field.key)
+                }
+              />
+            ) : field.type === "select" ? (
+              <select
+                name={field.key}
+                onChange={
+                  field.key === "discipline_id"
+                    ? (e) => setSelectedDiscipline(e.target.value)
+                    : undefined
+                }
+                disabled={
+                  locked(field) ||
+                  (!!row &&
                     config.project &&
-                    ["project_id", "discipline_id"].includes(field.key)
-                  }
-                  required={field.required}
-                  defaultValue={defaultValue(field)}
-                >
-                  <option value="">Choose…</option>
-                  {field.options
+                    ["project_id", "discipline_id"].includes(field.key))
+                }
+                required={field.required}
+                defaultValue={defaultValue(field)}
+              >
+                <option value="">Choose…</option>
+                {field.options
+                  ?.filter(
+                    (option) =>
+                      moduleKey !== "tasks" ||
+                      field.key !== "status" ||
+                      superAdmin ||
+                      canReview ||
+                      ![
+                        "approved",
+                        "completed",
+                        "revision_required",
+                        "cancelled",
+                      ].includes(option) ||
+                      option === row?.status,
+                  )
+                  .map((option) => (
+                    <option key={option} value={option}>
+                      {option.replaceAll("_", " ")}
+                    </option>
+                  ))}
+                {field.reference &&
+                  choices[field.reference]
                     ?.filter(
                       (option) =>
                         moduleKey !== "tasks" ||
-                        field.key !== "status" ||
-                        superAdmin ||
-                        canReview ||
-                        ![
-                          "approved",
-                          "completed",
-                          "revision_required",
-                          "cancelled",
-                        ].includes(option) ||
-                        option === row?.status,
+                        field.key !== "owner" ||
+                        option.disciplineId === selectedDiscipline ||
+                        option.value === row?.owner,
                     )
                     .map((option) => (
-                      <option key={option} value={option}>
-                        {option.replaceAll("_", " ")}
+                      <option key={option.value} value={option.value}>
+                        {option.label}
                       </option>
                     ))}
-                  {field.reference &&
-                    choices[field.reference]
-                      ?.filter(
-                        (option) =>
-                          moduleKey !== "tasks" ||
-                          field.key !== "owner" ||
-                          option.disciplineId === selectedDiscipline ||
-                          option.value === row?.owner,
-                      )
-                      .map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                </select>
-              ) : (
-                <input
-                  name={field.key}
-                  type={field.type ?? "text"}
-                  defaultValue={defaultValue(field)}
-                  readOnly={!!row && field.immutable}
-                  min={field.min}
-                  max={field.max}
-                  step={
-                    field.key === "budget"
-                      ? "0.01"
-                      : field.type === "number"
-                        ? "1"
-                        : undefined
-                  }
-                  required={field.required}
-                  maxLength={10000}
-                />
-              )}
-            </label>
-          ))}
+              </select>
+            ) : (
+              <input
+                name={field.key}
+                type={field.type ?? "text"}
+                defaultValue={defaultValue(field)}
+                readOnly={locked(field) || (!!row && field.immutable)}
+                min={field.min}
+                max={field.max}
+                step={
+                  field.key === "budget"
+                    ? "0.01"
+                    : field.type === "number"
+                      ? "1"
+                      : undefined
+                }
+                required={field.required}
+                maxLength={10000}
+              />
+            )}
+          </label>
+        ))}
         {moduleKey === "projects" && (
           <div className="span-all">
             <h3>Contributing disciplines</h3>
@@ -251,17 +249,19 @@ export function RecordForm({
               Only selected active disciplines can work on this project.
               Removing one preserves its history.
             </p>
-            {choices.disciplines?.map((d) => (
-              <label key={d.value}>
-                <input
-                  type="checkbox"
-                  name="contributors"
-                  value={d.value}
-                  defaultChecked={contributorIds.includes(d.value)}
-                />
-                {d.label}
-              </label>
-            ))}
+            <div className="contributor-options">
+              {choices.disciplines?.map((d) => (
+                <label key={d.value}>
+                  <input
+                    type="checkbox"
+                    name="contributors"
+                    value={d.value}
+                    defaultChecked={contributorIds.includes(d.value)}
+                  />
+                  {d.label}
+                </label>
+              ))}
+            </div>
           </div>
         )}
         {moduleKey === "documents" && !id && (
@@ -346,7 +346,13 @@ export function AccountForm({ choices }: { choices: Choices }) {
         e.preventDefault();
         setBusy(true);
         try {
-          setResult(await createAccount(new FormData(e.currentTarget)));
+          const form = new FormData(e.currentTarget);
+          if (
+            form.get("role") === "super_admin" &&
+            !confirm("Create a Super Admin with full system access?")
+          )
+            return;
+          setResult(await createAccount(form));
         } finally {
           setBusy(false);
         }

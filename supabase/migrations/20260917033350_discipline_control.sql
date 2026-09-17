@@ -10,7 +10,7 @@ delete from public.role_permissions where role_key<>'super_admin' and
   or permission_key in ('admin.access','tasks.create','tasks.assign','tasks.delete'));
 
 alter table public.project_disciplines add column is_active boolean not null default true;
-alter table public.tasks add column progress_note text;
+alter table public.tasks add column progress_note text check(length(progress_note)<=10000);
 
 create or replace function private.global_permission(permission text) returns boolean
 language sql stable security definer set search_path='' as $$
@@ -45,6 +45,7 @@ language sql stable security definer set search_path='' as $$
  and (owner_id=auth.uid() or exists(select 1 from public.profiles p
  join public.project_members m on m.user_id=p.id and m.project_id=project
  where p.id=auth.uid() and p.role in ('discipline_lead','project_manager','project_architect')
+ and (m.discipline_id is null or m.discipline_id=discipline)
  and m.role_key in ('discipline_lead','project_manager','project_architect'))))
 $$;
 
@@ -57,6 +58,9 @@ $$;
 drop policy disciplines_read on public.disciplines;
 create policy disciplines_read on public.disciplines for select to authenticated
 using(private.super_admin() or (private.active_user() and id=(select discipline_id from public.profiles where id=auth.uid())));
+drop policy members_read on public.project_members;
+create policy members_read on public.project_members for select to authenticated
+using(private.super_admin() or (private.visible_profile(user_id) and private.project_permission(project_id,discipline_id,'projects.view')));
 
 -- Trusted, short-lived invitation reservations. Public signup cannot provision
 -- an account, even when Auth's public signup endpoint is enabled.

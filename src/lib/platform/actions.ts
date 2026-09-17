@@ -325,6 +325,12 @@ export async function createAccount(form: FormData): Promise<ActionResult> {
         "An account already exists for this email. Use Reset access.",
       );
     const admin = authAdmin();
+    const expired = await db
+      .from("employee_provisioning")
+      .delete()
+      .eq("email", email)
+      .lt("expires_at", new Date().toISOString());
+    if (expired.error) throw expired.error;
     const reservation = await db
       .from("employee_provisioning")
       .insert({
@@ -338,17 +344,20 @@ export async function createAccount(form: FormData): Promise<ActionResult> {
       .select("token")
       .single();
     if (reservation.error) throw reservation.error;
-    const result = await admin.auth.admin.generateLink({
-      type: "invite",
-      email,
-      options: {
-        data: { full_name: name, provisioning_token: reservation.data.token },
-      },
-    });
-    await db
-      .from("employee_provisioning")
-      .delete()
-      .eq("token", reservation.data.token);
+    const result = await admin.auth.admin
+      .generateLink({
+        type: "invite",
+        email,
+        options: {
+          data: { full_name: name, provisioning_token: reservation.data.token },
+        },
+      })
+      .finally(async () => {
+        await db
+          .from("employee_provisioning")
+          .delete()
+          .eq("token", reservation.data.token);
+      });
     if (result.error) throw result.error;
     const link = new URL("/auth/callback", origin);
     link.searchParams.set("token_hash", result.data.properties.hashed_token);

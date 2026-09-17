@@ -147,6 +147,12 @@ export default async function RegisterPage({
     discipline: selected?.discipline_id ?? filters.discipline ?? null,
   });
   let editable = !config.readOnly && rights.data === true;
+  const creation = await db.rpc("has_permission", {
+    permission: `${config.permission}.create`,
+    project: config.admin ? null : scopedProject,
+    discipline: filters.discipline ?? null,
+  });
+  const canCreate = !config.readOnly && creation.data === true;
   if (moduleKey === "tasks" && selected) {
     const caps = await db.rpc("task_capabilities", { project: scopedProject });
     if (caps.error) throw new Error(caps.error.message);
@@ -199,7 +205,7 @@ export default async function RegisterPage({
         </div>
         <div className="heading-actions">
           {moduleKey !== "users" &&
-            editable &&
+            canCreate &&
             (!config.project || project) && (
               <Link
                 className="button primary"
@@ -489,6 +495,7 @@ export default async function RegisterPage({
           moduleKey={moduleKey}
           row={selected}
           choices={choices}
+          editable={editable}
         />
       )}
       {selected && moduleKey === "approvals" && (
@@ -501,10 +508,12 @@ async function RelatedRecords({
   moduleKey,
   row,
   choices,
+  editable,
 }: {
   moduleKey: string;
   row: DataRow;
   choices: Awaited<ReturnType<typeof choicesFor>>;
+  editable: boolean;
 }) {
   const { db } = await session();
   const task = moduleKey === "tasks";
@@ -518,7 +527,7 @@ async function RelatedRecords({
   const history = task
     ? await db
         .from("task_history")
-        .select("id,field_changed,old_value,new_value,changed_at")
+        .select("id,field_changed,old_value,new_value,changed_at,changed_by")
         .eq("task_id", row.id)
         .order("changed_at", { ascending: false })
         .limit(50)
@@ -532,10 +541,12 @@ async function RelatedRecords({
   return (
     <section className="register-card">
       <h2>Coordination & activity</h2>
-      <RelatedForm
-        type={task ? "task_comment" : "issue_comment"}
-        id={String(row.id)}
-      />
+      {editable && (
+        <RelatedForm
+          type={task ? "task_comment" : "issue_comment"}
+          id={String(row.id)}
+        />
+      )}
       {comments.data.map((c) => (
         <article className="activity-entry" key={c.id}>
           <b>{recordLabel("user_id", c.author, choices)}</b>
@@ -545,11 +556,13 @@ async function RelatedRecords({
       ))}
       {task && (
         <>
-          <RelatedForm
-            type="dependency"
-            id={String(row.id)}
-            tasks={choices.tasks}
-          />
+          {editable && (
+            <RelatedForm
+              type="dependency"
+              id={String(row.id)}
+              tasks={choices.tasks}
+            />
+          )}
           <h3>Predecessors</h3>
           {dependencies?.data?.map((d) => (
             <p key={d.id}>
@@ -564,7 +577,11 @@ async function RelatedRecords({
             history?.data?.map((h) => (
               <p key={h.id}>
                 {label(h.field_changed)}: {h.old_value ?? "—"} →{" "}
-                {h.new_value ?? "—"} <small>{h.changed_at}</small>
+                {h.new_value ?? "—"}{" "}
+                <small>
+                  {recordLabel("user_id", h.changed_by, choices)} ·{" "}
+                  {h.changed_at}
+                </small>
               </p>
             ))
           )}
