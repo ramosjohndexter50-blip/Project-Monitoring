@@ -9,61 +9,27 @@ export default async function PortalLayout({
   const { db, profile } = await session();
   const [access, grants] = await Promise.all([
     db.rpc("has_permission", { permission: "admin.access" }),
-    db
-      .from("role_permissions")
-      .select("permission_key")
-      .eq("role_key", profile.role),
+    db.from("role_permissions").select("permission_key").eq("role_key", profile.role),
   ]);
   const allowed = new Set((grants.data ?? []).map((g) => g.permission_key));
-  const groups = [
-    [
-      "OVERVIEW",
-      [
-        ["/portal", "Dashboard"],
-        ["/?view=board", "Task board"],
-        ["/portal/projects", "Projects"],
-        ["/portal/notifications", "Notifications"],
-        ["/portal/search", "Global search"],
-        ["/portal/reports", "Reports"],
-      ],
-    ],
-    [
-      "PROJECT REGISTERS",
-      [
-        ["/portal/teams", "Project teams"],
-        ["/portal/project_disciplines", "Project disciplines"],
-        ["/portal/phases", "Design phases"],
-        ["/portal/milestones", "Milestones"],
-        ["/portal/tasks", "Task register"],
-        ["/portal/deliverables", "Deliverables"],
-        ["/portal/documents", "Documents"],
-        ["/portal/rfis", "RFIs"],
-        ["/portal/issues", "Coordination issues"],
-        ["/portal/workflows", "Approval workflows"],
-        ["/portal/workflow_steps", "Workflow reviewers"],
-        ["/portal/approvals", "Approval queue"],
-      ],
-    ],
-  ] as const;
+  const taskHref = profile.role === "super_admin" ? "/portal/tasks" : `/portal/tasks?owner=${profile.id}`;
+
   return (
     <div className="platform-shell">
       <aside className="platform-sidebar">
         <Link className="platform-brand" href="/portal">
-          H /{" "}
-          <span>
-            Hamdan Studio<small>ARCHITECTURAL CONSULTANCY</small>
-          </span>
+          H / <span>Hamdan Studio<small>ARCHITECTURAL CONSULTANCY</small></span>
         </Link>
-        {groups.map(([title, links]) => (
-          <nav key={title} aria-label={title}>
-            <h2>{title}</h2>
-            {links.map(([href, name]) => (
-              <Link href={href} key={href}>
-                {name}
-              </Link>
-            ))}
-          </nav>
-        ))}
+
+        <nav aria-label="Workspace">
+          <h2>WORKSPACE</h2>
+          <Link href="/portal">Dashboard</Link>
+          <Link href={taskHref}>My Tasks</Link>
+          <Link href="/portal/projects">Projects</Link>
+          <Link href="/portal/notifications">Notifications</Link>
+          <Link href="/portal/search">Search</Link>
+        </nav>
+
         {access.data === true && (
           <nav aria-label="Administration">
             <h2>CONTROL CENTER</h2>
@@ -75,8 +41,6 @@ export default async function PortalLayout({
               ["role_permissions", "Role permissions", "roles.view"],
               ["disciplines", "Disciplines", "disciplines.view"],
               ["overrides", "Permission overrides", "roles.view"],
-              ["audit", "Audit & activity", "audit.view"],
-              ["settings", "Settings", "settings.manage"],
             ]
               .filter(([, , right]) => allowed.has(right))
               .map(([key, name]) => (
@@ -86,6 +50,7 @@ export default async function PortalLayout({
               ))}
           </nav>
         )}
+
         <div className="platform-user">
           <b>{profile.full_name ?? "Team member"}</b>
           <small>{profile.role.replaceAll("_", " ")}</small>
@@ -96,7 +61,7 @@ export default async function PortalLayout({
       </aside>
       <main className="platform-main">
         <header className="platform-topbar">
-          <span>ORGANIZATION / PROJECT OPERATIONS</span>
+          <span>PROJECT TASK MONITORING</span>
           <Link href="/portal/search">Search workspace ↗</Link>
         </header>
         <div className="platform-body">{children}</div>
