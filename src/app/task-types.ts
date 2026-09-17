@@ -1,0 +1,34 @@
+export type Status =
+  | "not_started"
+  | "in_progress"
+  | "for_review"
+  | "revision_required"
+  | "approved"
+  | "completed"
+  | "blocked"
+  | "cancelled";
+export type Task = {
+  id: string;
+  task_name: string;
+  discipline_id: string;
+  owner: string | null;
+  status: Status;
+  priority: "low" | "medium" | "high" | "critical";
+  due_date: string | null;
+  percent_complete: number;
+  notes: string | null;
+  progress_note: string | null;
+  updated_at: string;
+};
+export type Discipline = { id: string; name: string };
+export const labels: Record<Status, string> = {
+  not_started: "Assigned",
+  in_progress: "In progress",
+  for_review: "For review",
+  revision_required: "Revision required",
+  approved: "Approved",
+  completed: "Completed",
+  blocked: "Blocked",
+  cancelled: "Cancelled",
+};
+export const statuses = Object.keys(labels) as Status[];

@@ -1,0 +1,2860 @@
+{
+  "environment": "Local production build; synthetic Auth/Storage; actual PostgreSQL RLS via PGlite; not production latency",
+  "results": [
+    {
+      "route": "/",
+      "cold": {
+        "ms": 27,
+        "ttfb": 21,
+        "status": 200,
+        "htmlBytes": 14209,
+        "apiRequests": 3,
+        "apiBytes": 651,
+        "requests": [
+          {
+            "method": "GET",
+            "path": "/auth/v1/user",
+            "ms": 0.7,
+            "bytes": 244
+          },
+          {
+            "method": "GET",
+            "path": "/auth/v1/user",
+            "ms": 0.56,
+            "bytes": 244
+          },
+          {
+            "method": "GET",
+            "path": "/rest/v1/profiles?select=id%2Cfull_name%2Crole%2Cis_active%2Cdiscipline_id&id=eq.10000000-0000-4000-8000-000000000001",
+            "ms": 3.14,
+            "bytes": 163
+          }
+        ],
+        "renderError": false
+      },
+      "warm": [
+        {
+          "ms": 10,
+          "ttfb": 7,
+          "status": 200,
+          "htmlBytes": 14209,
+          "apiRequests": 3,
+          "apiBytes": 651,
+          "requests": [
+            {
+              "method": "GET",
+              "path": "/auth/v1/user",
+              "ms": 0.55,
+              "bytes": 244
+            },
+            {
+              "method": "GET",
+              "path": "/auth/v1/user",
+              "ms": 0.51,
+              "bytes": 244
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/profiles?select=id%2Cfull_name%2Crole%2Cis_active%2Cdiscipline_id&id=eq.10000000-0000-4000-8000-000000000001",
+              "ms": 1.94,
+              "bytes": 163
+            }
+          ],
+          "renderError": false
+        },
+        {
+          "ms": 8,
+          "ttfb": 7,
+          "status": 200,
+          "htmlBytes": 14209,
+          "apiRequests": 3,
+          "apiBytes": 651,
+          "requests": [
+            {
+              "method": "GET",
+              "path": "/auth/v1/user",
+              "ms": 0.53,
+              "bytes": 244
+            },
+            {
+              "method": "GET",
+              "path": "/auth/v1/user",
+              "ms": 0.52,
+              "bytes": 244
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/profiles?select=id%2Cfull_name%2Crole%2Cis_active%2Cdiscipline_id&id=eq.10000000-0000-4000-8000-000000000001",
+              "ms": 1.75,
+              "bytes": 163
+            }
+          ],
+          "renderError": false
+        },
+        {
+          "ms": 8,
+          "ttfb": 6,
+          "status": 200,
+          "htmlBytes": 14209,
+          "apiRequests": 3,
+          "apiBytes": 651,
+          "requests": [
+            {
+              "method": "GET",
+              "path": "/auth/v1/user",
+              "ms": 0.42,
+              "bytes": 244
+            },
+            {
+              "method": "GET",
+              "path": "/auth/v1/user",
+              "ms": 0.41,
+              "bytes": 244
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/profiles?select=id%2Cfull_name%2Crole%2Cis_active%2Cdiscipline_id&id=eq.10000000-0000-4000-8000-000000000001",
+              "ms": 1.73,
+              "bytes": 163
+            }
+          ],
+          "renderError": false
+        }
+      ]
+    },
+    {
+      "route": "/portal",
+      "cold": {
+        "ms": 58,
+        "ttfb": 5,
+        "status": 200,
+        "htmlBytes": 25770,
+        "apiRequests": 22,
+        "apiBytes": 4460,
+        "requests": [
+          {
+            "method": "GET",
+            "path": "/auth/v1/user",
+            "ms": 0.42,
+            "bytes": 244
+          },
+          {
+            "method": "GET",
+            "path": "/auth/v1/user",
+            "ms": 0.31,
+            "bytes": 244
+          },
+          {
+            "method": "GET",
+            "path": "/rest/v1/profiles?select=id%2Cfull_name%2Crole%2Cis_active%2Cdiscipline_id&id=eq.10000000-0000-4000-8000-000000000001",
+            "ms": 1.53,
+            "bytes": 163
+          },
+          {
+            "method": "POST",
+            "path": "/rest/v1/rpc/has_permission",
+            "ms": 1.48,
+            "bytes": 4
+          },
+          {
+            "method": "GET",
+            "path": "/rest/v1/role_permissions?select=permission_key&role_key=eq.super_admin",
+            "ms": 2.67,
+            "bytes": 2041
+          },
+          {
+            "method": "GET",
+            "path": "/rest/v1/disciplines?select=name&id=eq.003c995f-e6fc-4664-b2c3-15ff179ffab2",
+            "ms": 1.61,
+            "bytes": 25
+          },
+          {
+            "method": "GET",
+            "path": "/rest/v1/task_history?select=id%2Ctask_id%2Cfield_changed%2Cold_value%2Cnew_value%2Cchanged_at&order=changed_at.desc&limit=8",
+            "ms": 2.09,
+            "bytes": 2
+          },
+          {
+            "method": "HEAD",
+            "path": "/rest/v1/projects?select=id",
+            "ms": 4.79,
+            "bytes": 0
+          },
+          {
+            "method": "HEAD",
+            "path": "/rest/v1/tasks?select=id&due_date=lt.2026-09-17&status=not.in.%28completed%2Ccancelled%29",
+            "ms": 1.92,
+            "bytes": 0
+          },
+          {
+            "method": "HEAD",
+            "path": "/rest/v1/rfis?select=id&status=in.%28open%2Cunder_review%29",
+            "ms": 1.55,
+            "bytes": 0
+          },
+          {
+            "method": "HEAD",
+            "path": "/rest/v1/issues?select=id&severity=eq.critical&status=not.in.%28resolved%2Cclosed%2Ccancelled%29",
+            "ms": 1.5,
+            "bytes": 0
+          },
+          {
+            "method": "HEAD",
+            "path": "/rest/v1/approvals?select=id&status=eq.pending",
+            "ms": 1.34,
+            "bytes": 0
+          },
+          {
+            "method": "HEAD",
+            "path": "/rest/v1/profiles?select=id&is_active=eq.true",
+            "ms": 2.28,
+            "bytes": 0
+          },
+          {
+            "method": "POST",
+            "path": "/rest/v1/rpc/organization_summary",
+            "ms": 5.16,
+            "bytes": 146
+          },
+          {
+            "method": "POST",
+            "path": "/rest/v1/rpc/project_report",
+            "ms": 4.63,
+            "bytes": 267
+          },
+          {
+            "method": "GET",
+            "path": "/rest/v1/deliverables?select=id%2Ctitle%2Cstatus%2Cproject_id%2Cdue_date&owner=eq.10000000-0000-4000-8000-000000000001&status=not.in.%28approved%2Cissued%29&order=due_date.asc.nullslast&limit=8",
+            "ms": 1.75,
+            "bytes": 2
+          },
+          {
+            "method": "POST",
+            "path": "/rest/v1/rpc/has_permission",
+            "ms": 1.03,
+            "bytes": 4
+          },
+          {
+            "method": "GET",
+            "path": "/rest/v1/audit_logs?select=id%2Caction%2Centity%2Ccreated_at&order=created_at.desc&limit=8",
+            "ms": 2.89,
+            "bytes": 1009
+          },
+          {
+            "method": "GET",
+            "path": "/rest/v1/milestones?select=id%2Cname%2Cdue_date%2Cstatus%2Cproject_id&status=neq.completed&order=due_date.asc.nullslast&limit=8",
+            "ms": 1.54,
+            "bytes": 184
+          },
+          {
+            "method": "GET",
+            "path": "/rest/v1/tasks?select=id%2Ctask_name%2Cdue_date%2Cstatus%2Cproject_id%2Cpercent_complete&owner=eq.10000000-0000-4000-8000-000000000001&status=not.in.%28completed%2Ccancelled%29&order=due_date.asc.nullslast&limit=8",
+            "ms": 1.34,
+            "bytes": 2
+          },
+          {
+            "method": "GET",
+            "path": "/rest/v1/projects?select=id%2Cname%2Cstatus%2Ctarget_date&order=updated_at.desc&limit=8",
+            "ms": 1.56,
+            "bytes": 121
+          },
+          {
+            "method": "GET",
+            "path": "/rest/v1/notifications?select=id%2Ctitle%2Ccreated_at&user_id=eq.10000000-0000-4000-8000-000000000001&read_at=is.null&order=created_at.desc&limit=6",
+            "ms": 1.77,
+            "bytes": 2
+          }
+        ],
+        "renderError": false
+      },
+      "warm": [
+        {
+          "ms": 40,
+          "ttfb": 6,
+          "status": 200,
+          "htmlBytes": 25770,
+          "apiRequests": 22,
+          "apiBytes": 4460,
+          "requests": [
+            {
+              "method": "GET",
+              "path": "/auth/v1/user",
+              "ms": 0.47,
+              "bytes": 244
+            },
+            {
+              "method": "GET",
+              "path": "/auth/v1/user",
+              "ms": 0.39,
+              "bytes": 244
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/profiles?select=id%2Cfull_name%2Crole%2Cis_active%2Cdiscipline_id&id=eq.10000000-0000-4000-8000-000000000001",
+              "ms": 1.56,
+              "bytes": 163
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/role_permissions?select=permission_key&role_key=eq.super_admin",
+              "ms": 2.14,
+              "bytes": 2041
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/disciplines?select=name&id=eq.003c995f-e6fc-4664-b2c3-15ff179ffab2",
+              "ms": 1.49,
+              "bytes": 25
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.97,
+              "bytes": 4
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/task_history?select=id%2Ctask_id%2Cfield_changed%2Cold_value%2Cnew_value%2Cchanged_at&order=changed_at.desc&limit=8",
+              "ms": 1.27,
+              "bytes": 2
+            },
+            {
+              "method": "HEAD",
+              "path": "/rest/v1/projects?select=id",
+              "ms": 1.32,
+              "bytes": 0
+            },
+            {
+              "method": "HEAD",
+              "path": "/rest/v1/tasks?select=id&due_date=lt.2026-09-17&status=not.in.%28completed%2Ccancelled%29",
+              "ms": 1.4,
+              "bytes": 0
+            },
+            {
+              "method": "HEAD",
+              "path": "/rest/v1/rfis?select=id&status=in.%28open%2Cunder_review%29",
+              "ms": 1.01,
+              "bytes": 0
+            },
+            {
+              "method": "HEAD",
+              "path": "/rest/v1/issues?select=id&severity=eq.critical&status=not.in.%28resolved%2Cclosed%2Ccancelled%29",
+              "ms": 1.17,
+              "bytes": 0
+            },
+            {
+              "method": "HEAD",
+              "path": "/rest/v1/approvals?select=id&status=eq.pending",
+              "ms": 1.1,
+              "bytes": 0
+            },
+            {
+              "method": "HEAD",
+              "path": "/rest/v1/profiles?select=id&is_active=eq.true",
+              "ms": 1.39,
+              "bytes": 0
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/organization_summary",
+              "ms": 1.18,
+              "bytes": 146
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/project_report",
+              "ms": 2.11,
+              "bytes": 267
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/deliverables?select=id%2Ctitle%2Cstatus%2Cproject_id%2Cdue_date&owner=eq.10000000-0000-4000-8000-000000000001&status=not.in.%28approved%2Cissued%29&order=due_date.asc.nullslast&limit=8",
+              "ms": 1.45,
+              "bytes": 2
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.9,
+              "bytes": 4
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/audit_logs?select=id%2Caction%2Centity%2Ccreated_at&order=created_at.desc&limit=8",
+              "ms": 2.39,
+              "bytes": 1009
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/milestones?select=id%2Cname%2Cdue_date%2Cstatus%2Cproject_id&status=neq.completed&order=due_date.asc.nullslast&limit=8",
+              "ms": 1.48,
+              "bytes": 184
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/tasks?select=id%2Ctask_name%2Cdue_date%2Cstatus%2Cproject_id%2Cpercent_complete&owner=eq.10000000-0000-4000-8000-000000000001&status=not.in.%28completed%2Ccancelled%29&order=due_date.asc.nullslast&limit=8",
+              "ms": 1.21,
+              "bytes": 2
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/projects?select=id%2Cname%2Cstatus%2Ctarget_date&order=updated_at.desc&limit=8",
+              "ms": 1.36,
+              "bytes": 121
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/notifications?select=id%2Ctitle%2Ccreated_at&user_id=eq.10000000-0000-4000-8000-000000000001&read_at=is.null&order=created_at.desc&limit=6",
+              "ms": 1.16,
+              "bytes": 2
+            }
+          ],
+          "renderError": false
+        },
+        {
+          "ms": 38,
+          "ttfb": 6,
+          "status": 200,
+          "htmlBytes": 25770,
+          "apiRequests": 22,
+          "apiBytes": 4460,
+          "requests": [
+            {
+              "method": "GET",
+              "path": "/auth/v1/user",
+              "ms": 0.35,
+              "bytes": 244
+            },
+            {
+              "method": "GET",
+              "path": "/auth/v1/user",
+              "ms": 0.33,
+              "bytes": 244
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/profiles?select=id%2Cfull_name%2Crole%2Cis_active%2Cdiscipline_id&id=eq.10000000-0000-4000-8000-000000000001",
+              "ms": 1.41,
+              "bytes": 163
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/role_permissions?select=permission_key&role_key=eq.super_admin",
+              "ms": 2.57,
+              "bytes": 2041
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/disciplines?select=name&id=eq.003c995f-e6fc-4664-b2c3-15ff179ffab2",
+              "ms": 1.44,
+              "bytes": 25
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.82,
+              "bytes": 4
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/task_history?select=id%2Ctask_id%2Cfield_changed%2Cold_value%2Cnew_value%2Cchanged_at&order=changed_at.desc&limit=8",
+              "ms": 1.19,
+              "bytes": 2
+            },
+            {
+              "method": "HEAD",
+              "path": "/rest/v1/projects?select=id",
+              "ms": 1.32,
+              "bytes": 0
+            },
+            {
+              "method": "HEAD",
+              "path": "/rest/v1/tasks?select=id&due_date=lt.2026-09-17&status=not.in.%28completed%2Ccancelled%29",
+              "ms": 1.11,
+              "bytes": 0
+            },
+            {
+              "method": "HEAD",
+              "path": "/rest/v1/rfis?select=id&status=in.%28open%2Cunder_review%29",
+              "ms": 0.97,
+              "bytes": 0
+            },
+            {
+              "method": "HEAD",
+              "path": "/rest/v1/issues?select=id&severity=eq.critical&status=not.in.%28resolved%2Cclosed%2Ccancelled%29",
+              "ms": 1.25,
+              "bytes": 0
+            },
+            {
+              "method": "HEAD",
+              "path": "/rest/v1/approvals?select=id&status=eq.pending",
+              "ms": 1.03,
+              "bytes": 0
+            },
+            {
+              "method": "HEAD",
+              "path": "/rest/v1/profiles?select=id&is_active=eq.true",
+              "ms": 1.39,
+              "bytes": 0
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/organization_summary",
+              "ms": 1.15,
+              "bytes": 146
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/project_report",
+              "ms": 2.13,
+              "bytes": 267
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/deliverables?select=id%2Ctitle%2Cstatus%2Cproject_id%2Cdue_date&owner=eq.10000000-0000-4000-8000-000000000001&status=not.in.%28approved%2Cissued%29&order=due_date.asc.nullslast&limit=8",
+              "ms": 1.18,
+              "bytes": 2
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.79,
+              "bytes": 4
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/audit_logs?select=id%2Caction%2Centity%2Ccreated_at&order=created_at.desc&limit=8",
+              "ms": 2.5,
+              "bytes": 1009
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/milestones?select=id%2Cname%2Cdue_date%2Cstatus%2Cproject_id&status=neq.completed&order=due_date.asc.nullslast&limit=8",
+              "ms": 1.33,
+              "bytes": 184
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/tasks?select=id%2Ctask_name%2Cdue_date%2Cstatus%2Cproject_id%2Cpercent_complete&owner=eq.10000000-0000-4000-8000-000000000001&status=not.in.%28completed%2Ccancelled%29&order=due_date.asc.nullslast&limit=8",
+              "ms": 1.16,
+              "bytes": 2
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/projects?select=id%2Cname%2Cstatus%2Ctarget_date&order=updated_at.desc&limit=8",
+              "ms": 1.41,
+              "bytes": 121
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/notifications?select=id%2Ctitle%2Ccreated_at&user_id=eq.10000000-0000-4000-8000-000000000001&read_at=is.null&order=created_at.desc&limit=6",
+              "ms": 1.13,
+              "bytes": 2
+            }
+          ],
+          "renderError": false
+        },
+        {
+          "ms": 36,
+          "ttfb": 5,
+          "status": 200,
+          "htmlBytes": 25770,
+          "apiRequests": 22,
+          "apiBytes": 4460,
+          "requests": [
+            {
+              "method": "GET",
+              "path": "/auth/v1/user",
+              "ms": 0.36,
+              "bytes": 244
+            },
+            {
+              "method": "GET",
+              "path": "/auth/v1/user",
+              "ms": 0.33,
+              "bytes": 244
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/profiles?select=id%2Cfull_name%2Crole%2Cis_active%2Cdiscipline_id&id=eq.10000000-0000-4000-8000-000000000001",
+              "ms": 1.25,
+              "bytes": 163
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/role_permissions?select=permission_key&role_key=eq.super_admin",
+              "ms": 2.02,
+              "bytes": 2041
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/disciplines?select=name&id=eq.003c995f-e6fc-4664-b2c3-15ff179ffab2",
+              "ms": 1.41,
+              "bytes": 25
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.79,
+              "bytes": 4
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/task_history?select=id%2Ctask_id%2Cfield_changed%2Cold_value%2Cnew_value%2Cchanged_at&order=changed_at.desc&limit=8",
+              "ms": 1.2,
+              "bytes": 2
+            },
+            {
+              "method": "HEAD",
+              "path": "/rest/v1/projects?select=id",
+              "ms": 1.18,
+              "bytes": 0
+            },
+            {
+              "method": "HEAD",
+              "path": "/rest/v1/tasks?select=id&due_date=lt.2026-09-17&status=not.in.%28completed%2Ccancelled%29",
+              "ms": 1.12,
+              "bytes": 0
+            },
+            {
+              "method": "HEAD",
+              "path": "/rest/v1/rfis?select=id&status=in.%28open%2Cunder_review%29",
+              "ms": 1.14,
+              "bytes": 0
+            },
+            {
+              "method": "HEAD",
+              "path": "/rest/v1/issues?select=id&severity=eq.critical&status=not.in.%28resolved%2Cclosed%2Ccancelled%29",
+              "ms": 0.97,
+              "bytes": 0
+            },
+            {
+              "method": "HEAD",
+              "path": "/rest/v1/approvals?select=id&status=eq.pending",
+              "ms": 1.19,
+              "bytes": 0
+            },
+            {
+              "method": "HEAD",
+              "path": "/rest/v1/profiles?select=id&is_active=eq.true",
+              "ms": 1.25,
+              "bytes": 0
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/organization_summary",
+              "ms": 1.2,
+              "bytes": 146
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/project_report",
+              "ms": 2.16,
+              "bytes": 267
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/deliverables?select=id%2Ctitle%2Cstatus%2Cproject_id%2Cdue_date&owner=eq.10000000-0000-4000-8000-000000000001&status=not.in.%28approved%2Cissued%29&order=due_date.asc.nullslast&limit=8",
+              "ms": 1.13,
+              "bytes": 2
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.76,
+              "bytes": 4
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/audit_logs?select=id%2Caction%2Centity%2Ccreated_at&order=created_at.desc&limit=8",
+              "ms": 2.2,
+              "bytes": 1009
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/milestones?select=id%2Cname%2Cdue_date%2Cstatus%2Cproject_id&status=neq.completed&order=due_date.asc.nullslast&limit=8",
+              "ms": 1.39,
+              "bytes": 184
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/tasks?select=id%2Ctask_name%2Cdue_date%2Cstatus%2Cproject_id%2Cpercent_complete&owner=eq.10000000-0000-4000-8000-000000000001&status=not.in.%28completed%2Ccancelled%29&order=due_date.asc.nullslast&limit=8",
+              "ms": 1.34,
+              "bytes": 2
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/projects?select=id%2Cname%2Cstatus%2Ctarget_date&order=updated_at.desc&limit=8",
+              "ms": 1.34,
+              "bytes": 121
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/notifications?select=id%2Ctitle%2Ccreated_at&user_id=eq.10000000-0000-4000-8000-000000000001&read_at=is.null&order=created_at.desc&limit=6",
+              "ms": 1.15,
+              "bytes": 2
+            }
+          ],
+          "renderError": false
+        }
+      ]
+    },
+    {
+      "route": "/portal/tasks",
+      "cold": {
+        "ms": 21,
+        "ttfb": 6,
+        "status": 200,
+        "htmlBytes": 32684,
+        "apiRequests": 11,
+        "apiBytes": 5292,
+        "requests": [
+          {
+            "method": "GET",
+            "path": "/auth/v1/user",
+            "ms": 0.35,
+            "bytes": 244
+          },
+          {
+            "method": "GET",
+            "path": "/auth/v1/user",
+            "ms": 0.33,
+            "bytes": 244
+          },
+          {
+            "method": "GET",
+            "path": "/rest/v1/profiles?select=id%2Cfull_name%2Crole%2Cis_active%2Cdiscipline_id&id=eq.10000000-0000-4000-8000-000000000001",
+            "ms": 1.49,
+            "bytes": 163
+          },
+          {
+            "method": "GET",
+            "path": "/rest/v1/role_permissions?select=permission_key&role_key=eq.super_admin",
+            "ms": 2.23,
+            "bytes": 2041
+          },
+          {
+            "method": "GET",
+            "path": "/rest/v1/disciplines?select=id%2Cname&order=name.asc&limit=500&is_active=eq.true",
+            "ms": 2,
+            "bytes": 1380
+          },
+          {
+            "method": "GET",
+            "path": "/rest/v1/profiles?select=id%2Cfull_name%2Cdiscipline_id&order=full_name.asc&limit=500",
+            "ms": 1.31,
+            "bytes": 511
+          },
+          {
+            "method": "POST",
+            "path": "/rest/v1/rpc/has_permission",
+            "ms": 0.73,
+            "bytes": 4
+          },
+          {
+            "method": "GET",
+            "path": "/rest/v1/projects?select=id%2Cname&order=name.asc&limit=500",
+            "ms": 1.14,
+            "bytes": 82
+          },
+          {
+            "method": "GET",
+            "path": "/rest/v1/tasks?select=*&order=id.asc&offset=0&limit=25",
+            "ms": 1.57,
+            "bytes": 615
+          },
+          {
+            "method": "POST",
+            "path": "/rest/v1/rpc/has_permission",
+            "ms": 0.9,
+            "bytes": 4
+          },
+          {
+            "method": "POST",
+            "path": "/rest/v1/rpc/has_permission",
+            "ms": 0.77,
+            "bytes": 4
+          }
+        ],
+        "renderError": false
+      },
+      "warm": [
+        {
+          "ms": 18,
+          "ttfb": 5,
+          "status": 200,
+          "htmlBytes": 32684,
+          "apiRequests": 11,
+          "apiBytes": 5292,
+          "requests": [
+            {
+              "method": "GET",
+              "path": "/auth/v1/user",
+              "ms": 0.4,
+              "bytes": 244
+            },
+            {
+              "method": "GET",
+              "path": "/auth/v1/user",
+              "ms": 0.34,
+              "bytes": 244
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/profiles?select=id%2Cfull_name%2Crole%2Cis_active%2Cdiscipline_id&id=eq.10000000-0000-4000-8000-000000000001",
+              "ms": 1.16,
+              "bytes": 163
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/role_permissions?select=permission_key&role_key=eq.super_admin",
+              "ms": 1.82,
+              "bytes": 2041
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/disciplines?select=id%2Cname&order=name.asc&limit=500&is_active=eq.true",
+              "ms": 1.79,
+              "bytes": 1380
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/profiles?select=id%2Cfull_name%2Cdiscipline_id&order=full_name.asc&limit=500",
+              "ms": 1.34,
+              "bytes": 511
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/projects?select=id%2Cname&order=name.asc&limit=500",
+              "ms": 1.21,
+              "bytes": 82
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/tasks?select=*&order=id.asc&offset=0&limit=25",
+              "ms": 1.25,
+              "bytes": 615
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.75,
+              "bytes": 4
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.72,
+              "bytes": 4
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.95,
+              "bytes": 4
+            }
+          ],
+          "renderError": false
+        },
+        {
+          "ms": 17,
+          "ttfb": 5,
+          "status": 200,
+          "htmlBytes": 32684,
+          "apiRequests": 11,
+          "apiBytes": 5292,
+          "requests": [
+            {
+              "method": "GET",
+              "path": "/auth/v1/user",
+              "ms": 0.33,
+              "bytes": 244
+            },
+            {
+              "method": "GET",
+              "path": "/auth/v1/user",
+              "ms": 0.35,
+              "bytes": 244
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/profiles?select=id%2Cfull_name%2Crole%2Cis_active%2Cdiscipline_id&id=eq.10000000-0000-4000-8000-000000000001",
+              "ms": 1.28,
+              "bytes": 163
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/role_permissions?select=permission_key&role_key=eq.super_admin",
+              "ms": 1.84,
+              "bytes": 2041
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/disciplines?select=id%2Cname&order=name.asc&limit=500&is_active=eq.true",
+              "ms": 1.59,
+              "bytes": 1380
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/profiles?select=id%2Cfull_name%2Cdiscipline_id&order=full_name.asc&limit=500",
+              "ms": 1.41,
+              "bytes": 511
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/projects?select=id%2Cname&order=name.asc&limit=500",
+              "ms": 1.36,
+              "bytes": 82
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/tasks?select=*&order=id.asc&offset=0&limit=25",
+              "ms": 1.36,
+              "bytes": 615
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.73,
+              "bytes": 4
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.72,
+              "bytes": 4
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.69,
+              "bytes": 4
+            }
+          ],
+          "renderError": false
+        },
+        {
+          "ms": 17,
+          "ttfb": 6,
+          "status": 200,
+          "htmlBytes": 32684,
+          "apiRequests": 11,
+          "apiBytes": 5292,
+          "requests": [
+            {
+              "method": "GET",
+              "path": "/auth/v1/user",
+              "ms": 0.37,
+              "bytes": 244
+            },
+            {
+              "method": "GET",
+              "path": "/auth/v1/user",
+              "ms": 0.34,
+              "bytes": 244
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/profiles?select=id%2Cfull_name%2Crole%2Cis_active%2Cdiscipline_id&id=eq.10000000-0000-4000-8000-000000000001",
+              "ms": 1.29,
+              "bytes": 163
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/role_permissions?select=permission_key&role_key=eq.super_admin",
+              "ms": 1.87,
+              "bytes": 2041
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/disciplines?select=id%2Cname&order=name.asc&limit=500&is_active=eq.true",
+              "ms": 1.71,
+              "bytes": 1380
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/profiles?select=id%2Cfull_name%2Cdiscipline_id&order=full_name.asc&limit=500",
+              "ms": 1.41,
+              "bytes": 511
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/projects?select=id%2Cname&order=name.asc&limit=500",
+              "ms": 1.36,
+              "bytes": 82
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/tasks?select=*&order=id.asc&offset=0&limit=25",
+              "ms": 1.27,
+              "bytes": 615
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.8,
+              "bytes": 4
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.7,
+              "bytes": 4
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.72,
+              "bytes": 4
+            }
+          ],
+          "renderError": false
+        }
+      ]
+    },
+    {
+      "route": "/portal/projects",
+      "cold": {
+        "ms": 15,
+        "ttfb": 5,
+        "status": 200,
+        "htmlBytes": 25345,
+        "apiRequests": 10,
+        "apiBytes": 3818,
+        "requests": [
+          {
+            "method": "GET",
+            "path": "/auth/v1/user",
+            "ms": 0.32,
+            "bytes": 244
+          },
+          {
+            "method": "GET",
+            "path": "/auth/v1/user",
+            "ms": 0.32,
+            "bytes": 244
+          },
+          {
+            "method": "GET",
+            "path": "/rest/v1/profiles?select=id%2Cfull_name%2Crole%2Cis_active%2Cdiscipline_id&id=eq.10000000-0000-4000-8000-000000000001",
+            "ms": 1.18,
+            "bytes": 163
+          },
+          {
+            "method": "GET",
+            "path": "/rest/v1/role_permissions?select=permission_key&role_key=eq.super_admin",
+            "ms": 1.88,
+            "bytes": 2041
+          },
+          {
+            "method": "GET",
+            "path": "/rest/v1/profiles?select=id%2Cfull_name%2Cdiscipline_id&order=full_name.asc&limit=500",
+            "ms": 1.46,
+            "bytes": 511
+          },
+          {
+            "method": "GET",
+            "path": "/rest/v1/projects?select=id%2Cname&order=name.asc&limit=500",
+            "ms": 1.12,
+            "bytes": 82
+          },
+          {
+            "method": "GET",
+            "path": "/rest/v1/projects?select=*&order=id.asc&offset=0&limit=25",
+            "ms": 1.4,
+            "bytes": 521
+          },
+          {
+            "method": "POST",
+            "path": "/rest/v1/rpc/has_permission",
+            "ms": 0.83,
+            "bytes": 4
+          },
+          {
+            "method": "POST",
+            "path": "/rest/v1/rpc/has_permission",
+            "ms": 0.76,
+            "bytes": 4
+          },
+          {
+            "method": "POST",
+            "path": "/rest/v1/rpc/has_permission",
+            "ms": 0.71,
+            "bytes": 4
+          }
+        ],
+        "renderError": false
+      },
+      "warm": [
+        {
+          "ms": 16,
+          "ttfb": 5,
+          "status": 200,
+          "htmlBytes": 25345,
+          "apiRequests": 10,
+          "apiBytes": 3818,
+          "requests": [
+            {
+              "method": "GET",
+              "path": "/auth/v1/user",
+              "ms": 0.32,
+              "bytes": 244
+            },
+            {
+              "method": "GET",
+              "path": "/auth/v1/user",
+              "ms": 0.27,
+              "bytes": 244
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/profiles?select=id%2Cfull_name%2Crole%2Cis_active%2Cdiscipline_id&id=eq.10000000-0000-4000-8000-000000000001",
+              "ms": 1.2,
+              "bytes": 163
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/role_permissions?select=permission_key&role_key=eq.super_admin",
+              "ms": 2.06,
+              "bytes": 2041
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/profiles?select=id%2Cfull_name%2Cdiscipline_id&order=full_name.asc&limit=500",
+              "ms": 1.32,
+              "bytes": 511
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/projects?select=id%2Cname&order=name.asc&limit=500",
+              "ms": 1.11,
+              "bytes": 82
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/projects?select=*&order=id.asc&offset=0&limit=25",
+              "ms": 1.17,
+              "bytes": 521
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.72,
+              "bytes": 4
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.84,
+              "bytes": 4
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.77,
+              "bytes": 4
+            }
+          ],
+          "renderError": false
+        },
+        {
+          "ms": 15,
+          "ttfb": 4,
+          "status": 200,
+          "htmlBytes": 25345,
+          "apiRequests": 10,
+          "apiBytes": 3818,
+          "requests": [
+            {
+              "method": "GET",
+              "path": "/auth/v1/user",
+              "ms": 0.29,
+              "bytes": 244
+            },
+            {
+              "method": "GET",
+              "path": "/auth/v1/user",
+              "ms": 0.3,
+              "bytes": 244
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/profiles?select=id%2Cfull_name%2Crole%2Cis_active%2Cdiscipline_id&id=eq.10000000-0000-4000-8000-000000000001",
+              "ms": 1.16,
+              "bytes": 163
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/role_permissions?select=permission_key&role_key=eq.super_admin",
+              "ms": 1.76,
+              "bytes": 2041
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/profiles?select=id%2Cfull_name%2Cdiscipline_id&order=full_name.asc&limit=500",
+              "ms": 1.5,
+              "bytes": 511
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/projects?select=id%2Cname&order=name.asc&limit=500",
+              "ms": 1.14,
+              "bytes": 82
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/projects?select=*&order=id.asc&offset=0&limit=25",
+              "ms": 1.47,
+              "bytes": 521
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.72,
+              "bytes": 4
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.79,
+              "bytes": 4
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.71,
+              "bytes": 4
+            }
+          ],
+          "renderError": false
+        },
+        {
+          "ms": 16,
+          "ttfb": 5,
+          "status": 200,
+          "htmlBytes": 25345,
+          "apiRequests": 10,
+          "apiBytes": 3818,
+          "requests": [
+            {
+              "method": "GET",
+              "path": "/auth/v1/user",
+              "ms": 0.33,
+              "bytes": 244
+            },
+            {
+              "method": "GET",
+              "path": "/auth/v1/user",
+              "ms": 0.34,
+              "bytes": 244
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/profiles?select=id%2Cfull_name%2Crole%2Cis_active%2Cdiscipline_id&id=eq.10000000-0000-4000-8000-000000000001",
+              "ms": 1.2,
+              "bytes": 163
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/role_permissions?select=permission_key&role_key=eq.super_admin",
+              "ms": 1.81,
+              "bytes": 2041
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/profiles?select=id%2Cfull_name%2Cdiscipline_id&order=full_name.asc&limit=500",
+              "ms": 1.34,
+              "bytes": 511
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/projects?select=id%2Cname&order=name.asc&limit=500",
+              "ms": 1.13,
+              "bytes": 82
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/projects?select=*&order=id.asc&offset=0&limit=25",
+              "ms": 1.48,
+              "bytes": 521
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 1.19,
+              "bytes": 4
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.77,
+              "bytes": 4
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.74,
+              "bytes": 4
+            }
+          ],
+          "renderError": false
+        }
+      ]
+    },
+    {
+      "route": "/portal/users",
+      "cold": {
+        "ms": 19,
+        "ttfb": 4,
+        "status": 200,
+        "htmlBytes": 40548,
+        "apiRequests": 12,
+        "apiBytes": 6153,
+        "requests": [
+          {
+            "method": "GET",
+            "path": "/auth/v1/user",
+            "ms": 0.31,
+            "bytes": 244
+          },
+          {
+            "method": "GET",
+            "path": "/auth/v1/user",
+            "ms": 0.27,
+            "bytes": 244
+          },
+          {
+            "method": "GET",
+            "path": "/rest/v1/profiles?select=id%2Cfull_name%2Crole%2Cis_active%2Cdiscipline_id&id=eq.10000000-0000-4000-8000-000000000001",
+            "ms": 1.16,
+            "bytes": 163
+          },
+          {
+            "method": "GET",
+            "path": "/rest/v1/role_permissions?select=permission_key&role_key=eq.super_admin",
+            "ms": 1.8,
+            "bytes": 2041
+          },
+          {
+            "method": "POST",
+            "path": "/rest/v1/rpc/has_permission",
+            "ms": 0.76,
+            "bytes": 4
+          },
+          {
+            "method": "POST",
+            "path": "/rest/v1/rpc/has_permission",
+            "ms": 0.87,
+            "bytes": 4
+          },
+          {
+            "method": "POST",
+            "path": "/rest/v1/rpc/has_permission",
+            "ms": 0.76,
+            "bytes": 4
+          },
+          {
+            "method": "GET",
+            "path": "/rest/v1/disciplines?select=id%2Cname&order=name.asc&limit=500&is_active=eq.true",
+            "ms": 1.6,
+            "bytes": 1380
+          },
+          {
+            "method": "GET",
+            "path": "/rest/v1/roles?select=key%2Cname&order=name.asc&limit=500",
+            "ms": 1.4,
+            "bytes": 427
+          },
+          {
+            "method": "GET",
+            "path": "/rest/v1/profiles?select=*&order=id.asc&offset=0&limit=25",
+            "ms": 1.37,
+            "bytes": 1634
+          },
+          {
+            "method": "POST",
+            "path": "/rest/v1/rpc/has_permission",
+            "ms": 0.77,
+            "bytes": 4
+          },
+          {
+            "method": "POST",
+            "path": "/rest/v1/rpc/has_permission",
+            "ms": 0.68,
+            "bytes": 4
+          }
+        ],
+        "renderError": false
+      },
+      "warm": [
+        {
+          "ms": 23,
+          "ttfb": 5,
+          "status": 200,
+          "htmlBytes": 40548,
+          "apiRequests": 12,
+          "apiBytes": 6153,
+          "requests": [
+            {
+              "method": "GET",
+              "path": "/auth/v1/user",
+              "ms": 0.33,
+              "bytes": 244
+            },
+            {
+              "method": "GET",
+              "path": "/auth/v1/user",
+              "ms": 0.35,
+              "bytes": 244
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/profiles?select=id%2Cfull_name%2Crole%2Cis_active%2Cdiscipline_id&id=eq.10000000-0000-4000-8000-000000000001",
+              "ms": 1.34,
+              "bytes": 163
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/role_permissions?select=permission_key&role_key=eq.super_admin",
+              "ms": 2.03,
+              "bytes": 2041
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.82,
+              "bytes": 4
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.84,
+              "bytes": 4
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.92,
+              "bytes": 4
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/disciplines?select=id%2Cname&order=name.asc&limit=500&is_active=eq.true",
+              "ms": 1.9,
+              "bytes": 1380
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/roles?select=key%2Cname&order=name.asc&limit=500",
+              "ms": 1.43,
+              "bytes": 427
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/profiles?select=*&order=id.asc&offset=0&limit=25",
+              "ms": 1.35,
+              "bytes": 1634
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.75,
+              "bytes": 4
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.83,
+              "bytes": 4
+            }
+          ],
+          "renderError": false
+        },
+        {
+          "ms": 20,
+          "ttfb": 6,
+          "status": 200,
+          "htmlBytes": 40548,
+          "apiRequests": 12,
+          "apiBytes": 6153,
+          "requests": [
+            {
+              "method": "GET",
+              "path": "/auth/v1/user",
+              "ms": 0.31,
+              "bytes": 244
+            },
+            {
+              "method": "GET",
+              "path": "/auth/v1/user",
+              "ms": 0.28,
+              "bytes": 244
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/profiles?select=id%2Cfull_name%2Crole%2Cis_active%2Cdiscipline_id&id=eq.10000000-0000-4000-8000-000000000001",
+              "ms": 1.19,
+              "bytes": 163
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/role_permissions?select=permission_key&role_key=eq.super_admin",
+              "ms": 1.84,
+              "bytes": 2041
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.81,
+              "bytes": 4
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.72,
+              "bytes": 4
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.74,
+              "bytes": 4
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/disciplines?select=id%2Cname&order=name.asc&limit=500&is_active=eq.true",
+              "ms": 1.52,
+              "bytes": 1380
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/roles?select=key%2Cname&order=name.asc&limit=500",
+              "ms": 1.43,
+              "bytes": 427
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/profiles?select=*&order=id.asc&offset=0&limit=25",
+              "ms": 1.34,
+              "bytes": 1634
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.76,
+              "bytes": 4
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.79,
+              "bytes": 4
+            }
+          ],
+          "renderError": false
+        },
+        {
+          "ms": 19,
+          "ttfb": 5,
+          "status": 200,
+          "htmlBytes": 40548,
+          "apiRequests": 12,
+          "apiBytes": 6153,
+          "requests": [
+            {
+              "method": "GET",
+              "path": "/auth/v1/user",
+              "ms": 0.35,
+              "bytes": 244
+            },
+            {
+              "method": "GET",
+              "path": "/auth/v1/user",
+              "ms": 0.32,
+              "bytes": 244
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/profiles?select=id%2Cfull_name%2Crole%2Cis_active%2Cdiscipline_id&id=eq.10000000-0000-4000-8000-000000000001",
+              "ms": 1.28,
+              "bytes": 163
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/role_permissions?select=permission_key&role_key=eq.super_admin",
+              "ms": 1.91,
+              "bytes": 2041
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.72,
+              "bytes": 4
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.75,
+              "bytes": 4
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.78,
+              "bytes": 4
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/disciplines?select=id%2Cname&order=name.asc&limit=500&is_active=eq.true",
+              "ms": 1.53,
+              "bytes": 1380
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/roles?select=key%2Cname&order=name.asc&limit=500",
+              "ms": 1.38,
+              "bytes": 427
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/profiles?select=*&order=id.asc&offset=0&limit=25",
+              "ms": 1.35,
+              "bytes": 1634
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.73,
+              "bytes": 4
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.69,
+              "bytes": 4
+            }
+          ],
+          "renderError": false
+        }
+      ]
+    },
+    {
+      "route": "/portal/reports",
+      "cold": {
+        "ms": 12,
+        "ttfb": 5,
+        "status": 200,
+        "htmlBytes": 21348,
+        "apiRequests": 7,
+        "apiBytes": 3045,
+        "requests": [
+          {
+            "method": "GET",
+            "path": "/auth/v1/user",
+            "ms": 0.34,
+            "bytes": 244
+          },
+          {
+            "method": "GET",
+            "path": "/auth/v1/user",
+            "ms": 0.29,
+            "bytes": 244
+          },
+          {
+            "method": "GET",
+            "path": "/rest/v1/profiles?select=id%2Cfull_name%2Crole%2Cis_active%2Cdiscipline_id&id=eq.10000000-0000-4000-8000-000000000001",
+            "ms": 1.17,
+            "bytes": 163
+          },
+          {
+            "method": "GET",
+            "path": "/rest/v1/role_permissions?select=permission_key&role_key=eq.super_admin",
+            "ms": 1.79,
+            "bytes": 2041
+          },
+          {
+            "method": "GET",
+            "path": "/rest/v1/projects?select=id%2Cname&order=name.asc",
+            "ms": 1.12,
+            "bytes": 82
+          },
+          {
+            "method": "POST",
+            "path": "/rest/v1/rpc/has_permission",
+            "ms": 0.77,
+            "bytes": 4
+          },
+          {
+            "method": "POST",
+            "path": "/rest/v1/rpc/project_report",
+            "ms": 1.82,
+            "bytes": 267
+          }
+        ],
+        "renderError": false
+      },
+      "warm": [
+        {
+          "ms": 13,
+          "ttfb": 5,
+          "status": 200,
+          "htmlBytes": 21348,
+          "apiRequests": 7,
+          "apiBytes": 3045,
+          "requests": [
+            {
+              "method": "GET",
+              "path": "/auth/v1/user",
+              "ms": 0.31,
+              "bytes": 244
+            },
+            {
+              "method": "GET",
+              "path": "/auth/v1/user",
+              "ms": 0.3,
+              "bytes": 244
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/profiles?select=id%2Cfull_name%2Crole%2Cis_active%2Cdiscipline_id&id=eq.10000000-0000-4000-8000-000000000001",
+              "ms": 1.22,
+              "bytes": 163
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/role_permissions?select=permission_key&role_key=eq.super_admin",
+              "ms": 1.87,
+              "bytes": 2041
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/projects?select=id%2Cname&order=name.asc",
+              "ms": 1.14,
+              "bytes": 82
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.71,
+              "bytes": 4
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/project_report",
+              "ms": 1.83,
+              "bytes": 267
+            }
+          ],
+          "renderError": false
+        },
+        {
+          "ms": 11,
+          "ttfb": 4,
+          "status": 200,
+          "htmlBytes": 21348,
+          "apiRequests": 7,
+          "apiBytes": 3045,
+          "requests": [
+            {
+              "method": "GET",
+              "path": "/auth/v1/user",
+              "ms": 0.3,
+              "bytes": 244
+            },
+            {
+              "method": "GET",
+              "path": "/auth/v1/user",
+              "ms": 0.27,
+              "bytes": 244
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/profiles?select=id%2Cfull_name%2Crole%2Cis_active%2Cdiscipline_id&id=eq.10000000-0000-4000-8000-000000000001",
+              "ms": 1.13,
+              "bytes": 163
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/role_permissions?select=permission_key&role_key=eq.super_admin",
+              "ms": 1.75,
+              "bytes": 2041
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/projects?select=id%2Cname&order=name.asc",
+              "ms": 1.14,
+              "bytes": 82
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.71,
+              "bytes": 4
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/project_report",
+              "ms": 1.13,
+              "bytes": 267
+            }
+          ],
+          "renderError": false
+        },
+        {
+          "ms": 11,
+          "ttfb": 4,
+          "status": 200,
+          "htmlBytes": 21348,
+          "apiRequests": 7,
+          "apiBytes": 3045,
+          "requests": [
+            {
+              "method": "GET",
+              "path": "/auth/v1/user",
+              "ms": 0.36,
+              "bytes": 244
+            },
+            {
+              "method": "GET",
+              "path": "/auth/v1/user",
+              "ms": 0.31,
+              "bytes": 244
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/profiles?select=id%2Cfull_name%2Crole%2Cis_active%2Cdiscipline_id&id=eq.10000000-0000-4000-8000-000000000001",
+              "ms": 1.14,
+              "bytes": 163
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/role_permissions?select=permission_key&role_key=eq.super_admin",
+              "ms": 1.8,
+              "bytes": 2041
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/projects?select=id%2Cname&order=name.asc",
+              "ms": 1.1,
+              "bytes": 82
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.72,
+              "bytes": 4
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/project_report",
+              "ms": 1.07,
+              "bytes": 267
+            }
+          ],
+          "renderError": false
+        }
+      ]
+    },
+    {
+      "route": "/portal/search?q=ground",
+      "cold": {
+        "ms": 18,
+        "ttfb": 5,
+        "status": 200,
+        "htmlBytes": 21094,
+        "apiRequests": 12,
+        "apiBytes": 2854,
+        "requests": [
+          {
+            "method": "GET",
+            "path": "/auth/v1/user",
+            "ms": 0.29,
+            "bytes": 244
+          },
+          {
+            "method": "GET",
+            "path": "/auth/v1/user",
+            "ms": 0.27,
+            "bytes": 244
+          },
+          {
+            "method": "GET",
+            "path": "/rest/v1/profiles?select=id%2Cfull_name%2Crole%2Cis_active%2Cdiscipline_id&id=eq.10000000-0000-4000-8000-000000000001",
+            "ms": 1.15,
+            "bytes": 163
+          },
+          {
+            "method": "GET",
+            "path": "/rest/v1/role_permissions?select=permission_key&role_key=eq.super_admin",
+            "ms": 1.8,
+            "bytes": 2041
+          },
+          {
+            "method": "GET",
+            "path": "/rest/v1/projects?select=id%2Cname&name=ilike.%25ground%25&limit=20",
+            "ms": 1.27,
+            "bytes": 2
+          },
+          {
+            "method": "GET",
+            "path": "/rest/v1/tasks?select=id%2Cproject_id%2Ctask_name&task_name=ilike.%25ground%25&limit=20",
+            "ms": 1.38,
+            "bytes": 146
+          },
+          {
+            "method": "GET",
+            "path": "/rest/v1/deliverables?select=id%2Cproject_id%2Ctitle&title=ilike.%25ground%25&limit=20",
+            "ms": 1.09,
+            "bytes": 2
+          },
+          {
+            "method": "GET",
+            "path": "/rest/v1/rfis?select=id%2Cproject_id%2Csubject&subject=ilike.%25ground%25&limit=20",
+            "ms": 0.93,
+            "bytes": 2
+          },
+          {
+            "method": "POST",
+            "path": "/rest/v1/rpc/has_permission",
+            "ms": 0.73,
+            "bytes": 4
+          },
+          {
+            "method": "GET",
+            "path": "/rest/v1/issues?select=id%2Cproject_id%2Ctitle&title=ilike.%25ground%25&limit=20",
+            "ms": 0.98,
+            "bytes": 2
+          },
+          {
+            "method": "GET",
+            "path": "/rest/v1/documents?select=id%2Cproject_id%2Ctitle&title=ilike.%25ground%25&limit=20",
+            "ms": 1.47,
+            "bytes": 2
+          },
+          {
+            "method": "GET",
+            "path": "/rest/v1/profiles?select=id%2Cfull_name&full_name=ilike.%25ground%25&limit=20",
+            "ms": 1.23,
+            "bytes": 2
+          }
+        ],
+        "renderError": false
+      },
+      "warm": [
+        {
+          "ms": 18,
+          "ttfb": 7,
+          "status": 200,
+          "htmlBytes": 20811,
+          "apiRequests": 12,
+          "apiBytes": 2854,
+          "requests": [
+            {
+              "method": "GET",
+              "path": "/auth/v1/user",
+              "ms": 0.32,
+              "bytes": 244
+            },
+            {
+              "method": "GET",
+              "path": "/auth/v1/user",
+              "ms": 0.31,
+              "bytes": 244
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/profiles?select=id%2Cfull_name%2Crole%2Cis_active%2Cdiscipline_id&id=eq.10000000-0000-4000-8000-000000000001",
+              "ms": 1.24,
+              "bytes": 163
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/role_permissions?select=permission_key&role_key=eq.super_admin",
+              "ms": 1.92,
+              "bytes": 2041
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/projects?select=id%2Cname&name=ilike.%25ground%25&limit=20",
+              "ms": 1.18,
+              "bytes": 2
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/tasks?select=id%2Cproject_id%2Ctask_name&task_name=ilike.%25ground%25&limit=20",
+              "ms": 1.38,
+              "bytes": 146
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/deliverables?select=id%2Cproject_id%2Ctitle&title=ilike.%25ground%25&limit=20",
+              "ms": 1.09,
+              "bytes": 2
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/rfis?select=id%2Cproject_id%2Csubject&subject=ilike.%25ground%25&limit=20",
+              "ms": 0.95,
+              "bytes": 2
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/issues?select=id%2Cproject_id%2Ctitle&title=ilike.%25ground%25&limit=20",
+              "ms": 0.89,
+              "bytes": 2
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/documents?select=id%2Cproject_id%2Ctitle&title=ilike.%25ground%25&limit=20",
+              "ms": 0.97,
+              "bytes": 2
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/profiles?select=id%2Cfull_name&full_name=ilike.%25ground%25&limit=20",
+              "ms": 1.57,
+              "bytes": 2
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.69,
+              "bytes": 4
+            }
+          ],
+          "renderError": false
+        },
+        {
+          "ms": 18,
+          "ttfb": 5,
+          "status": 200,
+          "htmlBytes": 20811,
+          "apiRequests": 12,
+          "apiBytes": 2854,
+          "requests": [
+            {
+              "method": "GET",
+              "path": "/auth/v1/user",
+              "ms": 0.42,
+              "bytes": 244
+            },
+            {
+              "method": "GET",
+              "path": "/auth/v1/user",
+              "ms": 0.36,
+              "bytes": 244
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/profiles?select=id%2Cfull_name%2Crole%2Cis_active%2Cdiscipline_id&id=eq.10000000-0000-4000-8000-000000000001",
+              "ms": 1.23,
+              "bytes": 163
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/role_permissions?select=permission_key&role_key=eq.super_admin",
+              "ms": 1.83,
+              "bytes": 2041
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/projects?select=id%2Cname&name=ilike.%25ground%25&limit=20",
+              "ms": 1.15,
+              "bytes": 2
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/tasks?select=id%2Cproject_id%2Ctask_name&task_name=ilike.%25ground%25&limit=20",
+              "ms": 1.23,
+              "bytes": 146
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/deliverables?select=id%2Cproject_id%2Ctitle&title=ilike.%25ground%25&limit=20",
+              "ms": 1.33,
+              "bytes": 2
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/rfis?select=id%2Cproject_id%2Csubject&subject=ilike.%25ground%25&limit=20",
+              "ms": 1.15,
+              "bytes": 2
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/issues?select=id%2Cproject_id%2Ctitle&title=ilike.%25ground%25&limit=20",
+              "ms": 1.05,
+              "bytes": 2
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/documents?select=id%2Cproject_id%2Ctitle&title=ilike.%25ground%25&limit=20",
+              "ms": 1.02,
+              "bytes": 2
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/profiles?select=id%2Cfull_name&full_name=ilike.%25ground%25&limit=20",
+              "ms": 1.23,
+              "bytes": 2
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.76,
+              "bytes": 4
+            }
+          ],
+          "renderError": false
+        },
+        {
+          "ms": 17,
+          "ttfb": 4,
+          "status": 200,
+          "htmlBytes": 20811,
+          "apiRequests": 12,
+          "apiBytes": 2854,
+          "requests": [
+            {
+              "method": "GET",
+              "path": "/auth/v1/user",
+              "ms": 0.3,
+              "bytes": 244
+            },
+            {
+              "method": "GET",
+              "path": "/auth/v1/user",
+              "ms": 0.33,
+              "bytes": 244
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/profiles?select=id%2Cfull_name%2Crole%2Cis_active%2Cdiscipline_id&id=eq.10000000-0000-4000-8000-000000000001",
+              "ms": 1.22,
+              "bytes": 163
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/role_permissions?select=permission_key&role_key=eq.super_admin",
+              "ms": 1.8,
+              "bytes": 2041
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/projects?select=id%2Cname&name=ilike.%25ground%25&limit=20",
+              "ms": 1.16,
+              "bytes": 2
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/tasks?select=id%2Cproject_id%2Ctask_name&task_name=ilike.%25ground%25&limit=20",
+              "ms": 1.25,
+              "bytes": 146
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/deliverables?select=id%2Cproject_id%2Ctitle&title=ilike.%25ground%25&limit=20",
+              "ms": 1.43,
+              "bytes": 2
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/rfis?select=id%2Cproject_id%2Csubject&subject=ilike.%25ground%25&limit=20",
+              "ms": 0.95,
+              "bytes": 2
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/issues?select=id%2Cproject_id%2Ctitle&title=ilike.%25ground%25&limit=20",
+              "ms": 0.92,
+              "bytes": 2
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/documents?select=id%2Cproject_id%2Ctitle&title=ilike.%25ground%25&limit=20",
+              "ms": 0.99,
+              "bytes": 2
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/profiles?select=id%2Cfull_name&full_name=ilike.%25ground%25&limit=20",
+              "ms": 1.26,
+              "bytes": 2
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.94,
+              "bytes": 4
+            }
+          ],
+          "renderError": false
+        }
+      ]
+    },
+    {
+      "route": "/admin",
+      "cold": {
+        "ms": 32,
+        "ttfb": 4,
+        "status": 200,
+        "htmlBytes": 26146,
+        "apiRequests": 22,
+        "apiBytes": 4462,
+        "requests": [
+          {
+            "method": "GET",
+            "path": "/auth/v1/user",
+            "ms": 0.36,
+            "bytes": 244
+          },
+          {
+            "method": "GET",
+            "path": "/auth/v1/user",
+            "ms": 0.33,
+            "bytes": 244
+          },
+          {
+            "method": "GET",
+            "path": "/rest/v1/profiles?select=id%2Cfull_name%2Crole%2Cis_active%2Cdiscipline_id&id=eq.10000000-0000-4000-8000-000000000001",
+            "ms": 1.47,
+            "bytes": 163
+          },
+          {
+            "method": "GET",
+            "path": "/rest/v1/disciplines?select=name&id=eq.003c995f-e6fc-4664-b2c3-15ff179ffab2",
+            "ms": 1.42,
+            "bytes": 25
+          },
+          {
+            "method": "POST",
+            "path": "/rest/v1/rpc/has_permission",
+            "ms": 0.87,
+            "bytes": 4
+          },
+          {
+            "method": "HEAD",
+            "path": "/rest/v1/projects?select=id",
+            "ms": 1.21,
+            "bytes": 0
+          },
+          {
+            "method": "HEAD",
+            "path": "/rest/v1/tasks?select=id&due_date=lt.2026-09-17&status=not.in.%28completed%2Ccancelled%29",
+            "ms": 1.45,
+            "bytes": 0
+          },
+          {
+            "method": "HEAD",
+            "path": "/rest/v1/rfis?select=id&status=in.%28open%2Cunder_review%29",
+            "ms": 1.05,
+            "bytes": 0
+          },
+          {
+            "method": "HEAD",
+            "path": "/rest/v1/issues?select=id&severity=eq.critical&status=not.in.%28resolved%2Cclosed%2Ccancelled%29",
+            "ms": 0.92,
+            "bytes": 0
+          },
+          {
+            "method": "HEAD",
+            "path": "/rest/v1/approvals?select=id&status=eq.pending",
+            "ms": 0.96,
+            "bytes": 0
+          },
+          {
+            "method": "HEAD",
+            "path": "/rest/v1/profiles?select=id&is_active=eq.true",
+            "ms": 1.15,
+            "bytes": 0
+          },
+          {
+            "method": "GET",
+            "path": "/rest/v1/role_permissions?select=permission_key&role_key=eq.super_admin",
+            "ms": 1.87,
+            "bytes": 2041
+          },
+          {
+            "method": "POST",
+            "path": "/rest/v1/rpc/has_permission",
+            "ms": 0.84,
+            "bytes": 4
+          },
+          {
+            "method": "POST",
+            "path": "/rest/v1/rpc/organization_summary",
+            "ms": 1.13,
+            "bytes": 146
+          },
+          {
+            "method": "POST",
+            "path": "/rest/v1/rpc/project_report",
+            "ms": 1.16,
+            "bytes": 267
+          },
+          {
+            "method": "GET",
+            "path": "/rest/v1/deliverables?select=id%2Ctitle%2Cstatus%2Cproject_id%2Cdue_date&owner=eq.10000000-0000-4000-8000-000000000001&status=not.in.%28approved%2Cissued%29&order=due_date.asc.nullslast&limit=8",
+            "ms": 1.18,
+            "bytes": 2
+          },
+          {
+            "method": "POST",
+            "path": "/rest/v1/rpc/has_permission",
+            "ms": 0.74,
+            "bytes": 4
+          },
+          {
+            "method": "GET",
+            "path": "/rest/v1/audit_logs?select=id%2Caction%2Centity%2Ccreated_at&order=created_at.desc&limit=8",
+            "ms": 2.21,
+            "bytes": 1009
+          },
+          {
+            "method": "GET",
+            "path": "/rest/v1/milestones?select=id%2Cname%2Cdue_date%2Cstatus%2Cproject_id&status=neq.completed&order=due_date.asc.nullslast&limit=8",
+            "ms": 1.37,
+            "bytes": 184
+          },
+          {
+            "method": "GET",
+            "path": "/rest/v1/tasks?select=id%2Ctask_name%2Cdue_date%2Cstatus%2Cproject_id%2Cpercent_complete&owner=eq.10000000-0000-4000-8000-000000000001&status=not.in.%28completed%2Ccancelled%29&order=due_date.asc.nullslast&limit=8",
+            "ms": 1.11,
+            "bytes": 2
+          },
+          {
+            "method": "GET",
+            "path": "/rest/v1/projects?select=id%2Cname%2Cstatus%2Ctarget_date&order=updated_at.desc&limit=8",
+            "ms": 1.24,
+            "bytes": 121
+          },
+          {
+            "method": "GET",
+            "path": "/rest/v1/notifications?select=id%2Ctitle%2Ccreated_at&user_id=eq.10000000-0000-4000-8000-000000000001&read_at=is.null&order=created_at.desc&limit=6",
+            "ms": 1.16,
+            "bytes": 2
+          }
+        ],
+        "renderError": false
+      },
+      "warm": [
+        {
+          "ms": 31,
+          "ttfb": 4,
+          "status": 200,
+          "htmlBytes": 26146,
+          "apiRequests": 22,
+          "apiBytes": 4462,
+          "requests": [
+            {
+              "method": "GET",
+              "path": "/auth/v1/user",
+              "ms": 0.34,
+              "bytes": 244
+            },
+            {
+              "method": "GET",
+              "path": "/auth/v1/user",
+              "ms": 0.29,
+              "bytes": 244
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/profiles?select=id%2Cfull_name%2Crole%2Cis_active%2Cdiscipline_id&id=eq.10000000-0000-4000-8000-000000000001",
+              "ms": 1.17,
+              "bytes": 163
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/disciplines?select=name&id=eq.003c995f-e6fc-4664-b2c3-15ff179ffab2",
+              "ms": 1.23,
+              "bytes": 25
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.79,
+              "bytes": 4
+            },
+            {
+              "method": "HEAD",
+              "path": "/rest/v1/projects?select=id",
+              "ms": 1.14,
+              "bytes": 0
+            },
+            {
+              "method": "HEAD",
+              "path": "/rest/v1/tasks?select=id&due_date=lt.2026-09-17&status=not.in.%28completed%2Ccancelled%29",
+              "ms": 1.03,
+              "bytes": 0
+            },
+            {
+              "method": "HEAD",
+              "path": "/rest/v1/rfis?select=id&status=in.%28open%2Cunder_review%29",
+              "ms": 0.94,
+              "bytes": 0
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/role_permissions?select=permission_key&role_key=eq.super_admin",
+              "ms": 1.97,
+              "bytes": 2041
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.73,
+              "bytes": 4
+            },
+            {
+              "method": "HEAD",
+              "path": "/rest/v1/issues?select=id&severity=eq.critical&status=not.in.%28resolved%2Cclosed%2Ccancelled%29",
+              "ms": 0.94,
+              "bytes": 0
+            },
+            {
+              "method": "HEAD",
+              "path": "/rest/v1/approvals?select=id&status=eq.pending",
+              "ms": 0.99,
+              "bytes": 0
+            },
+            {
+              "method": "HEAD",
+              "path": "/rest/v1/profiles?select=id&is_active=eq.true",
+              "ms": 1.11,
+              "bytes": 0
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/organization_summary",
+              "ms": 1.14,
+              "bytes": 146
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/project_report",
+              "ms": 1.15,
+              "bytes": 267
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/deliverables?select=id%2Ctitle%2Cstatus%2Cproject_id%2Cdue_date&owner=eq.10000000-0000-4000-8000-000000000001&status=not.in.%28approved%2Cissued%29&order=due_date.asc.nullslast&limit=8",
+              "ms": 1.16,
+              "bytes": 2
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.81,
+              "bytes": 4
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/audit_logs?select=id%2Caction%2Centity%2Ccreated_at&order=created_at.desc&limit=8",
+              "ms": 2.02,
+              "bytes": 1009
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/milestones?select=id%2Cname%2Cdue_date%2Cstatus%2Cproject_id&status=neq.completed&order=due_date.asc.nullslast&limit=8",
+              "ms": 1.19,
+              "bytes": 184
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/tasks?select=id%2Ctask_name%2Cdue_date%2Cstatus%2Cproject_id%2Cpercent_complete&owner=eq.10000000-0000-4000-8000-000000000001&status=not.in.%28completed%2Ccancelled%29&order=due_date.asc.nullslast&limit=8",
+              "ms": 1.06,
+              "bytes": 2
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/projects?select=id%2Cname%2Cstatus%2Ctarget_date&order=updated_at.desc&limit=8",
+              "ms": 1.11,
+              "bytes": 121
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/notifications?select=id%2Ctitle%2Ccreated_at&user_id=eq.10000000-0000-4000-8000-000000000001&read_at=is.null&order=created_at.desc&limit=6",
+              "ms": 1.13,
+              "bytes": 2
+            }
+          ],
+          "renderError": false
+        },
+        {
+          "ms": 31,
+          "ttfb": 4,
+          "status": 200,
+          "htmlBytes": 26146,
+          "apiRequests": 22,
+          "apiBytes": 4462,
+          "requests": [
+            {
+              "method": "GET",
+              "path": "/auth/v1/user",
+              "ms": 0.32,
+              "bytes": 244
+            },
+            {
+              "method": "GET",
+              "path": "/auth/v1/user",
+              "ms": 0.28,
+              "bytes": 244
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/profiles?select=id%2Cfull_name%2Crole%2Cis_active%2Cdiscipline_id&id=eq.10000000-0000-4000-8000-000000000001",
+              "ms": 1.3,
+              "bytes": 163
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/disciplines?select=name&id=eq.003c995f-e6fc-4664-b2c3-15ff179ffab2",
+              "ms": 1.29,
+              "bytes": 25
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.79,
+              "bytes": 4
+            },
+            {
+              "method": "HEAD",
+              "path": "/rest/v1/projects?select=id",
+              "ms": 1.08,
+              "bytes": 0
+            },
+            {
+              "method": "HEAD",
+              "path": "/rest/v1/tasks?select=id&due_date=lt.2026-09-17&status=not.in.%28completed%2Ccancelled%29",
+              "ms": 1.1,
+              "bytes": 0
+            },
+            {
+              "method": "HEAD",
+              "path": "/rest/v1/rfis?select=id&status=in.%28open%2Cunder_review%29",
+              "ms": 0.97,
+              "bytes": 0
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/role_permissions?select=permission_key&role_key=eq.super_admin",
+              "ms": 1.81,
+              "bytes": 2041
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.71,
+              "bytes": 4
+            },
+            {
+              "method": "HEAD",
+              "path": "/rest/v1/issues?select=id&severity=eq.critical&status=not.in.%28resolved%2Cclosed%2Ccancelled%29",
+              "ms": 0.99,
+              "bytes": 0
+            },
+            {
+              "method": "HEAD",
+              "path": "/rest/v1/approvals?select=id&status=eq.pending",
+              "ms": 0.97,
+              "bytes": 0
+            },
+            {
+              "method": "HEAD",
+              "path": "/rest/v1/profiles?select=id&is_active=eq.true",
+              "ms": 1.23,
+              "bytes": 0
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/organization_summary",
+              "ms": 1.18,
+              "bytes": 146
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/project_report",
+              "ms": 1.08,
+              "bytes": 267
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/deliverables?select=id%2Ctitle%2Cstatus%2Cproject_id%2Cdue_date&owner=eq.10000000-0000-4000-8000-000000000001&status=not.in.%28approved%2Cissued%29&order=due_date.asc.nullslast&limit=8",
+              "ms": 1.04,
+              "bytes": 2
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.79,
+              "bytes": 4
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/audit_logs?select=id%2Caction%2Centity%2Ccreated_at&order=created_at.desc&limit=8",
+              "ms": 2,
+              "bytes": 1009
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/milestones?select=id%2Cname%2Cdue_date%2Cstatus%2Cproject_id&status=neq.completed&order=due_date.asc.nullslast&limit=8",
+              "ms": 1.21,
+              "bytes": 184
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/tasks?select=id%2Ctask_name%2Cdue_date%2Cstatus%2Cproject_id%2Cpercent_complete&owner=eq.10000000-0000-4000-8000-000000000001&status=not.in.%28completed%2Ccancelled%29&order=due_date.asc.nullslast&limit=8",
+              "ms": 1.07,
+              "bytes": 2
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/projects?select=id%2Cname%2Cstatus%2Ctarget_date&order=updated_at.desc&limit=8",
+              "ms": 1.09,
+              "bytes": 121
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/notifications?select=id%2Ctitle%2Ccreated_at&user_id=eq.10000000-0000-4000-8000-000000000001&read_at=is.null&order=created_at.desc&limit=6",
+              "ms": 1.09,
+              "bytes": 2
+            }
+          ],
+          "renderError": false
+        },
+        {
+          "ms": 31,
+          "ttfb": 4,
+          "status": 200,
+          "htmlBytes": 26146,
+          "apiRequests": 22,
+          "apiBytes": 4462,
+          "requests": [
+            {
+              "method": "GET",
+              "path": "/auth/v1/user",
+              "ms": 0.35,
+              "bytes": 244
+            },
+            {
+              "method": "GET",
+              "path": "/auth/v1/user",
+              "ms": 0.25,
+              "bytes": 244
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/profiles?select=id%2Cfull_name%2Crole%2Cis_active%2Cdiscipline_id&id=eq.10000000-0000-4000-8000-000000000001",
+              "ms": 1.13,
+              "bytes": 163
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/disciplines?select=name&id=eq.003c995f-e6fc-4664-b2c3-15ff179ffab2",
+              "ms": 1.28,
+              "bytes": 25
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.79,
+              "bytes": 4
+            },
+            {
+              "method": "HEAD",
+              "path": "/rest/v1/projects?select=id",
+              "ms": 1.18,
+              "bytes": 0
+            },
+            {
+              "method": "HEAD",
+              "path": "/rest/v1/tasks?select=id&due_date=lt.2026-09-17&status=not.in.%28completed%2Ccancelled%29",
+              "ms": 1.15,
+              "bytes": 0
+            },
+            {
+              "method": "HEAD",
+              "path": "/rest/v1/rfis?select=id&status=in.%28open%2Cunder_review%29",
+              "ms": 1.05,
+              "bytes": 0
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/role_permissions?select=permission_key&role_key=eq.super_admin",
+              "ms": 1.79,
+              "bytes": 2041
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.76,
+              "bytes": 4
+            },
+            {
+              "method": "HEAD",
+              "path": "/rest/v1/issues?select=id&severity=eq.critical&status=not.in.%28resolved%2Cclosed%2Ccancelled%29",
+              "ms": 0.95,
+              "bytes": 0
+            },
+            {
+              "method": "HEAD",
+              "path": "/rest/v1/approvals?select=id&status=eq.pending",
+              "ms": 1,
+              "bytes": 0
+            },
+            {
+              "method": "HEAD",
+              "path": "/rest/v1/profiles?select=id&is_active=eq.true",
+              "ms": 1.45,
+              "bytes": 0
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/organization_summary",
+              "ms": 1.1,
+              "bytes": 146
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/project_report",
+              "ms": 1.05,
+              "bytes": 267
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/deliverables?select=id%2Ctitle%2Cstatus%2Cproject_id%2Cdue_date&owner=eq.10000000-0000-4000-8000-000000000001&status=not.in.%28approved%2Cissued%29&order=due_date.asc.nullslast&limit=8",
+              "ms": 1.06,
+              "bytes": 2
+            },
+            {
+              "method": "POST",
+              "path": "/rest/v1/rpc/has_permission",
+              "ms": 0.79,
+              "bytes": 4
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/audit_logs?select=id%2Caction%2Centity%2Ccreated_at&order=created_at.desc&limit=8",
+              "ms": 1.98,
+              "bytes": 1009
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/milestones?select=id%2Cname%2Cdue_date%2Cstatus%2Cproject_id&status=neq.completed&order=due_date.asc.nullslast&limit=8",
+              "ms": 1.16,
+              "bytes": 184
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/tasks?select=id%2Ctask_name%2Cdue_date%2Cstatus%2Cproject_id%2Cpercent_complete&owner=eq.10000000-0000-4000-8000-000000000001&status=not.in.%28completed%2Ccancelled%29&order=due_date.asc.nullslast&limit=8",
+              "ms": 1.12,
+              "bytes": 2
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/projects?select=id%2Cname%2Cstatus%2Ctarget_date&order=updated_at.desc&limit=8",
+              "ms": 1.14,
+              "bytes": 121
+            },
+            {
+              "method": "GET",
+              "path": "/rest/v1/notifications?select=id%2Ctitle%2Ccreated_at&user_id=eq.10000000-0000-4000-8000-000000000001&read_at=is.null&order=created_at.desc&limit=6",
+              "ms": 1.09,
+              "bytes": 2
+            }
+          ],
+          "renderError": false
+        }
+      ]
+    }
+  ],
+  "assets": [
+    {
+      "file": ".next-verification\\static\\chunks\\005wwm9-mrqxc.js",
+      "bytes": 33891,
+      "gzip": 10812
+    },
+    {
+      "file": ".next-verification\\static\\chunks\\09dar6py3l-ns.css",
+      "bytes": 39733,
+      "gzip": 9786
+    },
+    {
+      "file": ".next-verification\\static\\chunks\\0cz1d0mv5g_q7.js",
+      "bytes": 112594,
+      "gzip": 39627
+    },
+    {
+      "file": ".next-verification\\static\\chunks\\0m5wdlgazr_sg.js",
+      "bytes": 14771,
+      "gzip": 4574
+    },
+    {
+      "file": ".next-verification\\static\\chunks\\19mx3mg6lkumu.js",
+      "bytes": 28907,
+      "gzip": 7614
+    },
+    {
+      "file": ".next-verification\\static\\chunks\\22i43cg4l4-dq.js",
+      "bytes": 8868,
+      "gzip": 3608
+    },
+    {
+      "file": ".next-verification\\static\\chunks\\25ze6k7b5__ty.js",
+      "bytes": 165741,
+      "gzip": 45086
+    },
+    {
+      "file": ".next-verification\\static\\chunks\\27t_qfc-3_lzs.js",
+      "bytes": 229156,
+      "gzip": 71628
+    },
+    {
+      "file": ".next-verification\\static\\chunks\\2wdo-rj_4pj0g.js",
+      "bytes": 258650,
+      "gzip": 67449
+    },
+    {
+      "file": ".next-verification\\static\\chunks\\310vm2bl3xxpt.js",
+      "bytes": 5364,
+      "gzip": 1970
+    },
+    {
+      "file": ".next-verification\\static\\chunks\\3d_qunyc-wuv2.js",
+      "bytes": 9435,
+      "gzip": 3881
+    },
+    {
+      "file": ".next-verification\\static\\chunks\\3fntmmi971322.js",
+      "bytes": 14377,
+      "gzip": 3661
+    },
+    {
+      "file": ".next-verification\\static\\chunks\\3sr0getodtp6l.js",
+      "bytes": 10101,
+      "gzip": 4085
+    },
+    {
+      "file": ".next-verification\\static\\chunks\\turbopack-3-n8t6x9kk4vn.js",
+      "bytes": 9721,
+      "gzip": 3851
+    },
+    {
+      "file": ".next-verification\\static\\GqHiChqPtgSqHi4j27g4l\\_buildManifest.js",
+      "bytes": 219,
+      "gzip": 154
+    },
+    {
+      "file": ".next-verification\\static\\GqHiChqPtgSqHi4j27g4l\\_clientMiddlewareManifest.js",
+      "bytes": 1151,
+      "gzip": 282
+    },
+    {
+      "file": ".next-verification\\static\\GqHiChqPtgSqHi4j27g4l\\_ssgManifest.js",
+      "bytes": 80,
+      "gzip": 64
+    }
+  ]
+}

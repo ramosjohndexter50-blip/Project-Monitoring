@@ -13,7 +13,7 @@ create table storage.objects(id uuid primary key default gen_random_uuid(),bucke
 alter table storage.objects enable row level security; grant select,insert,update,delete on storage.objects to authenticated;
 create publication supabase_realtime;`);
 for (const file of readdirSync("supabase/migrations")
-  .filter((f) => f.endsWith(".sql") && !f.includes("discipline_control"))
+  .filter((f) => f.endsWith(".sql") && f < "20260917033350")
   .sort())
   await db.exec(
     readFileSync("supabase/migrations/" + file, "utf8").replace(
@@ -87,6 +87,9 @@ await db.query(
   "update public.profiles set discipline_id=$1,position='Designer'",
   [discipline],
 );
+for (const file of readdirSync("supabase/migrations").filter(f => f.endsWith(".sql") && f > "20260917033350_discipline_control.sql").sort()) {
+  await db.exec(readFileSync("supabase/migrations/" + file, "utf8"));
+}
 const user = (id) => ({
   id,
   aud: "authenticated",
@@ -115,7 +118,20 @@ const quote = (s) => {
   return '"' + s + '"';
 };
 let queue = Promise.resolve();
+let measurements = [];
 const server = createServer((req, res) => {
+  if (req.url === "/__metrics") {
+    res.setHeader("Content-Type", "application/json");
+    res.end(JSON.stringify(measurements));
+    if (req.method === "DELETE") measurements = [];
+    return;
+  }
+  const started = performance.now();
+  const measurement = { method: req.method, path: req.url, ms: 0, bytes: 0 };
+  res.on("finish", () => {
+    measurement.ms = Math.round((performance.now() - started) * 100) / 100;
+    measurements.push(measurement);
+  });
   queue = queue
     .then(async () => {
       const headers = {
@@ -126,6 +142,7 @@ const server = createServer((req, res) => {
         "Content-Type": "application/json",
       };
       const send = (data, status = 200, extra = {}) => {
+        measurement.bytes = req.method === "HEAD" ? 0 : Buffer.byteLength(JSON.stringify(data));
         res.writeHead(status, { ...headers, ...extra });
         res.end(req.method === "HEAD" ? undefined : JSON.stringify(data));
       };

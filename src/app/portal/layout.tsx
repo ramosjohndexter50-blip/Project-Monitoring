@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { session } from "@/lib/platform/auth";
+import { session, hasPermission } from "@/lib/platform/auth";
 
 export default async function PortalLayout({
   children,
@@ -8,7 +8,7 @@ export default async function PortalLayout({
 }) {
   const { db, profile } = await session();
   const [access, grants] = await Promise.all([
-    db.rpc("has_permission", { permission: "admin.access" }),
+    hasPermission("admin.access"),
     db.from("role_permissions").select("permission_key").eq("role_key", profile.role),
   ]);
   const allowed = new Set((grants.data ?? []).map((g) => g.permission_key));
@@ -30,7 +30,7 @@ export default async function PortalLayout({
           <Link href="/portal/search">Search</Link>
         </nav>
 
-        {access.data === true && (
+        {access && (
           <nav aria-label="Administration">
             <h2>CONTROL CENTER</h2>
             <Link href="/admin">Admin overview</Link>

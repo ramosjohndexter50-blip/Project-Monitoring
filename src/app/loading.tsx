@@ -1,5 +1,7 @@
 import projectIcon from "../../image/project.png";
 
+import Image from "next/image";
+
 export default function Loading() {
   return (
     <main
@@ -10,8 +12,11 @@ export default function Loading() {
     >
       <section className="w-full max-w-md rounded-2xl border border-[#e3e8e4] bg-white px-8 py-10 text-center shadow-[0_18px_55px_rgba(23,32,31,0.08)]">
         <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl border border-[#e3e8e4] bg-[#fbfcfa] p-2">
-          <img
-            src={projectIcon.src}
+          <Image
+            src={projectIcon}
+            width={48}
+            height={48}
+            sizes="48px"
             alt=""
             className="h-full w-full rounded-xl object-contain"
             aria-hidden="true"

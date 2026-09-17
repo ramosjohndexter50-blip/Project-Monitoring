@@ -1,5 +1,8 @@
 ﻿# Implementation and verification
 
+**Live migration update (2026-09-17):** `restrict_rls_event_trigger` and `discipline_control` were applied successfully to `hskgapqvsweuljueenig`. `save_project_contributors` passed an authenticated Super Admin SQL test with rollback; PostgREST schema reload was requested and RPC resolution verified. This supersedes the pending-migration statements recorded below. No test project was retained.
+
+
 ## Delivery status
 
 Implemented in the local repository. On 2026-09-17, access to `hskgapqvsweuljueenig` was restored, the existing schema was inspected, and the consultancy platform migration was applied successfully. The requested account was created through Supabase Auth and its active Super Admin profile verified. Login initially returned `Email not confirmed`. Application deployment and remaining live acceptance checks are pending. Security advisors identified an existing publicly executable `rls_auto_enable` helper; a follow-up migration is prepared locally, not yet applied. Leaked-password protection is disabled in the test project's Auth settings.

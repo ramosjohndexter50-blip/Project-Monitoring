@@ -1,0 +1,23 @@
+{
+  "checks": [
+    "Login and paginated project board",
+    "Lazy task editor and save/read-after-write",
+    "Debounced search and complete empty/result states",
+    "Kanban and lazy history query",
+    "Dashboard summary and async cards"
+  ],
+  "timings": [
+    {
+      "link": "My Tasks",
+      "ms": 872
+    },
+    {
+      "link": "Projects",
+      "ms": 137
+    }
+  ],
+  "errors": [
+    "Error: Minified React error #441; visit https://react.dev/errors/441 for the full message or use the non-minified dev environment for full errors and additional helpful warnings."
+  ],
+  "environment": "Isolated local production build; synthetic Auth/Storage; no live SMTP/Realtime transport"
+}

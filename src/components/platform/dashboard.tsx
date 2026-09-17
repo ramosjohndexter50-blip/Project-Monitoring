@@ -1,121 +1,38 @@
 import Link from "next/link";
-import { session } from "@/lib/platform/auth";
+import { session, hasPermission } from "@/lib/platform/auth";
 export default async function Dashboard({
   admin = false,
 }: {
   admin?: boolean;
 }) {
   const { db, profile, user } = await session();
-  const homeDiscipline = profile.discipline_id
-    ? await db
-        .from("disciplines")
-        .select("name")
-        .eq("id", profile.discipline_id)
-        .maybeSingle()
-    : null;
-  const recentProgress = !admin
-    ? await db
-        .from("task_history")
-        .select("id,task_id,field_changed,old_value,new_value,changed_at")
-        .order("changed_at", { ascending: false })
-        .limit(8)
-    : null;
-  if (homeDiscipline?.error || recentProgress?.error)
-    throw new Error(
-      homeDiscipline?.error?.message || recentProgress?.error?.message,
-    );
   const today = new Date().toISOString().slice(0, 10);
-  const queries = [
-    db.from("projects").select("id", { count: "exact", head: true }),
-    db
-      .from("tasks")
-      .select("id", { count: "exact", head: true })
-      .lt("due_date", today)
-      .not("status", "in", "(completed,cancelled)"),
-    db
-      .from("rfis")
-      .select("id", { count: "exact", head: true })
-      .in("status", ["open", "under_review"]),
-    db
-      .from("issues")
-      .select("id", { count: "exact", head: true })
-      .eq("severity", "critical")
-      .not("status", "in", "(resolved,closed,cancelled)"),
-    db
-      .from("approvals")
-      .select("id", { count: "exact", head: true })
-      .eq("status", "pending"),
-    db
-      .from("profiles")
-      .select("id", { count: "exact", head: true })
-      .eq("is_active", true),
-  ];
-  const results = await Promise.all(queries);
-  const overview = await db.rpc("organization_summary");
-  if (overview.error) throw new Error(overview.error.message);
-  const aggregate = overview.data as {
-    total_users: number;
-    active_projects: number;
-    project_status: { status: string; count: number }[];
-    discipline_projects: { name: string; count: number }[];
-  };
-  const report = await db.rpc("project_report", { target_project: null });
-  if (report.error) throw new Error(report.error.message);
-  const disciplineProgress = (
-    report.data as {
-      disciplines: { name: string; tasks: number; progress: number }[];
-    }
-  ).disciplines;
-  const mine = await db
-    .from("deliverables")
-    .select("id,title,status,project_id,due_date")
-    .eq("owner", user.id)
-    .not("status", "in", "(approved,issued)")
-    .order("due_date", { nullsFirst: false })
-    .limit(8);
-  if (mine.error) throw new Error(mine.error.message);
-  const auditAccess = await db.rpc("has_permission", {
-    permission: "audit.view",
-  });
-  const activity =
-    auditAccess.data === true
-      ? await db
-          .from("audit_logs")
-          .select("id,action,entity,created_at")
-          .order("created_at", { ascending: false })
-          .limit(8)
-      : null;
-  const failure = results.find((r) => r.error);
-  if (failure?.error) throw new Error(failure.error.message);
-  const [milestones, work, projects, notifications] = await Promise.all([
-    db
-      .from("milestones")
-      .select("id,name,due_date,status,project_id")
-      .neq("status", "completed")
-      .order("due_date", { nullsFirst: false })
-      .limit(8),
-    db
-      .from("tasks")
-      .select("id,task_name,due_date,status,project_id,percent_complete")
-      .eq("owner", user.id)
-      .not("status", "in", "(completed,cancelled)")
-      .order("due_date", { nullsFirst: false })
-      .limit(8),
-    db
-      .from("projects")
-      .select("id,name,status,target_date")
-      .order("updated_at", { ascending: false })
-      .limit(8),
-    db
-      .from("notifications")
-      .select("id,title,created_at")
-      .eq("user_id", user.id)
-      .is("read_at", null)
-      .order("created_at", { ascending: false })
-      .limit(6),
+  const [homeDiscipline, recentProgress, metrics, mine, activity, milestones, work, projects, notifications] = await Promise.all([
+    profile.discipline_id ? db.from("disciplines").select("name").eq("id", profile.discipline_id).maybeSingle() : null,
+    !admin ? db.from("task_history").select("id,task_id,field_changed,old_value,new_value,changed_at").order("changed_at", { ascending: false }).limit(8) : null,
+    db.rpc("dashboard_metrics"),
+    db.from("deliverables").select("id,title,status,project_id,due_date").eq("owner", user.id).not("status", "in", "(approved,issued)").order("due_date", { nullsFirst: false }).limit(8),
+    hasPermission("audit.view").then(allowed => allowed ? db.from("audit_logs").select("id,action,entity,created_at").order("created_at", { ascending: false }).limit(8) : null),
+    db.from("milestones").select("id,name,due_date,status,project_id").neq("status", "completed").order("due_date", { nullsFirst: false }).limit(8),
+    db.from("tasks").select("id,task_name,due_date,status,project_id,percent_complete").eq("owner", user.id).not("status", "in", "(completed,cancelled)").order("due_date", { nullsFirst: false }).limit(8),
+    db.from("projects").select("id,name,status,target_date").order("updated_at", { ascending: false }).limit(8),
+    db.from("notifications").select("id,title,created_at").eq("user_id", user.id).is("read_at", null).order("created_at", { ascending: false }).limit(6),
   ]);
-  for (const result of [milestones, work, projects, notifications])
-    if (result.error) throw new Error(result.error.message);
+  for (const result of [homeDiscipline, recentProgress, metrics, mine, milestones, work, projects, notifications]) {
+    if (result?.error) throw new Error(result.error.message);
+  }
+  const data = metrics.data as {
+    counts: number[];
+    organization: {
+      total_users: number; active_projects: number;
+      project_status: { status: string; count: number }[];
+      discipline_projects: { name: string; count: number }[];
+    };
+    disciplines: { name: string; tasks: number; progress: number }[];
+  };
+  const results = data.counts.map(count => ({ count }));
+  const aggregate = data.organization;
+  const disciplineProgress = data.disciplines;
   return (
     <>
       <div className="platform-heading">

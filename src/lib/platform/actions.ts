@@ -42,7 +42,7 @@ export async function saveRecord(
     if (id) {
       const row = await context.db
         .from(config.table)
-        .select("*")
+        .select([config.key ?? "id", ...(config.project ? ["project_id"] : []), ...(config.fields.some(f => f.key === "discipline_id") ? ["discipline_id"] : [])].join(","))
         .eq(config.key ?? "id", id)
         .maybeSingle();
       if (row.error) throw row.error;
@@ -179,7 +179,7 @@ export async function saveRecord(
       if (config.project) query = query.eq("project_id", project!);
       const stamp = form.get("_updated_at");
       if (stamp) query = query.eq("updated_at", String(stamp));
-      const result = await query.select().maybeSingle();
+      const result = await query.select(config.key ?? "id").maybeSingle();
       if (result.error) throw result.error;
       if (!result.data)
         throw new Error(
@@ -189,7 +189,7 @@ export async function saveRecord(
       const result = await context.db
         .from(config.table)
         .insert(values)
-        .select()
+        .select(moduleKey === "role_permissions" ? "role_key,permission_key" : (config.key ?? "id"))
         .single();
       if (result.error) throw result.error;
     }

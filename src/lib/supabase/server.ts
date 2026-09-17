@@ -1,7 +1,8 @@
 import "server-only";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-export async function serverClient() {
+import { cache } from "react";
+export const serverClient = cache(async () => {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key =
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
@@ -22,4 +23,4 @@ export async function serverClient() {
       },
     },
   });
-}
+});

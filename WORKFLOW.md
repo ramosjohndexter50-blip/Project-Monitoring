@@ -2,7 +2,7 @@
 
 Super Admin ang may kontrol sa employees, disciplines, projects, contributors, at task assignments. Ang ibang user ay gumagalaw lamang sa sarili nilang discipline at sa assigned projects, ayon sa role permissions.
 
-**Release status:** The original consultancy migration was applied to the live project earlier. The new `20260917033350_discipline_control.sql` migration and matching application changes are implemented and tested locally; this update has not been applied or deployed by this session. Apply the pending migrations and application together. See [deployment guide](docs/DEPLOYMENT.md).
+**Release status (2026-09-17):** the consultancy, event-trigger hardening and discipline-control migrations are now applied to the live Supabase project. The project-save function was verified under the authenticated Super Admin database role inside a rolled-back transaction, and the API schema cache was refreshed. No verification project was retained. Full live browser/Auth/Storage acceptance remains a rollout check. See [deployment guide](docs/DEPLOYMENT.md).
 
 ## Daily workflow
 

@@ -85,8 +85,8 @@ export const modules: Record<string, Module> = {
     table: "notifications",
     permission: "notifications",
     readOnly: true,
-    search: "message",
-    columns: ["message", "created_at", "read_at"],
+    search: "title",
+    columns: ["title", "created_at", "read_at"],
     fields: [],
   },
   users: {

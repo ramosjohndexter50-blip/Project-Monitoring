@@ -1,4 +1,5 @@
 ﻿import Link from "next/link";
+import Form from "next/form";
 import { session } from "@/lib/platform/auth";
 export default async function Search({
   searchParams,
@@ -45,7 +46,7 @@ export default async function Search({
           <p>Search only the records your account is authorized to access.</p>
         </div>
       </div>
-      <form className="register-filters">
+      <Form className="register-filters" action="/portal/search">
         <label>
           Search
           <input
@@ -57,7 +58,7 @@ export default async function Search({
           />
         </label>
         <button className="button primary">Search</button>
-      </form>
+      </Form>
       <div className="dashboard-grid">
         {results.map((result) => (
           <section key={result.table} className="register-card">

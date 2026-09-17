@@ -1,5 +1,8 @@
 ﻿# Deployment and migration runbook
 
+**Live migration update (2026-09-17):** `restrict_rls_event_trigger` and `discipline_control` were applied successfully to `hskgapqvsweuljueenig`. `save_project_contributors` passed an authenticated Super Admin SQL test with rollback; PostgREST schema reload was requested and RPC resolution verified. This supersedes the pending-migration statements recorded below. No test project was retained.
+
+
 ## Discipline-control release (2026-09-17)
 
 The new application requires `20260917033350_discipline_control.sql`. Apply it after the consultancy platform migration and the pending event-trigger hardening migration. This session has not applied this new migration or deployed the new application.

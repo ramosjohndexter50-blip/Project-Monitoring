@@ -42,5 +42,5 @@ export default async function Home({
     (await searchParams).view !== "board"
   )
     redirect("/portal");
-  return <Workspace user={user} />;
+  return <Workspace user={{ id: user.id, email: user.email }} initialProfile={result.data} />;
 }

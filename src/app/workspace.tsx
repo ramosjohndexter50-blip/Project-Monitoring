@@ -15,10 +15,10 @@ export type Profile = {
 };
 type Project = { id: string; name: string; target_date: string | null };
 
-export default function Workspace({ user }: { user: User }) {
+export default function Workspace({ user, initialProfile }: { user: Pick<User, "id" | "email">; initialProfile: Profile }) {
   const supabase = useMemo(() => createClient()!, []);
   const router = useRouter();
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const profile = initialProfile;
   const [projects, setProjects] = useState<Project[]>([]);
   const [projectId, setProjectId] = useState("");
   const [section, setSection] = useState("board");
@@ -28,20 +28,10 @@ export default function Workspace({ user }: { user: User }) {
     let active = true;
     async function load() {
       try {
-        const [people, boards] = await Promise.all([
-          supabase
-            .from("profiles")
-            .select("id, full_name, role, discipline_id")
-            .eq("id", user.id)
-            .maybeSingle(),
-          supabase
-            .from("projects")
-            .select("id, name, target_date")
-            .order("name"),
-        ]);
+        const boards = await supabase.from("projects").select("id, name, target_date").order("name");
         if (!active) return;
-        if (people.error || boards.error) throw people.error ?? boards.error;
-        setProfile(people.data);
+        if (boards.error) throw boards.error;
+
         setProjects(boards.data ?? []);
         setProjectId(boards.data?.[0]?.id ?? "");
       } catch (e) {

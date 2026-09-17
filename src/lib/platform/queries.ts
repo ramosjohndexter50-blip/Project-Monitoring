@@ -1,6 +1,7 @@
 ﻿import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Choices, Module } from "./modules";
+import { cache } from "react";
 
 const COLUMN_REFERENCES: Record<string, string> = {
   project_id: "projects",
@@ -16,16 +17,17 @@ const COLUMN_REFERENCES: Record<string, string> = {
   role_key: "roles",
 };
 
-export async function choicesFor(
+export const choicesFor = cache(async (
   db: SupabaseClient,
   config: Module,
   project: string | null,
-): Promise<Choices> {
+  includeForm = true,
+): Promise<Choices> => {
   // Only load reference data that this module can actually render/use.
   // The old implementation loaded projects, disciplines and profiles for
   // every module, even when none of them were needed.
   const references = new Set(
-    config.fields.map((f) => f.reference).filter((x): x is string => !!x),
+    (includeForm ? config.fields : []).map((f) => f.reference).filter((x): x is string => !!x),
   );
 
   for (const column of config.columns) {
@@ -34,8 +36,9 @@ export async function choicesFor(
   }
 
   // The project selector is shown on non-admin register pages.
-  if (!config.admin) references.add("projects");
-  if (config.table === "users") {
+  if (config.project) references.add("projects");
+  if (config.table === "projects" && includeForm) references.add("disciplines");
+  if (config.table === "profiles") {
     references.add("disciplines");
     references.add("roles");
   }
@@ -95,22 +98,27 @@ export async function choicesFor(
       if (ref === "project_roles") query = query.not("key", "in", "(super_admin,admin)");
       if (table === "disciplines") query = query.eq("is_active", true);
 
-      const result = await query;
-      if (result.error) throw result.error;
-
-      let rows = result.data as unknown as Record<string, string>[];
+      // Filter at the database before LIMIT. Filtering the first 500 global
+      // profiles in JavaScript used to omit valid project members entirely.
       if (table === "profiles" && projectMemberIdsPromise) {
         const members = await projectMemberIdsPromise;
         if (members.error) throw members.error;
-        const ids = new Set(members.data.map((m) => m.user_id));
-        rows = rows.filter((r) => ids.has(r.id));
+        const ids = members.data.map(m => m.user_id);
+        if (!ids.length) return [ref, []] as const;
+        query = query.in("id", ids);
       }
       if (table === "disciplines" && projectDisciplineIdsPromise) {
         const pd = await projectDisciplineIdsPromise;
         if (pd.error) throw pd.error;
-        const allowed = new Set(pd.data.map((d) => d.discipline_id));
-        rows = rows.filter((row) => allowed.has(row.id));
+        const ids = pd.data.map(d => d.discipline_id);
+        if (!ids.length) return [ref, []] as const;
+        query = query.in("id", ids);
       }
+
+      const result = await query;
+      if (result.error) throw result.error;
+
+      const rows = result.data as unknown as Record<string, string>[];
 
       return [
         ref,
@@ -124,7 +132,7 @@ export async function choicesFor(
   );
 
   return Object.fromEntries(entries);
-}
+});
 
 export function recordLabel(key: string, value: unknown, choices: Choices) {
   const name = choices[COLUMN_REFERENCES[key]]?.find((item) => item.value === value)?.label;

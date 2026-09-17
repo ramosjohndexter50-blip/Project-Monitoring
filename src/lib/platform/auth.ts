@@ -32,18 +32,26 @@ export async function session() {
   return getSession();
 }
 
+// Lifetime: one server render/action. Never share authorization results between users
+// or across requests; role/assignment changes take effect on the next request.
+export const hasPermission = cache(async (
+  key: string,
+  project: string | null = null,
+  discipline: string | null = null,
+) => {
+  const { db } = await getSession();
+  const result = await db.rpc("has_permission", { permission: key, project, discipline });
+  if (result.error) throw new Error(result.error.message);
+  return result.data === true;
+});
+
 export async function permission(
   key: string,
   project?: string | null,
   discipline?: string | null,
 ) {
   const context = await getSession();
-  const result = await context.db.rpc("has_permission", {
-    permission: key,
-    project: project || null,
-    discipline: discipline || null,
-  });
-  if (result.error || result.data !== true)
+  if (!(await hasPermission(key, project || null, discipline || null)))
     throw new Error("You do not have permission to perform this action.");
   return context;
 }

@@ -1,0 +1,96 @@
+{
+  "environment": "Synthetic PostgreSQL in PGlite, 1200 seeded tasks; not production timing",
+  "before": {
+    "rows": 1203,
+    "bytes": 1820643,
+    "ms": 96.34829999999988
+  },
+  "after": {
+    "rows": 25,
+    "bytes": 38122,
+    "ms": 67.97960000000012
+  },
+  "plan": [
+    {
+      "QUERY PLAN": [
+        {
+          "Plan": {
+            "Node Type": "Limit",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Startup Cost": 0.28,
+            "Total Cost": 52.38,
+            "Plan Rows": 25,
+            "Plan Width": 20,
+            "Actual Startup Time": 0.107,
+            "Actual Total Time": 0.783,
+            "Actual Rows": 25,
+            "Actual Loops": 1,
+            "Disabled": false,
+            "Shared Hit Blocks": 77,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Index Scan",
+                "Parent Relationship": "Outer",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Scan Direction": "Forward",
+                "Index Name": "tasks_project_due_id",
+                "Relation Name": "tasks",
+                "Alias": "tasks",
+                "Startup Cost": 0.28,
+                "Total Cost": 835.93,
+                "Plan Rows": 401,
+                "Plan Width": 20,
+                "Actual Startup Time": 0.093,
+                "Actual Total Time": 0.744,
+                "Actual Rows": 25,
+                "Actual Loops": 1,
+                "Disabled": false,
+                "Index Cond": "(project_id = '0ab72af2-ff96-4c08-a313-3134f72cd8b5'::uuid)",
+                "Rows Removed by Index Recheck": 0,
+                "Filter": "private.project_permission(project_id, discipline_id, 'tasks.view'::text)",
+                "Rows Removed by Filter": 0,
+                "Index Searches": 1,
+                "Shared Hit Blocks": 77,
+                "Shared Read Blocks": 0,
+                "Shared Dirtied Blocks": 0,
+                "Shared Written Blocks": 0,
+                "Local Hit Blocks": 0,
+                "Local Read Blocks": 0,
+                "Local Dirtied Blocks": 0,
+                "Local Written Blocks": 0,
+                "Temp Read Blocks": 0,
+                "Temp Written Blocks": 0
+              }
+            ]
+          },
+          "Planning": {
+            "Shared Hit Blocks": 0,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          },
+          "Planning Time": 0.101,
+          "Triggers": [],
+          "Execution Time": 0.839
+        }
+      ]
+    }
+  ]
+}

@@ -19,7 +19,9 @@ export async function proxy(request: NextRequest) {
       },
     },
   });
-  await client.auth.getUser();
+  // Validate/refresh the JWT here. The server session still calls getUser once
+  // per request for up-to-date account validation before reading protected data.
+  await client.auth.getClaims();
   response.headers.set("Cache-Control", "private, no-store");
   return response;
 }

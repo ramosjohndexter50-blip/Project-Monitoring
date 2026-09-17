@@ -1,33 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import type { FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, useMemo } from "react";
+import dynamic from "next/dynamic";
+import { useDebouncedValue } from "@/lib/use-debounced-value";
+import LoadingSkeleton from "@/components/platform/loading-skeleton";
+import { labels, statuses, type Status, type Task, type Discipline } from "./task-types";
+const TaskEditor = dynamic(() => import("./task-editor"), { loading: () => <p role="status">Loading task details…</p> });
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Profile } from "./workspace";
 
-type Status =
-  | "not_started"
-  | "in_progress"
-  | "for_review"
-  | "revision_required"
-  | "approved"
-  | "completed"
-  | "blocked"
-  | "cancelled";
-type Task = {
-  id: string;
-  task_name: string;
-  discipline_id: string;
-  owner: string | null;
-  status: Status;
-  priority: "low" | "medium" | "high" | "critical";
-  due_date: string | null;
-  percent_complete: number;
-  notes: string | null;
-  progress_note: string | null;
-  updated_at: string;
-};
-type Discipline = { id: string; name: string };
 type History = {
   id: string;
   field_changed: string;
@@ -44,17 +25,6 @@ type Props = {
   userId: string;
   onlyMine: boolean;
 };
-const labels: Record<Status, string> = {
-  not_started: "Assigned",
-  in_progress: "In progress",
-  for_review: "For review",
-  revision_required: "Revision required",
-  approved: "Approved",
-  completed: "Completed",
-  blocked: "Blocked",
-  cancelled: "Cancelled",
-};
-const statuses = Object.keys(labels) as Status[];
 const fields =
   "id, task_name, discipline_id, owner, status, priority, due_date, percent_complete, notes, progress_note, updated_at";
 const errorText = (error: unknown) =>
@@ -66,22 +36,6 @@ function today() {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
-async function readProjectTasks(supabase: SupabaseClient, projectId: string) {
-  const data: Task[] = [];
-  for (let offset = 0; ; offset += 500) {
-    const result = await supabase
-      .from("tasks")
-      .select(fields)
-      .eq("project_id", projectId)
-      .order("due_date", { ascending: true, nullsFirst: false })
-      .order("id")
-      .range(offset, offset + 499);
-    if (result.error) return { data: null, error: result.error };
-    data.push(...(result.data as Task[]));
-    if (result.data.length < 500) return { data, error: null };
-  }
-}
-
 export default function TaskBoard({
   supabase,
   role,
@@ -90,6 +44,10 @@ export default function TaskBoard({
   userId,
   onlyMine,
 }: Props) {
+  const [summary, setSummary] = useState({ total: 0, progress: 0, done: 0, overdue: 0, attention: 0, statuses: {} as Record<string, number> });
+  const [total, setTotal] = useState(0);
+  const [resolvedPage, setResolvedPage] = useState(1);
+  const [matchingStatuses, setMatchingStatuses] = useState<Record<string, number>>({});
   const [tasks, setTasks] = useState<Task[]>([]);
   const [disciplines, setDisciplines] = useState<Discipline[]>([]);
   const [people, setPeople] = useState<Profile[]>([]);
@@ -100,6 +58,7 @@ export default function TaskBoard({
   const [filter, setFilter] = useState<Status | "all">("all");
   const [disciplineFilter, setDisciplineFilter] = useState("");
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebouncedValue(search);
   const [page, setPage] = useState(1);
   const [editor, setEditor] = useState<Task | "new" | null>(null);
   const [saving, setSaving] = useState(false);
@@ -108,6 +67,7 @@ export default function TaskBoard({
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyError, setHistoryError] = useState("");
   const request = useRef(0);
+  const abort = useRef<AbortController | null>(null);
   const historyRequest = useRef(0);
   const mutation = useRef(false);
   const [capabilities, setCapabilities] = useState<{
@@ -121,48 +81,56 @@ export default function TaskBoard({
       : capabilities.create_disciplines.length > 0;
   const load = useCallback(async () => {
     const version = ++request.current;
+    abort.current?.abort();
+    const controller = new AbortController();
+    abort.current = controller;
+    setLoading(true);
     try {
-      const [taskRows, disciplineRows, profileRows, rights] = await Promise.all(
-        [
-          readProjectTasks(supabase, projectId),
-          supabase.from("disciplines").select("id, name").order("name"),
-          supabase
-            .from("profiles")
-            .select("id, full_name, role, discipline_id")
-            .order("full_name"),
-          supabase.rpc("task_capabilities", { project: projectId }),
-        ],
-      );
-      if (version !== request.current) return;
-      if (
-        taskRows.error ||
-        disciplineRows.error ||
-        profileRows.error ||
-        rights.error
-      )
-        throw (
-          taskRows.error ??
-          disciplineRows.error ??
-          profileRows.error ??
-          rights.error
-        );
-      setCapabilities(rights.data);
-      setTasks((taskRows.data ?? []) as Task[]);
-      setDisciplines(disciplineRows.data ?? []);
-      setPeople((profileRows.data ?? []) as Profile[]);
+      const result = await supabase.rpc("task_board_page", {
+        target_project: projectId, page_number: page, page_size: 25,
+        search_term: debouncedSearch, status_filter: filter === "all" ? null : filter,
+        discipline_filter: disciplineFilter || null, only_mine: onlyMine, as_of: today(),
+      }).abortSignal(controller.signal);
+      if (version !== request.current || controller.signal.aborted) return;
+      if (result.error) throw result.error;
+      setTasks(result.data.rows);
+      setCapabilities(result.data.capabilities);
+      setSummary(result.data.summary);
+      setTotal(result.data.total);
+      setResolvedPage(result.data.page);
+      setMatchingStatuses(result.data.matching_statuses);
       setMessage("");
     } catch (error) {
-      if (version === request.current) setMessage(errorText(error));
+      if (version === request.current && !controller.signal.aborted) setMessage(errorText(error));
     } finally {
-      if (version === request.current) setLoading(false);
+      if (version === request.current && !controller.signal.aborted) setLoading(false);
     }
+  }, [supabase, projectId, page, debouncedSearch, filter, disciplineFilter, onlyMine]);
+  useEffect(() => {
+    const controller = new AbortController();
+    void Promise.all([
+      supabase.from("disciplines").select("id, name").order("name").abortSignal(controller.signal),
+      supabase.from("profiles").select("id, full_name, role, discipline_id").order("full_name").abortSignal(controller.signal),
+    ]).then(([ds, ps]) => {
+      if (controller.signal.aborted) return;
+      if (ds.error || ps.error) { setMessage(errorText(ds.error ?? ps.error)); return; }
+      setDisciplines(ds.data ?? []);
+      setPeople((ps.data ?? []) as Profile[]);
+    });
+    return () => controller.abort();
   }, [supabase, projectId]);
+  useEffect(() => {
+    // Request cancellation prevents an older search overwriting a newer page.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void load();
+    return () => { request.current++; abort.current?.abort(); };
+  }, [load]);
+  const latestLoad = useRef(load);
+  useEffect(() => { latestLoad.current = load; }, [load]);
   useEffect(() => {
     const requests = request;
     const historyRequests = historyRequest;
-    // Fetching external data updates state only after the awaited database response.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    void load();
+    let timer: ReturnType<typeof setTimeout>;
     const channel = supabase
       .channel(`board-${projectId}`)
       .on(
@@ -174,7 +142,8 @@ export default function TaskBoard({
           filter: `project_id=eq.${projectId}`,
         },
         () => {
-          void load();
+          clearTimeout(timer);
+          timer = setTimeout(() => { if (!mutation.current) void latestLoad.current(); }, 150);
         },
       )
       .subscribe((state) =>
@@ -185,42 +154,22 @@ export default function TaskBoard({
         ),
       );
     return () => {
+      clearTimeout(timer);
       requests.current++;
       historyRequests.current++;
       void supabase.removeChannel(channel);
     };
-  }, [load, supabase, projectId]);
+  }, [supabase, projectId]);
 
-  const personName = (id: string | null) =>
-    id
-      ? (people.find((p) => p.id === id)?.full_name ??
-        (id === userId ? "You" : "Assigned team member"))
-      : "Unassigned";
-  const disciplineName = (id: string) =>
-    disciplines.find((d) => d.id === id)?.name ?? "Unknown discipline";
-  const overdue = (task: Task) =>
-    !["completed", "cancelled"].includes(task.status) &&
-    !!task.due_date &&
-    task.due_date < today();
-  const scoped = tasks.filter((task) => !onlyMine || task.owner === userId);
-  const visible = scoped.filter(
-    (task) =>
-      (filter === "all" || task.status === filter) &&
-      (!disciplineFilter || task.discipline_id === disciplineFilter) &&
-      `${task.task_name} ${disciplineName(task.discipline_id)} ${personName(task.owner)}`
-        .toLowerCase()
-        .includes(search.toLowerCase()),
-  );
-  const pageCount = Math.max(1, Math.ceil(visible.length / 25));
-  const currentPage = Math.min(page, pageCount);
-  const displayed = visible.slice((currentPage - 1) * 25, currentPage * 25);
-  const done = scoped.filter((task) => task.status === "completed").length;
-  const progress = scoped.length
-    ? Math.round(
-        scoped.reduce((sum, task) => sum + task.percent_complete, 0) /
-          scoped.length,
-      )
-    : 0;
+  const peopleById = useMemo(() => new Map(people.map(p => [p.id, p.full_name])), [people]);
+  const disciplinesById = useMemo(() => new Map(disciplines.map(d => [d.id, d.name])), [disciplines]);
+  const personName = (id: string | null) => id ? (peopleById.get(id) ?? (id === userId ? "You" : "Assigned team member")) : "Unassigned";
+  const disciplineName = (id: string) => disciplinesById.get(id) ?? "Unknown discipline";
+  const overdue = (task: Task) => !["completed", "cancelled"].includes(task.status) && !!task.due_date && task.due_date < today();
+  const pageCount = Math.max(1, Math.ceil(total / 25));
+  const currentPage = resolvedPage;
+  const displayed = tasks;
+  const { done, progress } = summary;
 
   async function persist(task: Task | null, values: Partial<Task>) {
     if (mutation.current || !canEdit(task ?? undefined)) return false;
@@ -338,7 +287,7 @@ export default function TaskBoard({
         </div>
         <div className="stat-card">
           <span className="stat-label">Open tasks</span>
-          <strong>{loading ? "—" : scoped.length - done}</strong>
+          <strong>{loading ? "—" : summary.total - done}</strong>
           <small>Ready and in progress</small>
         </div>
         <div className="stat-card">
@@ -346,19 +295,17 @@ export default function TaskBoard({
           <strong className="warm-number">
             {loading
               ? "—"
-              : scoped.filter(
-                  (task) => task.status === "blocked" || overdue(task),
-                ).length}
+              : summary.attention}
           </strong>
           <small>
-            {scoped.filter(overdue).length} overdue ·{" "}
-            {scoped.filter((task) => task.status === "blocked").length} stuck
+            {summary.overdue} overdue ·{" "}
+            {(summary.statuses.blocked ?? 0)} stuck
           </small>
         </div>
         <div className="stat-card">
           <span className="stat-label">Completed</span>
           <strong>{loading ? "—" : done}</strong>
-          <small>of {scoped.length} tasks</small>
+          <small>of {summary.total} tasks</small>
         </div>
       </section>
       <div className="section-heading">
@@ -386,13 +333,13 @@ export default function TaskBoard({
               aria-label="Search tasks"
               placeholder="Search tasks or people"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             />
           </label>
           <select
             aria-label="Filter discipline"
             value={disciplineFilter}
-            onChange={(e) => setDisciplineFilter(e.target.value)}
+            onChange={(e) => { setDisciplineFilter(e.target.value); setPage(1); }}
           >
             <option value="">All disciplines</option>
             {disciplines.map((d) => (
@@ -427,13 +374,13 @@ export default function TaskBoard({
               key={status}
               aria-pressed={filter === status}
               className={filter === status ? "selected" : ""}
-              onClick={() => setFilter(status)}
+              onClick={() => { setFilter(status); setPage(1); }}
             >
               {status === "all" ? "All tasks" : labels[status]}
               <span className="filter-count">
                 {status === "all"
-                  ? scoped.length
-                  : scoped.filter((task) => task.status === status).length}
+                  ? summary.total
+                  : (summary.statuses[status] ?? 0)}
               </span>
             </button>
           ))}
@@ -468,20 +415,18 @@ export default function TaskBoard({
           />
         )}
         {loading ? (
-          <p className="task-empty" role="status">
-            Loading project tasks...
-          </p>
-        ) : visible.length === 0 ? (
+          <LoadingSkeleton />
+        ) : total === 0 ? (
           <div className="empty-board">
             <h3>
-              {scoped.length
+              {summary.total
                 ? "No matching tasks"
                 : onlyMine
                   ? "No tasks assigned to you yet"
                   : "Your board is ready"}
             </h3>
             <p>
-              {scoped.length
+              {summary.total
                 ? "Try another search or filter."
                 : "Create tasks and assign owners to get started."}
             </p>
@@ -559,7 +504,7 @@ export default function TaskBoard({
                 <h3>
                   {labels[status]}{" "}
                   <span>
-                    {visible.filter((task) => task.status === status).length}
+                    {(matchingStatuses[status] ?? 0)}
                   </span>
                 </h3>
                 {displayed
@@ -658,16 +603,16 @@ export default function TaskBoard({
       )}
       <nav className="pagination" aria-label="Task board pagination">
         <button
-          disabled={currentPage <= 1}
+          disabled={loading || currentPage <= 1}
           onClick={() => setPage(currentPage - 1)}
         >
           Previous
         </button>
         <span>
-          Page {currentPage} of {pageCount} ? {visible.length} matching tasks
+          Page {currentPage} of {pageCount} ? {total} matching tasks
         </span>
         <button
-          disabled={currentPage >= pageCount}
+          disabled={loading || currentPage >= pageCount}
           onClick={() => setPage(currentPage + 1)}
         >
           Next
@@ -684,250 +629,5 @@ export default function TaskBoard({
         </span>
       </footer>
     </>
-  );
-}
-
-function TaskEditor({
-  task,
-  superAdmin,
-  canReview,
-  disciplines,
-  people,
-  disciplineId,
-  saving,
-  onCancel,
-  onSave,
-}: {
-  task: Task | null;
-  superAdmin: boolean;
-  canReview: boolean;
-  disciplines: Discipline[];
-  people: Profile[];
-  disciplineId: string | null;
-  saving: boolean;
-  onCancel: () => void;
-  onSave: (values: Partial<Task>) => Promise<void>;
-}) {
-  const [draft, setDraft] = useState({
-    task_name: task?.task_name ?? "",
-    discipline_id: task?.discipline_id ?? disciplineId ?? "",
-    owner: task?.owner ?? "",
-    due_date: task?.due_date ?? "",
-    priority: task?.priority ?? "medium",
-    status: task?.status ?? "not_started",
-    percent_complete: task?.percent_complete ?? 0,
-    notes: task?.notes ?? "",
-    progress_note: task?.progress_note ?? "",
-  });
-  const editable =
-    disciplines.some((d) => d.id === draft.discipline_id) ||
-    (!task && disciplines.length > 0);
-  async function submit(event: FormEvent) {
-    event.preventDefault();
-    if (!draft.task_name.trim() || !editable) return;
-    if (!superAdmin) {
-      await onSave({
-        status: draft.status,
-        percent_complete: draft.percent_complete,
-        progress_note: draft.progress_note,
-      });
-      return;
-    }
-    await onSave({
-      ...draft,
-      task_name: draft.task_name.trim(),
-      owner: draft.owner || null,
-      due_date: draft.due_date || null,
-      percent_complete:
-        draft.status === "completed"
-          ? 100
-          : draft.status === "not_started"
-            ? 0
-            : draft.percent_complete,
-    });
-  }
-  return (
-    <form className="task-editor" onSubmit={submit}>
-      <div className="editor-heading">
-        <h3>{task ? "Task details" : "Create a task"}</h3>
-        <button
-          type="button"
-          className="text-button"
-          disabled={saving}
-          onClick={onCancel}
-        >
-          Close
-        </button>
-      </div>
-      <fieldset disabled={saving || !editable}>
-        <label className="wide">
-          Task name
-          <input
-            autoFocus
-            required
-            maxLength={300}
-            readOnly={!superAdmin}
-            value={draft.task_name}
-            onChange={(e) => setDraft({ ...draft, task_name: e.target.value })}
-          />
-        </label>
-        <label>
-          Discipline
-          <select
-            required
-            disabled={!!task}
-            value={draft.discipline_id}
-            onChange={(e) =>
-              setDraft({ ...draft, discipline_id: e.target.value })
-            }
-          >
-            <option value="">Choose discipline</option>
-            {task && !disciplines.some((d) => d.id === task.discipline_id) && (
-              <option value={task.discipline_id}>Assigned discipline</option>
-            )}
-            {disciplines.map((d) => (
-              <option key={d.id} value={d.id}>
-                {d.name}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          Owner
-          <select
-            disabled={!superAdmin}
-            value={draft.owner}
-            onChange={(e) => setDraft({ ...draft, owner: e.target.value })}
-          >
-            <option value="">Unassigned</option>
-            {draft.owner && !people.some((p) => p.id === draft.owner) && (
-              <option value={draft.owner}>Assigned team member</option>
-            )}
-            {people
-              .filter((p) => p.discipline_id === draft.discipline_id)
-              .map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.full_name ?? p.id}
-                </option>
-              ))}
-          </select>
-        </label>
-        <label>
-          Due date
-          <input
-            type="date"
-            readOnly={!superAdmin}
-            value={draft.due_date}
-            onChange={(e) => setDraft({ ...draft, due_date: e.target.value })}
-          />
-        </label>
-        <label>
-          Priority
-          <select
-            disabled={!superAdmin}
-            value={draft.priority}
-            onChange={(e) =>
-              setDraft({
-                ...draft,
-                priority: e.target.value as Task["priority"],
-              })
-            }
-          >
-            {["low", "medium", "high", "critical"].map((p) => (
-              <option key={p}>{p}</option>
-            ))}
-          </select>
-        </label>
-        <label>
-          Status
-          <select
-            value={draft.status}
-            onChange={(e) => {
-              const status = e.target.value as Status;
-              setDraft({
-                ...draft,
-                status,
-                percent_complete:
-                  status === "completed"
-                    ? 100
-                    : status === "not_started" || draft.status === "completed"
-                      ? 0
-                      : draft.percent_complete,
-              });
-            }}
-          >
-            {statuses
-              .filter(
-                (s) =>
-                  superAdmin ||
-                  canReview ||
-                  ![
-                    "approved",
-                    "completed",
-                    "revision_required",
-                    "cancelled",
-                  ].includes(s) ||
-                  s === task?.status,
-              )
-              .map((s) => (
-                <option key={s} value={s}>
-                  {labels[s]}
-                </option>
-              ))}
-          </select>
-        </label>
-        <label>
-          Progress (%)
-          <input
-            type="number"
-            min="0"
-            max="100"
-            required
-            disabled={
-              draft.status === "completed" || draft.status === "not_started"
-            }
-            value={draft.percent_complete}
-            onChange={(e) =>
-              setDraft({ ...draft, percent_complete: Number(e.target.value) })
-            }
-          />
-        </label>
-        <label className="wide">
-          Notes / blocker
-          <textarea
-            rows={3}
-            readOnly={!superAdmin}
-            value={draft.notes}
-            onChange={(e) => setDraft({ ...draft, notes: e.target.value })}
-            placeholder="Scope, next steps, or what is blocking this task"
-          />
-        </label>
-      </fieldset>
-      <label>
-        Progress note
-        <textarea
-          value={draft.progress_note}
-          disabled={saving || !editable}
-          onChange={(e) =>
-            setDraft({ ...draft, progress_note: e.target.value })
-          }
-        />
-      </label>
-      <p className="editor-hint">
-        Owners listed here follow your current profile access. Contact an admin
-        to assign another team member.
-      </p>
-      {editable ? (
-        <button
-          className="button primary compact"
-          disabled={saving}
-          type="submit"
-        >
-          {saving ? "Saving..." : task ? "Save changes" : "Create task"}
-        </button>
-      ) : (
-        <p>Read-only task details.</p>
-      )}
-    </form>
   );
 }

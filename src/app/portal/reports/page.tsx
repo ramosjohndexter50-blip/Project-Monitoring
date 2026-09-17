@@ -1,4 +1,5 @@
 ﻿import Link from "next/link";
+import Form from "next/form";
 import { session } from "@/lib/platform/auth";
 export default async function Reports({
   searchParams,
@@ -7,11 +8,11 @@ export default async function Reports({
 }) {
   const { project } = await searchParams;
   const { db } = await session();
-  const projects = await db.from("projects").select("id,name").order("name");
+  const [projects, result] = await Promise.all([
+    db.from("projects").select("id,name").order("name"),
+    db.rpc("project_report", { target_project: project || null }),
+  ]);
   if (projects.error) throw new Error(projects.error.message);
-  const result = await db.rpc("project_report", {
-    target_project: project || null,
-  });
   if (result.error) throw new Error(result.error.message);
   const data = result.data as {
     tasks: number;
@@ -36,7 +37,7 @@ export default async function Reports({
           </p>
         </div>
       </div>
-      <form className="register-filters">
+      <Form className="register-filters" action="/portal/reports">
         <label>
           Project
           <select name="project" defaultValue={project ?? ""}>
@@ -49,7 +50,7 @@ export default async function Reports({
           </select>
         </label>
         <button className="button secondary">Apply</button>
-      </form>
+      </Form>
       <section className="metric-grid">
         <article>
           <span>Tasks</span>

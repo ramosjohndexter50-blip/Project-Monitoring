@@ -18,7 +18,6 @@ import {
   respondRfi,
   type ActionResult,
 } from "@/lib/platform/actions";
-import { createClient } from "@/lib/supabase/client";
 export function Result({ result }: { result: ActionResult | null }) {
   return result ? (
     <div className={result.ok ? "form-success" : "form-error"} role="status">
@@ -107,6 +106,7 @@ export function RecordForm({
               throw new Error("Choose a document to upload.");
             if (file.size > 50 * 1024 * 1024)
               throw new Error("Maximum file size is 50 MB.");
+            const { createClient } = await import("@/lib/supabase/client");
             const db = createClient();
             if (!db) throw new Error("Supabase not configured.");
             const filename = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");

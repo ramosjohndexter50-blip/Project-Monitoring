@@ -1,5 +1,5 @@
 import { PGlite } from "@electric-sql/pglite";
-import { readFileSync, readdirSync } from "node:fs";
+import { readFileSync, readdirSync, mkdirSync, writeFileSync } from "node:fs";
 import assert from "node:assert/strict";
 const db = new PGlite();
 await db.exec(`create role service_role bypassrls; create role anon; create role authenticated; create schema auth; create schema storage;
@@ -11,7 +11,7 @@ create table storage.objects(id uuid primary key default gen_random_uuid(),bucke
 alter table storage.objects enable row level security; grant select,insert,update,delete on storage.objects to authenticated;
 create publication supabase_realtime;`);
 for (const file of readdirSync("supabase/migrations")
-  .filter((f) => f.endsWith(".sql") && !f.includes("discipline_control"))
+  .filter((f) => f.endsWith(".sql") && f < "20260917033350")
   .sort()) {
   const sql = readFileSync("supabase/migrations/" + file, "utf8").replace(
     "create extension if not exists pgcrypto;",
@@ -682,4 +682,76 @@ assert.ok(
 console.log(
   "PASS invitation-only provisioning, discipline isolation, reserved assignments, 100% review progress, history, contributor revocation and profile-discipline changes",
 );
+// Performance migrations must be tested after the discipline-control upgrade.
+for (const file of readdirSync("supabase/migrations").filter(f => f.endsWith(".sql") && f > "20260917033350_discipline_control.sql").sort()) {
+  await db.exec(readFileSync("supabase/migrations/" + file, "utf8"));
+  console.log("PASS migration", file);
+}
+await db.query("update public.profiles set discipline_id=$1 where id=$2", [d, ids.member]);
+await db.query(`insert into public.tasks(project_id,discipline_id,task_name,owner,due_date,notes)
+  select $1,$2,'Performance task ' || n,$3,current_date+(n%30),repeat('Scope details ',80)
+  from generate_series(1,1200) n`, [p,d,ids.member]);
+await db.exec("analyze public.tasks; analyze public.task_history; analyze public.projects");
+let benchmark;
+await as("admin", async () => {
+  const beforeStart = performance.now();
+  const beforeRows = await db.query("select id,task_name,discipline_id,owner,status,priority,due_date,percent_complete,notes,progress_note,updated_at from public.tasks where project_id=$1 order by due_date nulls last,id", [p]);
+  const beforeCaps = await db.query("select public.task_capabilities($1) c", [p]);
+  const beforeMs = performance.now()-beforeStart;
+  const start = performance.now();
+  const after = (await db.query("select public.task_board_page($1) b", [p])).rows[0].b;
+  const afterMs = performance.now()-start;
+  assert.equal(after.rows.length,25);
+  assert.equal(after.total,beforeRows.rows.length);
+  assert.equal(after.summary.total,beforeRows.rows.length);
+  assert.equal(after.capabilities.editable_tasks.length,25);
+  assert.deepEqual(after.rows.map(t=>t.id),beforeRows.rows.slice(0,25).map(t=>t.id));
+  const second = (await db.query("select public.task_board_page($1,2) b",[p])).rows[0].b;
+  assert.deepEqual(second.rows.map(t=>t.id),beforeRows.rows.slice(25,50).map(t=>t.id));
+  const last = (await db.query("select public.task_board_page($1,999999) b",[p])).rows[0].b;
+  assert.equal(last.page,Math.ceil(after.total/25));
+  assert.ok(last.rows.length>0);
+  const bounded = (await db.query("select public.task_board_page($1,-10,10000) b",[p])).rows[0].b;
+  assert.equal(bounded.rows.length,100);
+  assert.equal(bounded.page,1);
+  const search = (await db.query("select public.task_board_page($1,1,25,'Performance task 1200') b",[p])).rows[0].b;
+  assert.equal(search.total,1);
+  const literal = (await db.query("select public.task_board_page($1,1,25,'%') b",[p])).rows[0].b;
+  assert.equal(literal.total,0);
+  const person = (await db.query("select public.task_board_page($1,1,25,$2) b",[p, (await db.query('select full_name from public.profiles where id=$1',[ids.member])).rows[0].full_name])).rows[0].b;
+  assert.ok(person.total>=1200);
+  const report = (await db.query("select public.project_report(null) r")).rows[0].r;
+  const dashboard = (await db.query("select public.dashboard_metrics() r")).rows[0].r;
+  assert.deepEqual(dashboard.disciplines.sort((a,b)=>a.name.localeCompare(b.name)),report.disciplines.sort((a,b)=>a.name.localeCompare(b.name)));
+  assert.equal(dashboard.counts[1],report.overdue);
+  const plan = (await db.query("explain (analyze,buffers,format json) select id,due_date from public.tasks where project_id=$1 order by due_date nulls last,id limit 25",[p])).rows;
+  benchmark = { environment:'Synthetic PostgreSQL in PGlite, 1200 seeded tasks; not production timing',
+    before: { rows:beforeRows.rows.length, bytes:Buffer.byteLength(JSON.stringify(beforeRows.rows))+Buffer.byteLength(JSON.stringify(beforeCaps.rows)), ms:beforeMs },
+    after: { rows:after.rows.length, bytes:Buffer.byteLength(JSON.stringify(after)), ms:afterMs }, plan };
+});
+for (const name of ['member','viewer','outsider','disabled']) await as(name, async () => {
+  const board = (await db.query("select public.task_board_page($1) b",[p])).rows[0].b;
+  const visible = Number((await db.query("select count(*) n from public.tasks where project_id=$1",[p])).rows[0].n);
+  assert.equal(board.total,visible);
+  assert.ok(board.rows.length<=25);
+  if (name==='outsider' || name==='disabled') {
+    assert.equal(board.total,0);
+    assert.equal(board.capabilities.editable_tasks.length,0);
+  }
+  if (name==='member') {
+    const mine = (await db.query("select public.task_board_page($1,1,25,'',null,null,true) b",[p])).rows[0].b;
+    assert.ok(mine.rows.every(t=>t.owner===ids.member));
+    await db.query("update public.tasks set status='in_progress',percent_complete=42 where id=$1",[mine.rows[0].id]);
+    const fresh = (await db.query("select public.task_board_page($1,1,25,'',null,null,true) b",[p])).rows[0].b;
+    assert.equal(fresh.rows[0].percent_complete,42);
+  }
+});
+await db.exec('set role anon');
+await denied('select public.dashboard_metrics()');
+await denied('select public.task_board_page($1)',[p]);
+await db.exec('reset role');
+mkdirSync('docs/performance',{recursive:true});
+writeFileSync('docs/performance/database.json',JSON.stringify(benchmark,null,2));
+console.log('PASS bounded pagination, stable sorting, complete aggregates, literal/name search, read-after-write, and RLS isolation for new RPCs');
+console.log('BENCHMARK',JSON.stringify({before:benchmark.before,after:benchmark.after}));
 await db.close();
