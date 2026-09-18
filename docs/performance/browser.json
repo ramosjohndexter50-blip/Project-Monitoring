@@ -4,20 +4,70 @@
     "Lazy task editor and save/read-after-write",
     "Debounced search and complete empty/result states",
     "Kanban and lazy history query",
-    "Dashboard summary and async cards"
+    "Dashboard summary and async cards",
+    "All active portal/admin modules navigate without render errors",
+    "Search form uses client-side navigation (document preserved)",
+    "Reports render full authorized aggregates",
+    "Project editor retains existing discipline assignments",
+    "Task creation via Server Action preserves validation and refreshes register",
+    "390px mobile dashboard, register, and reports have no page overflow",
+    "Logout clears session and protected routes redirect",
+    "Non-admin sees scoped tasks and no admin/create controls",
+    "Inactive account denied",
+    "No unexpected browser console/runtime errors (fixture Realtime transport excluded)"
   ],
   "timings": [
     {
       "link": "My Tasks",
-      "ms": 872
+      "ms": 827
     },
     {
       "link": "Projects",
-      "ms": 137
+      "ms": 325
+    },
+    {
+      "link": "Notifications",
+      "ms": 325
+    },
+    {
+      "link": "Employee management",
+      "ms": 830
+    },
+    {
+      "link": "Roles",
+      "ms": 335
+    },
+    {
+      "link": "Permission catalog",
+      "ms": 332
+    },
+    {
+      "link": "Role permissions",
+      "ms": 341
+    },
+    {
+      "link": "Disciplines",
+      "ms": 338
+    },
+    {
+      "link": "Permission overrides",
+      "ms": 334
+    },
+    {
+      "link": "Admin overview",
+      "ms": 821
+    },
+    {
+      "link": "Search",
+      "ms": 325
     }
   ],
-  "errors": [
-    "Error: Minified React error #441; visit https://react.dev/errors/441 for the full message or use the non-minified dev environment for full errors and additional helpful warnings."
+  "errors": [],
+  "expectedDenials": [
+    {
+      "source": "http://127.0.0.1:55440/rest/v1/rpc/record_session_event",
+      "message": "Failed to load resource: the server responded with a status of 400 (Bad Request)"
+    }
   ],
   "environment": "Isolated local production build; synthetic Auth/Storage; no live SMTP/Realtime transport"
 }

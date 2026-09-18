@@ -70,6 +70,7 @@ export default function TaskBoard({
   const abort = useRef<AbortController | null>(null);
   const historyRequest = useRef(0);
   const mutation = useRef(false);
+  const pendingRealtime = useRef(false);
   const [capabilities, setCapabilities] = useState<{
     editable_tasks: string[];
     create_disciplines: string[];
@@ -143,7 +144,10 @@ export default function TaskBoard({
         },
         () => {
           clearTimeout(timer);
-          timer = setTimeout(() => { if (!mutation.current) void latestLoad.current(); }, 150);
+          timer = setTimeout(() => {
+            if (mutation.current) pendingRealtime.current = true;
+            else void latestLoad.current();
+          }, 150);
         },
       )
       .subscribe((state) =>
@@ -196,7 +200,7 @@ export default function TaskBoard({
         throw new Error(
           "Task changed or you no longer have access. Refresh and try again.",
         );
-      await load();
+      await latestLoad.current();
       return true;
     } catch (error) {
       setMessage(errorText(error));
@@ -204,6 +208,10 @@ export default function TaskBoard({
     } finally {
       mutation.current = false;
       setSaving(false);
+      if (pendingRealtime.current) {
+        pendingRealtime.current = false;
+        void latestLoad.current();
+      }
     }
   }
   async function changeStatus(task: Task, status: Status) {

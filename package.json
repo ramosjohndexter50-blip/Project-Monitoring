@@ -8,6 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test:db": "node scripts/test-database.mjs",
+    "test:browser": "node scripts/verify-browser.mjs",
+    "perf:measure": "node scripts/measure-performance.mjs",
     "bootstrap:admin": "node --env-file=.env.local scripts/bootstrap-admin.mjs"
   },
   "dependencies": {

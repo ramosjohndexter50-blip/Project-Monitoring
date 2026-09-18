@@ -1,5 +1,24 @@
 begin;
 
+-- Cache only the statement-constant caller identity. Keep every existing
+-- ownership, permission, project and discipline predicate unchanged.
+do $$
+declare p record; statement text;
+begin
+  for p in select * from pg_policies where schemaname='public'
+    and (qual like '%auth.uid()%' or with_check like '%auth.uid()%')
+  loop
+    statement := format('alter policy %I on %I.%I',p.policyname,p.schemaname,p.tablename);
+    if p.qual is not null then
+      statement := statement || ' using (' || replace(p.qual,'auth.uid()','(select auth.uid())') || ')';
+    end if;
+    if p.with_check is not null then
+      statement := statement || ' with check (' || replace(p.with_check,'auth.uid()','(select auth.uid())') || ')';
+    end if;
+    execute statement;
+  end loop;
+end $$;
+
 -- The FK indexes already exist. These cover measured ORDER BY / LIMIT paths,
 -- rather than adding another index to every foreign key.
 create index if not exists tasks_project_due_id on public.tasks(project_id, due_date, id);

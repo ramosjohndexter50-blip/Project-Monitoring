@@ -3,14 +3,22 @@
 import { chromium } from "@playwright/test";
 import assert from "node:assert/strict";
 import { mkdirSync, writeFileSync } from "node:fs";
-const base = "http://127.0.0.1:3101";
+// Match APP_ORIGIN in start-verification.mjs, including hostname for CSRF checks.
+const base = "http://localhost:3101";
 const installed = process.env.PERFORMANCE_CHROME_PATH;
 const browser = await chromium.launch({ headless: true, ...(installed ? { executablePath: installed } : {}) });
-const checks = [], timings = [], errors = [];
+const checks = [], timings = [], errors = [], expectedDenials = [];
+let checkingDisabledAccount = false;
 const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
 const page = await context.newPage();
 page.on("pageerror", e => errors.push(e.message));
-page.on("console", msg => { if (msg.type() === "error" && !/WebSocket|realtime\/v1/i.test(msg.text())) errors.push(msg.text()); });
+page.on("console", msg => {
+  if (msg.type() !== "error" || /WebSocket|realtime\/v1/i.test(msg.text())) return;
+  const source = msg.location().url;
+  if (checkingDisabledAccount && source.includes("/rpc/record_session_event")) {
+    expectedDenials.push({ source, message: msg.text() });
+  } else errors.push(`${msg.text()} (${source})`);
+});
 page.on("dialog", dialog => dialog.accept());
 const check = (name) => { checks.push(name); console.log("PASS", name); };
 async function login(name) {
@@ -71,12 +79,13 @@ try {
   await page.goto(`${base}/portal/tasks?project=20000000-0000-4000-8000-000000000001&new=1`);
   await page.getByRole("heading", { name: "New tasks record" }).waitFor();
   const form = page.locator("form.register-form");
-  await form.locator('[name="task_name"]').fill("Browser regression task");
+  const createdTask = `Browser regression task ${Date.now()}`;
+  await form.locator('[name="task_name"]').fill(createdTask);
   await form.locator('[name="discipline_id"]').selectOption({ label: "Architecture" });
   await form.locator('[name="owner"]').selectOption({ label: "Test manager" });
   await form.getByRole("button", { name: "Save record" }).click();
   await page.locator(".form-success").waitFor();
-  await page.getByRole("cell", { name: "Browser regression task", exact: true }).waitFor();
+  await page.getByRole("cell", { name: createdTask, exact: true }).waitFor();
   check("Task creation via Server Action preserves validation and refreshes register");
   await page.setViewportSize({ width: 390, height: 844 });
   for (const route of ["/portal","/portal/tasks","/portal/reports"]) {
@@ -101,6 +110,7 @@ try {
   check("Non-admin sees scoped tasks and no admin/create controls");
   await page.getByRole("button", { name: "Sign out", exact: true }).click();
   await page.getByRole("heading", { name: "Welcome back." }).waitFor();
+  checkingDisabledAccount = true;
   await login("disabled");
   await page.getByRole("heading", { name: "Account inactive" }).waitFor();
   check("Inactive account denied");
@@ -108,6 +118,6 @@ try {
   check("No unexpected browser console/runtime errors (fixture Realtime transport excluded)");
 } finally {
   mkdirSync("docs/performance", { recursive: true });
-  writeFileSync("docs/performance/browser.json",JSON.stringify({ checks,timings,errors, environment:"Isolated local production build; synthetic Auth/Storage; no live SMTP/Realtime transport" },null,2));
+  writeFileSync("docs/performance/browser.json",JSON.stringify({ checks,timings,errors,expectedDenials, environment:"Isolated local production build; synthetic Auth/Storage; no live SMTP/Realtime transport" },null,2));
   await browser.close();
 }

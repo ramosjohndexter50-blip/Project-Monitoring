@@ -47,8 +47,8 @@ export async function saveRecord(
         .maybeSingle();
       if (row.error) throw row.error;
       if (!row.data) throw new Error("Record unavailable or access denied.");
-      existing = row.data;
-      if (config.project) project = String(row.data.project_id);
+      existing = row.data as unknown as Record<string, unknown>;
+      if (config.project) project = String(existing.project_id);
     }
     if (moduleKey === "projects" && id) project = id;
     if (moduleKey === "workflow_steps") {
