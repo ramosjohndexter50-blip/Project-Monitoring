@@ -295,6 +295,7 @@ export function ActionButton({
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<ActionResult | null>(null);
   const router = useRouter();
+  if (kind === "reset") return <TemporaryPasswordForm id={id} />;
   return (
     <div>
       <button
@@ -306,19 +307,12 @@ export function ActionButton({
             !confirm("Remove this assignment? Access may change immediately.")
           )
             return;
-          if (
-            kind === "reset" &&
-            !confirm("Generate a one-time password reset link for this user?")
-          )
-            return;
           setBusy(true);
           try {
             setResult(
               await (kind === "read"
                 ? markNotification(id)
-                : kind === "reset"
-                  ? resetAccount(id)
-                  : removeRecord(moduleKey!, id, extra)),
+                : removeRecord(moduleKey!, id, extra)),
             );
             router.refresh();
           } finally {
@@ -328,13 +322,25 @@ export function ActionButton({
       >
         {kind === "read"
           ? "Mark read"
-          : kind === "reset"
-            ? "Reset access"
-            : "Remove"}
+          : moduleKey === "disciplines" ? "Delete discipline" : "Remove"}
       </button>
       <Result result={result} />
     </div>
   );
+}
+function TemporaryPasswordForm({ id }: { id: string }) {
+  const [busy, setBusy] = useState(false);
+  const [result, setResult] = useState<ActionResult | null>(null);
+  return <details><summary>Set temporary password</summary><form onSubmit={async e => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    setBusy(true);
+    try {
+      const response = await resetAccount(id, String(new FormData(form).get("password") || ""));
+      setResult(response);
+      if (response.ok) form.reset();
+    } finally { setBusy(false); }
+  }}><label>Temporary password<input name="password" type="password" autoComplete="new-password" required minLength={12} maxLength={128} /></label><button className="button secondary" disabled={busy}>Set password</button><Result result={result} /></form></details>;
 }
 export function AccountForm({ choices }: { choices: Choices }) {
   const [result, setResult] = useState<ActionResult | null>(null);
@@ -352,7 +358,9 @@ export function AccountForm({ choices }: { choices: Choices }) {
             !confirm("Create a Super Admin who can manage accounts, roles and web settings?")
           )
             return;
-          setResult(await createAccount(form));
+          const response = await createAccount(form);
+          setResult(response);
+          if (response.ok) (e.target as HTMLFormElement).reset();
         } finally {
           setBusy(false);
         }
@@ -371,6 +379,11 @@ export function AccountForm({ choices }: { choices: Choices }) {
         <label>
           Email
           <input name="email" type="email" required />
+        </label>
+        <label>
+          Temporary password
+          <input name="password" type="password" autoComplete="new-password" minLength={12} maxLength={128} required />
+          <small>The user must replace this password at first login.</small>
         </label>
         <label>
           Role
@@ -404,7 +417,7 @@ export function AccountForm({ choices }: { choices: Choices }) {
         </label>
       </fieldset>
       <button className="button primary" disabled={busy}>
-        Create account & setup link
+        Create account
       </button>
       <Result result={result} />
     </form>

@@ -3,7 +3,7 @@ import { readFileSync, readdirSync, mkdirSync, writeFileSync } from "node:fs";
 import assert from "node:assert/strict";
 const db = new PGlite();
 await db.exec(`create role service_role bypassrls; create role anon; create role authenticated; create schema auth; create schema storage;
-create table auth.users(id uuid primary key,email text,raw_user_meta_data jsonb default '{}',email_confirmed_at timestamptz,last_sign_in_at timestamptz);
+create table auth.users(id uuid primary key,email text,raw_user_meta_data jsonb default '{}',raw_app_meta_data jsonb default '{}',email_confirmed_at timestamptz,last_sign_in_at timestamptz);
 create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;
 grant usage on schema auth,public,storage to authenticated,anon; grant execute on function auth.uid() to authenticated,anon;
 create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint);
@@ -683,7 +683,7 @@ console.log(
   "PASS invitation-only provisioning, discipline isolation, reserved assignments, 100% review progress, history, contributor revocation and profile-discipline changes",
 );
 // Performance migrations must be tested after the discipline-control upgrade.
-for (const file of readdirSync("supabase/migrations").filter(f => f.endsWith(".sql") && f > "20260917033350_discipline_control.sql" && !f.endsWith('_split_project_admin.sql')).sort()) {
+for (const file of readdirSync("supabase/migrations").filter(f => f.endsWith(".sql") && f > "20260917033350_discipline_control.sql" && !f.endsWith('_split_project_admin.sql') && !f.endsWith('_password_onboarding_discipline_removal.sql')).sort()) {
   await db.exec(readFileSync("supabase/migrations/" + file, "utf8"));
   console.log("PASS migration", file);
 }
@@ -801,4 +801,31 @@ await as('orgadmin',async()=>{
   assert.equal((await db.query('select * from public.projects')).rows.length,0);
 });
 console.log('PASS Admin project/task/team management, Super Admin account/settings management, cross-role denials and disabled Admin isolation');
+for (const file of readdirSync('supabase/migrations').filter(f=>f.endsWith('_password_onboarding_discipline_removal.sql'))) await db.exec(readFileSync('supabase/migrations/'+file,'utf8'));
+await as('admin',async()=>{
+  await denied('select public.remove_discipline($1)',[d]);
+  const empty=(await db.query("insert into public.disciplines(name) values('Unused test discipline') returning id")).rows[0].id;
+  await db.query('select public.remove_discipline($1)',[empty]);
+  assert.equal((await db.query('select id from public.disciplines where id=$1',[empty])).rows.length,0);
+});
+// An inactive employee keeps their historical discipline but prevents hard deletion.
+const retired=(await db.query("insert into public.disciplines(name) values('Retired test discipline') returning id")).rows[0].id;
+await db.query('update public.profiles set discipline_id=$1 where id=$2',[retired,ids.disabled]);
+await as('admin',async()=>{
+  await db.query('select public.remove_discipline($1)',[retired]);
+  const row=(await db.query('select deleted_at,is_active from public.disciplines where id=$1',[retired])).rows[0];
+  assert.ok(row.deleted_at); assert.equal(row.is_active,false);
+  await denied('update public.profiles set is_active=true where id=$1',[ids.disabled]);
+});
+for(const name of ['admin','member','orgadmin']) {
+  await db.query("update auth.users set raw_app_meta_data='{"+'"must_change_password":true'+"}' where id=$1",[ids[name]]);
+  await as(name,async()=>{
+    assert.equal((await db.query("select public.has_permission('projects.create') allowed")).rows[0].allowed,false);
+    assert.equal((await db.query('select * from public.projects')).rows.length,0);
+    await denied('select public.remove_discipline($1)',[d]);
+  });
+  await db.query("update auth.users set raw_app_meta_data='{}' where id=$1",[ids[name]]);
+}
+await as('admin',async()=>assert.equal((await db.query("select public.has_permission('users.create') allowed")).rows[0].allowed,true));
+console.log('PASS password-change database gate, blocked active-employee deletion, unused deletion, historical preservation and reactivation guard');
 await db.close();

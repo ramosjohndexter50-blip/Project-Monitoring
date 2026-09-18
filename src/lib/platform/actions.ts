@@ -209,6 +209,13 @@ export async function removeRecord(
       throw new Error("Archive this record instead of deleting it.");
     const context = await session();
     let project: string | null = null;
+    if (moduleKey === "disciplines") {
+      await permission("disciplines.delete");
+      const result = await context.db.rpc("remove_discipline", { target: id });
+      if (result.error) throw result.error;
+      revalidatePath("/portal", "layout");
+      return { ok: true, message: String(result.data) };
+    }
     if (config.project) {
       const row = await context.db
         .from(config.table)
@@ -296,9 +303,8 @@ export async function createAccount(form: FormData): Promise<ActionResult> {
     const { db, profile } = await permission("users.create");
     if (profile.role !== "super_admin")
       throw new Error("Super Admin required.");
-    const origin = process.env.APP_ORIGIN;
-    if (!origin)
-      throw new Error("Set APP_ORIGIN before creating employee accounts.");
+    const password = String(form.get("password") || "");
+    if (password.length < 12 || password.length > 128) throw new Error("Use a temporary password with 12–128 characters.");
     const email = String(form.get("email") || "")
       .trim()
       .toLowerCase();
@@ -341,12 +347,12 @@ export async function createAccount(form: FormData): Promise<ActionResult> {
       .single();
     if (reservation.error) throw reservation.error;
     const result = await admin.auth.admin
-      .generateLink({
-        type: "invite",
+      .createUser({
         email,
-        options: {
-          data: { full_name: name, provisioning_token: reservation.data.token },
-        },
+        password,
+        email_confirm: true,
+        user_metadata: { full_name: name, provisioning_token: reservation.data.token },
+        app_metadata: { must_change_password: true },
       })
       .finally(async () => {
         await db
@@ -355,24 +361,19 @@ export async function createAccount(form: FormData): Promise<ActionResult> {
           .eq("token", reservation.data.token);
       });
     if (result.error) throw result.error;
-    const link = new URL("/auth/callback", origin);
-    link.searchParams.set("token_hash", result.data.properties.hashed_token);
-    link.searchParams.set("type", "invite");
-    link.searchParams.set("next", "/auth/reset");
     void db;
     revalidatePath("/portal/users");
     return {
       ok: true,
       message:
-        "Employee account created with the selected role and discipline. Share this one-time setup link privately; no email was sent.",
-      link: link.toString(),
+        "Account created. Share the temporary password privately. The user must change it at first login. No email was sent.",
     };
   } catch (error) {
     unstable_rethrow(error);
     return { ok: false, message: errorMessage(error) };
   }
 }
-export async function resetAccount(id: string): Promise<ActionResult> {
+export async function resetAccount(id: string, password: string): Promise<ActionResult> {
   try {
     const { db, user, profile } = await permission("users.update");
     if (profile.role !== "super_admin")
@@ -387,29 +388,21 @@ export async function resetAccount(id: string): Promise<ActionResult> {
       throw new Error("Activate the account before resetting access.");
     if (target.data.role === "super_admin" && profile.role !== "super_admin")
       throw new Error("Super Admin access required.");
-    const origin = process.env.APP_ORIGIN;
-    if (!origin) throw new Error("Set APP_ORIGIN first.");
+    if (id === user.id) throw new Error("Use Change password for your own account.");
+    if (password.length < 12 || password.length > 128) throw new Error("Use a temporary password with 12–128 characters.");
     const admin = authAdmin();
-    const result = await admin.auth.admin.generateLink({
-      type: "recovery",
-      email: target.data.email,
-    });
+    const result = await admin.auth.admin.updateUserById(id, { password, email_confirm: true, app_metadata: { must_change_password: true } });
     if (result.error) throw result.error;
     const log = await admin.from("audit_logs").insert({
       actor_id: user.id,
-      action: "access_reset_link_created",
+      action: "temporary_password_set",
       entity: "profiles",
       entity_id: id,
     });
     if (log.error) throw log.error;
-    const link = new URL("/auth/callback", origin);
-    link.searchParams.set("token_hash", result.data.properties.hashed_token);
-    link.searchParams.set("type", "recovery");
-    link.searchParams.set("next", "/auth/reset");
     return {
       ok: true,
-      message: "Share this one-time reset link privately.",
-      link: link.toString(),
+      message: "Temporary password set. The user must change it at next login.",
     };
   } catch (error) {
     unstable_rethrow(error);

@@ -13,6 +13,7 @@ export default async function Home({
     data: { user },
   } = await db.auth.getUser();
   if (!user) return <LoginScreen />;
+  if (user.app_metadata.must_change_password === true) redirect("/auth/reset");
   const result = await db
     .from("profiles")
     .select("id, full_name, role, is_active, discipline_id")

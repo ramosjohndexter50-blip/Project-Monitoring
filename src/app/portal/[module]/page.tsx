@@ -46,6 +46,7 @@ export default async function RegisterPage({
   const recordKey = config.key ?? "id";
   const columns = [...new Set([...config.columns, ...(moduleKey === "role_permissions" ? [] : [recordKey]), ...(config.project ? ["project_id"] : [])])].join(",");
   let query = db.from(config.table).select(columns, { count: "exact" });
+  if (moduleKey === "disciplines") query = query.is("deleted_at", null);
   query = query.order(moduleKey === "notifications" ? "created_at" : moduleKey === "role_permissions" ? "role_key" : recordKey, {
     ascending: moduleKey !== "notifications",
   });

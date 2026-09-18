@@ -160,6 +160,7 @@ export const modules: Record<string, Module> = {
     removable: true,
   },
   disciplines: {
+    removable: true,
     title: "Disciplines",
     table: "disciplines",
     permission: "disciplines",

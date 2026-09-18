@@ -5,7 +5,7 @@ import { readFileSync, readdirSync } from "node:fs";
 import { createServer } from "node:http";
 const db = new PGlite();
 await db.exec(`create role anon; create role authenticated; create role service_role bypassrls; create schema auth; create schema storage;
-create table auth.users(id uuid primary key,email text,raw_user_meta_data jsonb default '{}',email_confirmed_at timestamptz,last_sign_in_at timestamptz);
+create table auth.users(id uuid primary key,email text,raw_user_meta_data jsonb default '{}',raw_app_meta_data jsonb default '{}',email_confirmed_at timestamptz,last_sign_in_at timestamptz);
 create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;
 grant usage on schema auth,public,storage to authenticated,anon; grant execute on function auth.uid() to authenticated,anon;
 create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint);
@@ -91,6 +91,8 @@ await db.query(
 for (const file of readdirSync("supabase/migrations").filter(f => f.endsWith(".sql") && f > "20260917033350_discipline_control.sql").sort()) {
   await db.exec(readFileSync("supabase/migrations/" + file, "utf8"));
 }
+const metadata = new Map();
+const passwords = new Map();
 const user = (id) => ({
   id,
   aud: "authenticated",
@@ -98,7 +100,7 @@ const user = (id) => ({
   email: Object.keys(ids).find((k) => ids[k] === id) + "@fixture.test",
   email_confirmed_at: new Date().toISOString(),
   created_at: new Date().toISOString(),
-  app_metadata: {},
+  app_metadata: metadata.get(id) ?? {},
   user_metadata: {},
 });
 const token = (id) =>
@@ -174,18 +176,19 @@ const server = createServer((req, res) => {
       try {
         if (url.pathname === "/auth/v1/token") {
           const name = String(body.email ?? "").split("@")[0];
-          const id = ids[name];
+          const id = ids[name] ?? (String(body.refresh_token ?? '').startsWith('fixture-refresh:') ? String(body.refresh_token).split(':')[1] : null);
           if (!id) {
             send({ message: "Unknown fixture account" }, 400);
             return;
           }
+          if (body.email && passwords.has(id) && passwords.get(id)!==body.password) { send({message:'Invalid login credentials'},400);return; }
           await db.query(
             "update auth.users set last_sign_in_at=now() where id=$1",
             [id],
           );
           send({
             access_token: token(id),
-            refresh_token: "fixture-refresh",
+            refresh_token: `fixture-refresh:${id}`,
             token_type: "bearer",
             expires_in: 3600,
             user: user(id),
@@ -197,12 +200,32 @@ const server = createServer((req, res) => {
             send({ message: "Not authenticated" }, 401);
             return;
           }
+          if(req.method==='PUT' && body.password) {
+            if(passwords.get(uid)===body.password) {send({message:'New password must be different'},400);return;}
+            passwords.set(uid,body.password);
+          }
           send(user(uid));
           return;
         }
         if (url.pathname === "/auth/v1/logout") {
           send({});
           return;
+        }
+        if (url.pathname.startsWith('/auth/v1/admin/users')) {
+          if(req.headers.authorization!=='Bearer fixture-service-key') {send({message:'Denied'},403);return;}
+          if(req.method==='POST') {
+            const id=crypto.randomUUID();
+            await db.query('insert into auth.users(id,email,raw_user_meta_data,raw_app_meta_data,email_confirmed_at) values($1,$2,$3,$4,now())',[id,body.email,JSON.stringify(body.user_metadata??{}),JSON.stringify(body.app_metadata??{})]);
+            ids[body.email.split('@')[0]]=id;metadata.set(id,body.app_metadata??{});passwords.set(id,body.password);
+            send(user(id));return;
+          }
+          const id=parts[5];
+          if(req.method==='PUT') {
+            if(body.password)passwords.set(id,body.password);
+            metadata.set(id,{...metadata.get(id),...body.app_metadata});
+            await db.query('update auth.users set raw_app_meta_data=$1 where id=$2',[JSON.stringify(metadata.get(id)),id]);
+          }
+          send(user(id));return;
         }
         if (url.pathname === "/auth/v1/admin/generate_link") {
           if (req.headers.authorization !== "Bearer fixture-service-key") {

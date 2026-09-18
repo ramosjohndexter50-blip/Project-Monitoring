@@ -37,6 +37,11 @@ export default function LoginScreen() {
       }
 
       if (result.data.session) {
+        if (result.data.user?.app_metadata.must_change_password === true) {
+          router.replace("/auth/reset");
+          router.refresh();
+          return;
+        }
         await supabase.rpc("record_session_event", { event: "login" });
         router.refresh();
       }

@@ -3,12 +3,12 @@
   "before": {
     "rows": 1203,
     "bytes": 1820643,
-    "ms": 105.62320000000022
+    "ms": 97.34649999999988
   },
   "after": {
     "rows": 25,
-    "bytes": 38122,
-    "ms": 74.98119999999972
+    "bytes": 38126,
+    "ms": 70.82819999999992
   },
   "plan": [
     {
@@ -22,8 +22,8 @@
             "Total Cost": 52.17,
             "Plan Rows": 25,
             "Plan Width": 20,
-            "Actual Startup Time": 0.16,
-            "Actual Total Time": 0.888,
+            "Actual Startup Time": 0.127,
+            "Actual Total Time": 0.807,
             "Actual Rows": 25,
             "Actual Loops": 1,
             "Disabled": false,
@@ -51,12 +51,12 @@
                 "Total Cost": 832.58,
                 "Plan Rows": 401,
                 "Plan Width": 20,
-                "Actual Startup Time": 0.144,
-                "Actual Total Time": 0.847,
+                "Actual Startup Time": 0.113,
+                "Actual Total Time": 0.769,
                 "Actual Rows": 25,
                 "Actual Loops": 1,
                 "Disabled": false,
-                "Index Cond": "(project_id = 'e7b870e7-157c-43f4-a0fd-0d94952a07db'::uuid)",
+                "Index Cond": "(project_id = 'e46761ed-9bff-45e2-a4d7-a78ea6a632c7'::uuid)",
                 "Rows Removed by Index Recheck": 0,
                 "Filter": "private.project_permission(project_id, discipline_id, 'tasks.view'::text)",
                 "Rows Removed by Filter": 0,
@@ -88,7 +88,7 @@
           },
           "Planning Time": 0.139,
           "Triggers": [],
-          "Execution Time": 0.949
+          "Execution Time": 0.869
         }
       ]
     }

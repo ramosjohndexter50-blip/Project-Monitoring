@@ -1,13 +1,16 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { changePassword } from "./actions";
+import { useRouter } from "next/navigation";
 export default function ResetPassword() {
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const router = useRouter();
   return (
     <main className="login-panel">
       <h1>Set your password</h1>
+      <p>Choose your own password before opening the workspace. Use at least 12 characters.</p>
       <form
         className="login-form"
         onSubmit={async (e) => {
@@ -19,13 +22,9 @@ export default function ResetPassword() {
           }
           setBusy(true);
           try {
-            const db = createClient();
-            if (!db) throw new Error("Supabase not configured");
-            const result = await db.auth.updateUser({
-              password: String(data.get("password")),
-            });
-            if (result.error) throw result.error;
-            setMessage("Password saved. You can open your workspace.");
+            const result = await changePassword(data);
+            setMessage(result.message);
+            if (result.ok) { router.replace("/"); router.refresh(); }
           } catch (error) {
             setMessage(
               error instanceof Error
@@ -41,6 +40,8 @@ export default function ResetPassword() {
           New password
           <input
             name="password"
+            minLength={12}
+            maxLength={128}
             type="password"
             required
             autoComplete="new-password"
@@ -50,6 +51,8 @@ export default function ResetPassword() {
           Confirm password
           <input
             name="confirm"
+            minLength={12}
+            maxLength={128}
             type="password"
             required
             autoComplete="new-password"

@@ -11,6 +11,7 @@ const getSession = cache(async () => {
     error,
   } = await db.auth.getUser();
   if (error || !user) redirect("/");
+  if (user.app_metadata.must_change_password === true) redirect("/auth/reset");
 
   const profile = await db
     .from("profiles")
