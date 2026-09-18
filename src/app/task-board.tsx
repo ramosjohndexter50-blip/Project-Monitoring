@@ -121,10 +121,12 @@ export default function TaskBoard({
     return () => controller.abort();
   }, [supabase, projectId]);
   useEffect(() => {
+    const requests = request;
+    const pending = abort;
     // Request cancellation prevents an older search overwriting a newer page.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void load();
-    return () => { request.current++; abort.current?.abort(); };
+    return () => { requests.current++; pending.current?.abort(); };
   }, [load]);
   const latestLoad = useRef(load);
   useEffect(() => { latestLoad.current = load; }, [load]);
@@ -260,7 +262,7 @@ export default function TaskBoard({
         {statuses
           .filter(
             (status) =>
-              role === "super_admin" ||
+              role === "admin" ||
               capabilities.review_disciplines?.includes(task.discipline_id) ||
               ![
                 "approved",
@@ -407,7 +409,7 @@ export default function TaskBoard({
                 ? capabilities.create_disciplines.includes(d.id)
                 : canEdit(editor) && d.id === editor.discipline_id,
             )}
-            superAdmin={role === "super_admin"}
+            projectAdmin={role === "admin"}
             canReview={
               editor !== "new" &&
               !!capabilities.review_disciplines?.includes(editor.discipline_id)
@@ -629,7 +631,7 @@ export default function TaskBoard({
       <footer className="footer-note">
         <span>{sync}</span>
         <span>
-          {role === "super_admin"
+          {role === "admin"
             ? "Admin access"
             : role === "discipline_lead"
               ? "Edit your discipline"

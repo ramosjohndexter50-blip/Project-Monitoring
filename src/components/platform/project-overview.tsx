@@ -25,7 +25,7 @@ export default async function ProjectOverview({
   return (
     <section className="register-card">
       <h2>
-        {profile.role === "super_admin"
+        {["admin", "super_admin"].includes(profile.role)
           ? "Overall project completion"
           : "Your discipline completion"}
         : {overall}%

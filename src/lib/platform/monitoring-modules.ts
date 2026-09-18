@@ -39,6 +39,16 @@ const project = ref("project_id", "Project", "projects", true);
 export const taskStatuses = ["not_started", "in_progress", "for_review", "revision_required", "approved", "completed", "blocked", "cancelled"];
 
 export const modules: Record<string, Module> = {
+  settings: {
+    title: "Web settings", table: "system_settings", permission: "settings", admin: true,
+    key: "key", search: "key", columns: ["key", "value"],
+    fields: [f("key", "Setting key", "text", { required: true, immutable: true }), f("value", "Value", "text", { required: true })],
+  },
+  teams: {
+    title: "Project team", table: "project_members", permission: "teams", project: true,
+    search: "role_key", columns: ["project_id", "user_id", "role_key", "discipline_id"], removable: true,
+    fields: [ref("user_id", "Employee", "profiles", true), ref("role_key", "Project role", "project_roles", true), discipline],
+  },
   projects: {
     title: "Projects",
     table: "projects",

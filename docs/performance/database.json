@@ -3,12 +3,12 @@
   "before": {
     "rows": 1203,
     "bytes": 1820643,
-    "ms": 102.26369999999997
+    "ms": 105.62320000000022
   },
   "after": {
     "rows": 25,
-    "bytes": 38121,
-    "ms": 73.06819999999993
+    "bytes": 38122,
+    "ms": 74.98119999999972
   },
   "plan": [
     {
@@ -19,11 +19,11 @@
             "Parallel Aware": false,
             "Async Capable": false,
             "Startup Cost": 0.28,
-            "Total Cost": 52.38,
+            "Total Cost": 52.17,
             "Plan Rows": 25,
             "Plan Width": 20,
-            "Actual Startup Time": 0.114,
-            "Actual Total Time": 0.939,
+            "Actual Startup Time": 0.16,
+            "Actual Total Time": 0.888,
             "Actual Rows": 25,
             "Actual Loops": 1,
             "Disabled": false,
@@ -48,15 +48,15 @@
                 "Relation Name": "tasks",
                 "Alias": "tasks",
                 "Startup Cost": 0.28,
-                "Total Cost": 835.93,
+                "Total Cost": 832.58,
                 "Plan Rows": 401,
                 "Plan Width": 20,
-                "Actual Startup Time": 0.101,
-                "Actual Total Time": 0.898,
+                "Actual Startup Time": 0.144,
+                "Actual Total Time": 0.847,
                 "Actual Rows": 25,
                 "Actual Loops": 1,
                 "Disabled": false,
-                "Index Cond": "(project_id = 'a43c6cec-a99a-44b4-a08f-6b8bc5b90531'::uuid)",
+                "Index Cond": "(project_id = 'e7b870e7-157c-43f4-a0fd-0d94952a07db'::uuid)",
                 "Rows Removed by Index Recheck": 0,
                 "Filter": "private.project_permission(project_id, discipline_id, 'tasks.view'::text)",
                 "Rows Removed by Filter": 0,
@@ -86,9 +86,9 @@
             "Temp Read Blocks": 0,
             "Temp Written Blocks": 0
           },
-          "Planning Time": 0.099,
+          "Planning Time": 0.139,
           "Triggers": [],
-          "Execution Time": 1.002
+          "Execution Time": 0.949
         }
       ]
     }

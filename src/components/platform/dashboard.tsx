@@ -45,15 +45,17 @@ export default async function Dashboard({
           <h1>
             {admin
               ? "Super Admin Control Center"
-              : (homeDiscipline?.data?.name ?? "Discipline assignment pending")}
+              : profile.role === "admin" ? "Admin Project Center" : (homeDiscipline?.data?.name ?? "Discipline assignment pending")}
           </h1>
-          {!admin && (
+          {!admin && profile.role !== "admin" && (
             <p>
               You are viewing{" "}
               {homeDiscipline?.data?.name ?? "your assigned discipline"}. Access
               follows your discipline and project assignments.
             </p>
           )}
+          {profile.role === "admin" && <p>Create projects, manage contributors, assign employees and monitor delivery.</p>}
+          {admin && <p>Manage user accounts, roles, disciplines and web settings. Project changes are handled by Admin.</p>}
           <p>
             {profile.full_name ?? "Welcome"} ·{" "}
             {profile.role.replaceAll("_", " ")} · Results reflect your

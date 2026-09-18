@@ -28,7 +28,7 @@ async function login(name) {
   await page.getByRole("button", { name: "Sign in" }).click();
 }
 try {
-  await login("admin");
+  await login("projectadmin");
   await page.getByRole("heading", { name: "Project tasks", exact: true }).waitFor();
   await page.getByRole("button", { name: /^Coordinate ground floor drawings/ }).waitFor();
   check("Login and paginated project board");
@@ -52,10 +52,11 @@ try {
   await page.getByRole("region", { name: "Task history" }).waitFor();
   check("Kanban and lazy history query");
   await page.getByRole("link", { name: "Consultancy dashboard" }).click();
-  await page.getByRole("heading", { name: "Architecture", exact: true }).waitFor();
+  await page.getByRole("heading", { name: "Admin Project Center", exact: true }).waitFor();
   await page.screenshot({ path: "docs/performance/dashboard-desktop.png", fullPage: true });
   check("Dashboard summary and async cards");
-  for (const [link, heading] of [["My Tasks","Tasks"],["Projects","Projects"],["Notifications","Notifications"],["Employee management","Employee management"],["Roles","Roles"],["Permission catalog","Permission catalog"],["Role permissions","Role permissions"],["Disciplines","Disciplines"],["Permission overrides","Permission overrides"],["Admin overview","Super Admin Control Center"],["Search","Find project information"]]) {
+  assert.equal(await page.getByRole("navigation", {name:"Administration"}).count(),0);
+  for (const [link, heading] of [["Tasks","Tasks"],["Projects","Projects"],["Project team","Project team"],["Notifications","Notifications"],["Search","Find project information"]]) {
     const start = performance.now();
     await page.locator(".platform-sidebar").getByRole("link", { name: link, exact: true }).click();
     await page.getByRole("heading", { name: heading, exact: true, level: 1 }).waitFor();
@@ -87,6 +88,31 @@ try {
   await page.locator(".form-success").waitFor();
   await page.getByRole("cell", { name: createdTask, exact: true }).waitFor();
   check("Task creation via Server Action preserves validation and refreshes register");
+  await page.goto(base+'/portal/projects?new=1');
+  const projectName=`Admin browser project ${Date.now()}`;
+  await page.locator('input[name="name"]').fill(projectName);
+  await page.locator('input[name="project_code"]').fill(`AB-${Date.now()}`);
+  await page.getByRole('checkbox',{name:'Architecture',exact:true}).check();
+  await page.getByRole('button',{name:'Save record',exact:true}).click();
+  await page.locator('.form-success').waitFor();
+  let projectRow=page.getByRole('row').filter({has:page.getByRole('cell',{name:projectName,exact:true})});
+  await projectRow.getByRole('link',{name:'Details',exact:true}).click();
+  await page.getByRole('heading',{name:'Record details',exact:true}).waitFor();
+  await page.locator('input[name="client_name"]').fill('Verified client');
+  await page.getByRole('button',{name:'Save record',exact:true}).click();
+  await page.locator('.form-success').waitFor();
+  await page.getByRole('cell',{name:'Verified client',exact:true}).waitFor();
+  projectRow=page.getByRole('row').filter({has:page.getByRole('cell',{name:projectName,exact:true})});
+  await projectRow.getByRole('link',{name:'Manage team',exact:true}).click();
+  await page.getByRole('link',{name:'+ Assign employee',exact:true}).click();
+  await page.getByRole('heading',{name:'New project team record',exact:true}).waitFor();
+  await page.locator('select[name="user_id"]').selectOption({label:'Test viewer'});
+  await page.locator('select[name="role_key"]').selectOption('viewer');
+  await page.locator('select[name="discipline_id"]').selectOption({label:'Architecture'});
+  await page.getByRole('button',{name:'Save record',exact:true}).click();
+  await page.locator('.form-success').waitFor();
+  await page.getByRole('cell',{name:'Test viewer',exact:true}).waitFor();
+  check('Admin creates and edits projects, retains contributors and assigns a project team');
   await page.setViewportSize({ width: 390, height: 844 });
   for (const route of ["/portal","/portal/tasks","/portal/reports"]) {
     await page.goto(base+route);
@@ -101,6 +127,25 @@ try {
   await page.goto(base+"/portal/tasks");
   await page.getByRole("heading", { name: "Welcome back." }).waitFor();
   check("Logout clears session and protected routes redirect");
+  await login("admin");
+  await page.getByRole("heading", { name: "Super Admin Control Center", exact:true }).waitFor();
+  for (const [link,heading] of [["Employee management","Employee management"],["Roles","Roles"],["Permission catalog","Permission catalog"],["Role permissions","Role permissions"],["Disciplines","Disciplines"],["Permission overrides","Permission overrides"],["Web settings","Web settings"]]) {
+    await page.locator('.platform-sidebar').getByRole('link',{name:link,exact:true}).click();
+    await page.getByRole('heading',{name:heading,exact:true,level:1}).waitFor();
+  }
+  await page.goto(base+'/portal/settings?edit=organization_name');
+  await page.locator('input[name="value"]').fill('Verified studio');
+  await page.getByRole('button',{name:'Save record',exact:true}).click();
+  await page.locator('.form-success').waitFor();
+  await page.getByRole('cell',{name:'Verified studio',exact:true}).waitFor();
+  await page.goto(base+'/portal/projects?edit=20000000-0000-4000-8000-000000000001');
+  assert.equal(await page.getByRole('link',{name:'+ New project',exact:true}).count(),0);
+  assert.equal(await page.getByRole('button',{name:'Save record',exact:true}).count(),0);
+  await page.goto(base+'/portal/tasks');
+  assert.equal(await page.getByRole('link',{name:'+ New task',exact:true}).count(),0);
+  check('Super Admin controls accounts/settings and monitors projects read-only');
+  await page.getByRole('button',{name:'Sign out',exact:true}).click();
+  await page.getByRole('heading',{name:'Welcome back.'}).waitFor();
   await login("manager");
   await page.getByRole("heading", { name: "Architecture", exact: true }).waitFor();
   assert.equal(await page.getByRole("navigation", { name: "Administration" }).count(),0);

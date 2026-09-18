@@ -36,7 +36,7 @@ export default async function RegisterPage({
   const { db, user, profile } = await session();
 
   if (config.admin) {
-    await Promise.all([permission("admin.access"), permission(`${config.permission}.view`)]);
+    await Promise.all([permission("admin.access"), permission(moduleKey === "settings" ? "settings.manage" : `${config.permission}.view`)]);
   }
 
   const project = filters.project || null;
@@ -69,7 +69,7 @@ export default async function RegisterPage({
   const selectedPromise = filters.edit
     ? db.from(config.table).select([...new Set([recordKey, ...config.columns, ...config.fields.map(f => f.key), ...(config.project ? ["project_id"] : []), ...(["tasks", "projects", "profiles", "disciplines"].includes(config.table) ? ["updated_at"] : [])])].join(",")).eq(recordKey, filters.edit).maybeSingle()
     : Promise.resolve(null);
-  const createPromise = config.readOnly ? Promise.resolve(false) : hasPermission(`${config.permission}.create`, config.admin ? null : project, filters.discipline || null);
+  const createPromise = config.readOnly ? Promise.resolve(false) : hasPermission(moduleKey === "settings" ? "settings.manage" : `${config.permission}.create`, config.admin ? null : project, filters.discipline || null);
   const [choices, records, selectedResult, createAllowed] = await Promise.all([
     choicesPromise,
     query.range((page - 1) * 25, page * 25 - 1),
@@ -93,15 +93,14 @@ export default async function RegisterPage({
   let canCreate = false;
   if (config.readOnly) {
     editable = false;
-  } else if (moduleKey === "tasks" && selected && profile.role !== "super_admin") {
-    editable = String(selected.owner ?? "") === user.id;
+  } else if (moduleKey === "tasks" && selected && profile.role !== "admin") {
+    editable = profile.role !== "super_admin" && String(selected.owner ?? "") === user.id && await hasPermission("tasks.update", scopedProject, String(selected.discipline_id));
   } else {
-    editable = selected ? await hasPermission(`${config.permission}.update`, config.admin ? null : scopedProject, String(selected.discipline_id ?? filters.discipline ?? "") || null) : createAllowed;
+    editable = selected ? await hasPermission(moduleKey === "settings" ? "settings.manage" : `${config.permission}.update`, config.admin ? null : scopedProject, String(selected.discipline_id ?? filters.discipline ?? "") || null) : createAllowed;
     canCreate = createAllowed;
   }
 
-  if (moduleKey === "tasks" && profile.role === "super_admin") canCreate = true;
-  if (moduleKey === "tasks" && selected && profile.role !== "super_admin") canCreate = false;
+  if (moduleKey === "tasks" && selected && profile.role !== "admin") canCreate = false;
 
   const contributors = moduleKey === "projects" && selected
     ? await db.from("project_disciplines").select("discipline_id").eq("project_id", String(selected.id)).eq("is_active", true)
@@ -125,7 +124,7 @@ export default async function RegisterPage({
         </div>
         <div className="heading-actions">
           {canCreate && (!config.project || project) && (
-            <Link className="button primary" href={link({ new: "1", edit: "" })}>+ New task</Link>
+            <Link className="button primary" href={link({ new: "1", edit: "" })}>+ {moduleKey === "projects" ? "New project" : moduleKey === "tasks" ? "New task" : moduleKey === "teams" ? "Assign employee" : "New record"}</Link>
           )}
         </div>
       </div>
@@ -162,7 +161,7 @@ export default async function RegisterPage({
             </select>
           </label>
         )}
-        {config.columns.includes("owner") && profile.role === "super_admin" && (
+        {config.columns.includes("owner") && ["admin", "super_admin"].includes(profile.role) && (
           <label>
             Assignee
             <select name="owner" defaultValue={filters.owner ?? ""}>
@@ -197,7 +196,7 @@ export default async function RegisterPage({
           project={scopedProject}
           choices={choices}
           editable={editable || (!selected && canCreate)}
-          superAdmin={profile.role === "super_admin"}
+          projectAdmin={profile.role === "admin"}
           contributorIds={contributors?.data?.map(d => d.discipline_id) ?? []}
         />
       )}
@@ -215,6 +214,7 @@ export default async function RegisterPage({
                     <div className="row-actions">
                       {!config.readOnly && moduleKey !== "role_permissions" && <Link prefetch={false} href={link({ edit: id, new: "", project: config.project ? String(row.project_id) : (project ?? "") })}>Details</Link>}
                       {moduleKey === "projects" && <Link href={`/portal/tasks?project=${id}`}>Open tasks</Link>}
+                      {moduleKey === "projects" && profile.role === "admin" && <Link href={`/portal/teams?project=${id}`}>Manage team</Link>}
                       {moduleKey === "users" && <ActionButton kind="reset" id={id} />}
                       {moduleKey === "notifications" && !row.read_at && <ActionButton kind="read" id={id} />}
                       {config.removable && <ActionButton kind="remove" moduleKey={moduleKey} id={id} extra={String(row.permission_key ?? "")} />}

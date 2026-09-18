@@ -29,6 +29,7 @@ const ids = {
   manager: "10000000-0000-4000-8000-000000000002",
   viewer: "10000000-0000-4000-8000-000000000003",
   disabled: "10000000-0000-4000-8000-000000000004",
+  projectadmin: "10000000-0000-4000-8000-000000000005",
 };
 for (const [name, id] of Object.entries(ids)) {
   await db.query(
@@ -40,7 +41,7 @@ for (const [name, id] of Object.entries(ids)) {
     [
       name === "admin"
         ? "super_admin"
-        : name === "manager"
+        : name === "projectadmin" ? "admin" : name === "manager"
           ? "project_manager"
           : "viewer",
       name !== "disabled",

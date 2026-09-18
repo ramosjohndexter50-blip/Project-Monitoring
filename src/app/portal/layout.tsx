@@ -12,7 +12,7 @@ export default async function PortalLayout({
     db.from("role_permissions").select("permission_key").eq("role_key", profile.role),
   ]);
   const allowed = new Set((grants.data ?? []).map((g) => g.permission_key));
-  const taskHref = profile.role === "super_admin" ? "/portal/tasks" : `/portal/tasks?owner=${profile.id}`;
+  const taskHref = ["super_admin", "admin"].includes(profile.role) ? "/portal/tasks" : `/portal/tasks?owner=${profile.id}`;
 
   return (
     <div className="platform-shell">
@@ -24,8 +24,10 @@ export default async function PortalLayout({
         <nav aria-label="Workspace">
           <h2>WORKSPACE</h2>
           <Link href="/portal">Dashboard</Link>
-          <Link href={taskHref}>My Tasks</Link>
+          <Link href={taskHref}>{["super_admin", "admin"].includes(profile.role) ? "Tasks" : "My Tasks"}</Link>
           <Link href="/portal/projects">Projects</Link>
+          {profile.role === "admin" && <Link href="/portal/teams">Project team</Link>}
+          <Link href="/?view=board">Project board</Link>
           <Link href="/portal/notifications">Notifications</Link>
           <Link href="/portal/search">Search</Link>
         </nav>
@@ -41,6 +43,7 @@ export default async function PortalLayout({
               ["role_permissions", "Role permissions", "roles.view"],
               ["disciplines", "Disciplines", "disciplines.view"],
               ["overrides", "Permission overrides", "roles.view"],
+              ["settings", "Web settings", "settings.manage"],
             ]
               .filter(([, , right]) => allowed.has(right))
               .map(([key, name]) => (

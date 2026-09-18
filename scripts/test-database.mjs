@@ -683,7 +683,7 @@ console.log(
   "PASS invitation-only provisioning, discipline isolation, reserved assignments, 100% review progress, history, contributor revocation and profile-discipline changes",
 );
 // Performance migrations must be tested after the discipline-control upgrade.
-for (const file of readdirSync("supabase/migrations").filter(f => f.endsWith(".sql") && f > "20260917033350_discipline_control.sql").sort()) {
+for (const file of readdirSync("supabase/migrations").filter(f => f.endsWith(".sql") && f > "20260917033350_discipline_control.sql" && !f.endsWith('_split_project_admin.sql')).sort()) {
   await db.exec(readFileSync("supabase/migrations/" + file, "utf8"));
   console.log("PASS migration", file);
 }
@@ -754,4 +754,51 @@ mkdirSync('docs/performance',{recursive:true});
 writeFileSync('docs/performance/database.json',JSON.stringify(benchmark,null,2));
 console.log('PASS bounded pagination, stable sorting, complete aggregates, literal/name search, read-after-write, and RLS isolation for new RPCs');
 console.log('BENCHMARK',JSON.stringify({before:benchmark.before,after:benchmark.after}));
+for (const file of readdirSync('supabase/migrations').filter(f => f.endsWith('_split_project_admin.sql')).sort()) {
+  await db.exec(readFileSync('supabase/migrations/' + file, 'utf8'));
+}
+await as('orgadmin', async () => {
+  for (const key of ['projects.create','projects.update','teams.update','tasks.create','tasks.assign'])
+    assert.equal((await db.query('select public.has_permission($1) allowed',[key])).rows[0].allowed,true,key);
+  for (const key of ['users.create','users.update','users.disable','roles.update','settings.manage','admin.access'])
+    assert.equal((await db.query('select public.has_permission($1) allowed',[key])).rows[0].allowed,false,key);
+  const saved = (await db.query('select public.save_project_contributors(null,$1,$2) id', [JSON.stringify({name:'Admin-owned project',project_code:'ADMIN-001',status:'planning',priority:'medium'}),[d,d2]])).rows[0].id;
+  await db.query('select public.save_project_contributors($1,$2,$3)',[saved,JSON.stringify({name:'Admin project edited'}),[d]]);
+  assert.equal((await db.query('select name from public.projects where id=$1',[saved])).rows[0].name,'Admin project edited');
+  await db.query("insert into public.project_members(project_id,user_id,role_key,discipline_id) values($1,$2,'employee',$3)",[saved,ids.member,d]);
+  const task = (await db.query("insert into public.tasks(project_id,discipline_id,owner,task_name) values($1,$2,$3,'Admin task') returning id",[saved,d,ids.member])).rows[0].id;
+  await db.query("update public.tasks set notes='Admin instructions',status='completed' where id=$1",[task]);
+  assert.equal((await db.query('select percent_complete from public.tasks where id=$1',[task])).rows[0].percent_complete,100);
+  const board=(await db.query('select public.task_board_page($1) b',[saved])).rows[0].b;
+  assert.ok(board.capabilities.editable_tasks.includes(task));
+  assert.ok(board.capabilities.create_disciplines.includes(d));
+  await denied("update public.profiles set role='super_admin' where id=$1",[ids.orgadmin]);
+  await denied("insert into public.system_settings(key,value) values('forbidden','x')");
+  await denied("insert into public.role_permissions values('admin','users.create')");
+  await denied("insert into public.employee_provisioning(email,full_name,role_key,discipline_id,position) values('forbidden@example.invalid','Forbidden','admin',$1,'Admin')",[d]);
+});
+await as('admin',async()=>{
+  for(const key of ['users.create','users.update','settings.manage','admin.access'])
+    assert.equal((await db.query('select public.has_permission($1) allowed',[key])).rows[0].allowed,true,key);
+  for(const key of ['projects.create','projects.update','teams.update','tasks.create','tasks.update'])
+    assert.equal((await db.query('select public.has_permission($1,$2) allowed',[key,p])).rows[0].allowed,false,key);
+  await denied("update public.projects set name='Forbidden' where id=$1",[p]);
+  await denied("update public.tasks set notes='Forbidden' where id=$1",[t]);
+  await denied('select public.set_project_contributors($1,$2)',[p,[d]]);
+  await db.query("update public.system_settings set value='Verified organization' where key='organization_name'");
+  await db.query("insert into public.employee_provisioning(email,full_name,role_key,discipline_id,position) values('newadmin@example.invalid','New Admin','admin',$1,'Administrator')",[d]);
+  const board=(await db.query('select public.task_board_page($1) b',[p])).rows[0].b;
+  assert.equal(board.capabilities.editable_tasks.length,0);
+  assert.equal(board.capabilities.create_disciplines.length,0);
+});
+// Even an accidentally added grant cannot cross the system/project boundary.
+await db.exec("insert into public.role_permissions values('admin','users.update'),('super_admin','projects.update') on conflict do nothing");
+await as('orgadmin',async()=>assert.equal((await db.query("select public.has_permission('users.update') allowed")).rows[0].allowed,false));
+await as('admin',async()=>assert.equal((await db.query("select public.has_permission('projects.update',$1) allowed",[p])).rows[0].allowed,false));
+await db.query('update public.profiles set is_active=false where id=$1',[ids.orgadmin]);
+await as('orgadmin',async()=>{
+  assert.equal((await db.query("select public.has_permission('projects.create') allowed")).rows[0].allowed,false);
+  assert.equal((await db.query('select * from public.projects')).rows.length,0);
+});
+console.log('PASS Admin project/task/team management, Super Admin account/settings management, cross-role denials and disabled Admin isolation');
 await db.close();

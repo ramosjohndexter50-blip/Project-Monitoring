@@ -236,7 +236,7 @@ function WorkflowGuide() {
           [
             "01",
             "Plan & assign",
-            "Super Admin: gumawa ng task, pumili ng discipline at owner, ilagay ang due date at priority.",
+            "Admin: gumawa ng task, pumili ng discipline at owner, ilagay ang due date at priority.",
           ],
           [
             "02",

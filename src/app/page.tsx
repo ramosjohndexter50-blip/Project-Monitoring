@@ -37,8 +37,9 @@ export default async function Home({
         <a href="/auth/signout">Sign out</a>
       </main>
     );
+  if (result.data.role === "super_admin" && (await searchParams).view !== "board") redirect("/admin");
   if (
-    result.data.role !== "super_admin" &&
+    result.data.role !== "admin" &&
     (await searchParams).view !== "board"
   )
     redirect("/portal");

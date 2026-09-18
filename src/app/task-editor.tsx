@@ -6,7 +6,7 @@ import { labels, statuses, type Status, type Task, type Discipline } from "./tas
 
 export default function TaskEditor({
   task,
-  superAdmin,
+  projectAdmin,
   canReview,
   disciplines,
   people,
@@ -16,7 +16,7 @@ export default function TaskEditor({
   onSave,
 }: {
   task: Task | null;
-  superAdmin: boolean;
+  projectAdmin: boolean;
   canReview: boolean;
   disciplines: Discipline[];
   people: Profile[];
@@ -42,7 +42,7 @@ export default function TaskEditor({
   async function submit(event: FormEvent) {
     event.preventDefault();
     if (!draft.task_name.trim() || !editable) return;
-    if (!superAdmin) {
+    if (!projectAdmin) {
       await onSave({
         status: draft.status,
         percent_complete: draft.percent_complete,
@@ -83,7 +83,7 @@ export default function TaskEditor({
             autoFocus
             required
             maxLength={300}
-            readOnly={!superAdmin}
+            readOnly={!projectAdmin}
             value={draft.task_name}
             onChange={(e) => setDraft({ ...draft, task_name: e.target.value })}
           />
@@ -112,7 +112,7 @@ export default function TaskEditor({
         <label>
           Owner
           <select
-            disabled={!superAdmin}
+            disabled={!projectAdmin}
             value={draft.owner}
             onChange={(e) => setDraft({ ...draft, owner: e.target.value })}
           >
@@ -133,7 +133,7 @@ export default function TaskEditor({
           Due date
           <input
             type="date"
-            readOnly={!superAdmin}
+            readOnly={!projectAdmin}
             value={draft.due_date}
             onChange={(e) => setDraft({ ...draft, due_date: e.target.value })}
           />
@@ -141,7 +141,7 @@ export default function TaskEditor({
         <label>
           Priority
           <select
-            disabled={!superAdmin}
+            disabled={!projectAdmin}
             value={draft.priority}
             onChange={(e) =>
               setDraft({
@@ -176,7 +176,7 @@ export default function TaskEditor({
             {statuses
               .filter(
                 (s) =>
-                  superAdmin ||
+                  projectAdmin ||
                   canReview ||
                   ![
                     "approved",
@@ -213,7 +213,7 @@ export default function TaskEditor({
           Notes / blocker
           <textarea
             rows={3}
-            readOnly={!superAdmin}
+            readOnly={!projectAdmin}
             value={draft.notes}
             onChange={(e) => setDraft({ ...draft, notes: e.target.value })}
             placeholder="Scope, next steps, or what is blocking this task"

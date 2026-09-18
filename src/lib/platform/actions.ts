@@ -26,16 +26,12 @@ export async function saveRecord(
     if (config.readOnly) throw new Error("This register is read-only.");
     const context = await session();
     if (
-      [
-        "users",
-        "projects",
-        "teams",
-        "project_disciplines",
-        "disciplines",
-      ].includes(moduleKey) &&
+      ["users", "disciplines", "settings"].includes(moduleKey) &&
       context.profile.role !== "super_admin"
     )
-      throw new Error("Only Super Admin can manage accounts and assignments.");
+      throw new Error("Only Super Admin can manage accounts and web settings.");
+    if (["projects", "teams", "project_disciplines"].includes(moduleKey) && context.profile.role !== "admin")
+      throw new Error("Only Admin can manage projects and project assignments.");
     if (config.admin) await permission("admin.access");
     let project = projectId;
     let existing: Record<string, unknown> | null = null;
@@ -72,7 +68,7 @@ export async function saveRecord(
     for (const field of config.fields) {
       if (
         moduleKey === "tasks" &&
-        context.profile.role !== "super_admin" &&
+        context.profile.role !== "admin" &&
         !["status", "percent_complete", "progress_note"].includes(field.key)
       )
         continue;

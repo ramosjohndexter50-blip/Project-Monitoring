@@ -38,7 +38,7 @@ export function RecordForm({
   project,
   choices,
   editable,
-  superAdmin = false,
+  projectAdmin = false,
   contributorIds = [],
   canReview = false,
 }: {
@@ -47,7 +47,7 @@ export function RecordForm({
   project: string | null;
   choices: Choices;
   editable: boolean;
-  superAdmin?: boolean;
+  projectAdmin?: boolean;
   contributorIds?: string[];
   canReview?: boolean;
 }) {
@@ -75,7 +75,7 @@ export function RecordForm({
     );
   const locked = (field: Field) =>
     moduleKey === "tasks" &&
-    !superAdmin &&
+    !projectAdmin &&
     !["status", "percent_complete", "progress_note"].includes(field.key);
   return (
     <form
@@ -191,7 +191,7 @@ export function RecordForm({
                     (option) =>
                       moduleKey !== "tasks" ||
                       field.key !== "status" ||
-                      superAdmin ||
+                      projectAdmin ||
                       canReview ||
                       ![
                         "approved",
@@ -349,7 +349,7 @@ export function AccountForm({ choices }: { choices: Choices }) {
           const form = new FormData(e.currentTarget);
           if (
             form.get("role") === "super_admin" &&
-            !confirm("Create a Super Admin with full system access?")
+            !confirm("Create a Super Admin who can manage accounts, roles and web settings?")
           )
             return;
           setResult(await createAccount(form));
@@ -360,8 +360,8 @@ export function AccountForm({ choices }: { choices: Choices }) {
     >
       <h2>Create employee account</h2>
       <p>
-        Choose the employee&apos;s role and home discipline, then assign project
-        membership.
+        Choose the account role and home discipline. Admin manages projects;
+        Super Admin manages accounts and web settings. Project membership is assigned by Admin.
       </p>
       <fieldset disabled={busy}>
         <label>
