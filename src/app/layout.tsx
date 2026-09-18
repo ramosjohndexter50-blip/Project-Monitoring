@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Manrope, DM_Mono } from "next/font/google";
 import projectIcon from "../../image/project.png";
 import "./globals.css";
+import "./theme.css";
+import ThemeToggle from "@/components/theme-toggle";
 
 const manrope = Manrope({
   variable: "--font-manrope",
@@ -28,9 +30,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${manrope.variable} ${dmMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <head><script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem('project-monitor-theme');document.documentElement.dataset.theme=t==='dark'||t==='light'?t:matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}catch(e){document.documentElement.dataset.theme='light'}})()` }} /></head>
+      <body className="min-h-full flex flex-col"><ThemeToggle />{children}</body>
     </html>
   );
 }

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import NavLink from "@/components/platform/nav-link";
 import { session, hasPermission } from "@/lib/platform/auth";
 
 export default async function PortalLayout({
@@ -18,24 +19,24 @@ export default async function PortalLayout({
     <div className="platform-shell">
       <aside className="platform-sidebar">
         <Link className="platform-brand" href="/portal">
-          H / <span>Hamdan Studio<small>ARCHITECTURAL CONSULTANCY</small></span>
+          <i className="studio-mark" aria-hidden="true" /><span>Hamdan Studio<small>ARCHITECTURAL CONSULTANCY</small></span>
         </Link>
 
         <nav aria-label="Workspace">
           <h2>WORKSPACE</h2>
-          <Link href="/portal">Dashboard</Link>
-          <Link href={taskHref}>{["super_admin", "admin"].includes(profile.role) ? "Tasks" : "My Tasks"}</Link>
-          <Link href="/portal/projects">Projects</Link>
-          {profile.role === "admin" && <Link href="/portal/teams">Project team</Link>}
-          <Link href="/?view=board">Project board</Link>
-          <Link href="/portal/notifications">Notifications</Link>
-          <Link href="/portal/search">Search</Link>
+          <NavLink href="/portal">Dashboard</NavLink>
+          <NavLink href={taskHref}>{["super_admin", "admin"].includes(profile.role) ? "Tasks" : "My Tasks"}</NavLink>
+          <NavLink href="/portal/projects">Projects</NavLink>
+          {profile.role === "admin" && <NavLink href="/portal/teams">Project team</NavLink>}
+          <NavLink href="/?view=board">Project board</NavLink>
+          <NavLink href="/portal/notifications">Notifications</NavLink>
+          <NavLink href="/portal/search">Search</NavLink>
         </nav>
 
         {access && (
           <nav aria-label="Administration">
             <h2>CONTROL CENTER</h2>
-            <Link href="/admin">Admin overview</Link>
+            <NavLink href="/admin">Admin overview</NavLink>
             {[
               ["users", "Employee management", "users.view"],
               ["roles", "Roles", "roles.view"],
@@ -47,9 +48,9 @@ export default async function PortalLayout({
             ]
               .filter(([, , right]) => allowed.has(right))
               .map(([key, name]) => (
-                <Link key={key} href={`/portal/${key}`}>
+                <NavLink key={key} href={`/portal/${key}`}>
                   {name}
-                </Link>
+                </NavLink>
               ))}
           </nav>
         )}

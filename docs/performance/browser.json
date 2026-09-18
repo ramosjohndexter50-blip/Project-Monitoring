@@ -21,23 +21,23 @@
   "timings": [
     {
       "link": "Tasks",
-      "ms": 802
+      "ms": 322
     },
     {
       "link": "Projects",
-      "ms": 800
+      "ms": 322
     },
     {
       "link": "Project team",
-      "ms": 803
+      "ms": 329
     },
     {
       "link": "Notifications",
-      "ms": 796
+      "ms": 324
     },
     {
       "link": "Search",
-      "ms": 798
+      "ms": 325
     }
   ],
   "errors": [],

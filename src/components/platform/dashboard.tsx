@@ -33,6 +33,8 @@ export default async function Dashboard({
   const results = data.counts.map(count => ({ count }));
   const aggregate = data.organization;
   const disciplineProgress = data.disciplines;
+  const taskCount = disciplineProgress.reduce((sum, d) => sum + Number(d.tasks), 0);
+  const completion = taskCount ? Math.round(disciplineProgress.reduce((sum, d) => sum + Number(d.tasks) * Number(d.progress), 0) / taskCount) : 0;
   return (
     <>
       <div className="platform-heading">
@@ -83,8 +85,32 @@ export default async function Dashboard({
       </section>
       <p className="data-note">
         {aggregate.active_projects} active projects
-        {admin ? ` ? ${aggregate.total_users} total users` : ""}
+        {admin ? ` · ${aggregate.total_users} total users` : ""}
       </p>
+      <section className="overview-grid" aria-label="Project overview">
+        <article className="overview-chart">
+          <div className="overview-title"><h2>Discipline progress</h2><span>Current snapshot</span></div>
+          {disciplineProgress.length ? <div className="discipline-bars">
+            {disciplineProgress.slice(0, 8).map((d, i) => <div className="discipline-bar" key={d.name}>
+              <div className="bar-track"><div className={i % 3 === 1 ? "bar-fill highlighted" : "bar-fill"} style={{ height: `${Math.max(3, Number(d.progress))}%` }} /><strong>{d.progress}%</strong></div>
+              <span title={d.name}>{d.name}</span><small>{d.tasks} tasks</small>
+            </div>)}
+          </div> : <div className="chart-empty"><span>Ready for your next project</span><p>Discipline progress appears here as your team records work.</p><Link href="/portal/projects">Explore projects ↗</Link></div>}
+        </article>
+        <article className="overview-highlight">
+          <div className="overview-title"><h2>Delivery pulse</h2><Link href="/portal/reports" aria-label="Open progress report">↗</Link></div>
+          <div className="pulse-value">{completion}<span>%</span></div>
+          <p>Average recorded task progress</p>
+          <div className="pulse-orbit" aria-hidden="true"><i /><i /><i /></div>
+          <div className="pulse-footer"><span><b>{taskCount}</b> tracked tasks</span><span><b>{aggregate.active_projects}</b> active projects</span></div>
+        </article>
+        <article className="overview-focus">
+          <div className="overview-title"><h2>Your focus</h2><span className="focus-dot" /></div>
+          <strong>{work.data?.length ?? 0}</strong><p>Upcoming tasks assigned to you</p>
+          <Link href={`/portal/tasks?owner=${user.id}`}>View my tasks <span>↗</span></Link>
+          <small>{notifications.data?.length ? `${notifications.data.length} recent unread notifications` : "You're all caught up on notifications"}</small>
+        </article>
+      </section>
       <div className="dashboard-grid">
         {recentProgress && (
           <section className="register-card">
@@ -184,7 +210,7 @@ export default async function Dashboard({
               <div className="summary-row" key={d.name}>
                 <b>{d.name}</b>
                 <span>
-                  {d.progress}% ? {d.tasks} tasks
+                  {d.progress}% · {d.tasks} tasks
                 </span>
                 <progress value={d.progress} max={100} />
               </div>
@@ -192,7 +218,7 @@ export default async function Dashboard({
           ) : (
             <p>No discipline work recorded yet.</p>
           )}
-          <Link href="/portal/reports">Team workload & reports ?</Link>
+          <Link href="/portal/reports">Team workload & reports ↗</Link>
         </section>
         <section className="register-card">
           <h2>My deliverables</h2>
@@ -243,20 +269,16 @@ export default async function Dashboard({
               activity.data?.map((a) => (
                 <p className="summary-row" key={a.id}>
                   <b>
-                    {a.action} ? {a.entity}
+                    {a.action} · {a.entity}
                   </b>
                   <small>{a.created_at}</small>
                 </p>
               ))
             )}
-            <Link href="/portal/audit">Audit & user activity ?</Link>
+            <Link href="/portal/audit">Audit & user activity ↗</Link>
           </section>
         )}
       </div>
-      <p className="data-note">
-        Database queries succeeded. This indicates data connectivity, not a
-        complete infrastructure health check.
-      </p>
     </>
   );
 }

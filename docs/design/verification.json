@@ -1,0 +1,11 @@
+{
+  "passed": true,
+  "checks": [
+    "light/dark dashboard",
+    "persisted theme after reload and navigation",
+    "system preference and explicit override",
+    "390px dashboard/register/board/reset overflow",
+    "no runtime or hydration errors"
+  ],
+  "environment": "Isolated fixture; no live data changes"
+}
