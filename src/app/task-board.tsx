@@ -54,7 +54,7 @@ export default function TaskBoard({
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [sync, setSync] = useState("Connecting...");
-  const [view, setView] = useState("table");
+  const [view, setView] = useState("board");
   const [filter, setFilter] = useState<Status | "all">("all");
   const [disciplineFilter, setDisciplineFilter] = useState("");
   const [search, setSearch] = useState("");
@@ -324,14 +324,14 @@ export default function TaskBoard({
           <p>One task, one owner, a clear next step.</p>
         </div>
         <div className="view-toggle">
-          {["table", "board"].map((item) => (
+          {["board", "table", "gantt"].map((item) => (
             <button
               key={item}
               aria-pressed={view === item}
               className={view === item ? "selected" : ""}
               onClick={() => setView(item)}
             >
-              {item === "table" ? "Main table" : "Kanban board"}
+              {item === "table" ? "List" : item === "board" ? "Board" : "Gantt"}
             </button>
           ))}
         </div>
@@ -506,6 +506,18 @@ export default function TaskBoard({
                 ))}
               </tbody>
             </table>
+          </div>
+        ) : view === "gantt" ? (
+          <div className="gantt-board">
+            <div className="gantt-scale"><span>Task</span><span>Progress timeline</span><span>Due</span></div>
+            {displayed.map((task) => {
+              const pct = Math.max(4, Math.min(100, task.percent_complete || 4));
+              return <div className="gantt-row" key={task.id}>
+                <button className="task-title" onClick={() => setEditor(task)}>{task.task_name}<small>{disciplineName(task.discipline_id)}</small></button>
+                <div className="gantt-track"><i style={{ width: `${pct}%` }} /><span>{task.percent_complete}%</span></div>
+                <time className={overdue(task) ? "overdue" : ""}>{task.due_date ?? "No due date"}</time>
+              </div>;
+            })}
           </div>
         ) : (
           <div className="kanban">
