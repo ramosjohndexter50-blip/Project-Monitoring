@@ -56,9 +56,10 @@ export default function Workspace({ user, initialProfile }: { user: Pick<User, "
     <main className="app-shell">
       <aside className="sidebar">
         <div className="brand">
-          <span className="brand-mark">H</span>
+          <span className="brand-mark" aria-hidden="true">H</span>
           <span>
-            Hamdan Studio<span className="brand-accent">/</span>Manila
+            Hamdan Studio
+            <small>ARCHITECTURAL CONSULTANCY</small>
           </span>
         </div>
         <div className="workspace-label">PROJECT WORKSPACE</div>
