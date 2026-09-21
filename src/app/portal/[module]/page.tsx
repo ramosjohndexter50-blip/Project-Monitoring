@@ -254,7 +254,7 @@ export default async function RegisterPage({
                       <td className="task-main-cell"><Link prefetch={false} href={link({ edit: id, new: "", project: String(row.project_id ?? project ?? "") })}>{String(row.task_name ?? "Untitled task")}</Link><small>{String(row.notes ?? "").slice(0, 72) || "No description added."}</small></td>
                       <td>{recordLabel("discipline_id", row.discipline_id, choices)}</td>
                       <td>{recordLabel("project_id", row.project_id, choices)}</td>
-                      <td><span className="assignee-cell">{assignee !== "—" && <i>{assignee.split(/\s+/).slice(0,2).map((part) => part[0]).join("").toUpperCase()}</i>}{assignee}</span></td>
+                      <td><span className="assignee-cell">{assignee !== "—" && <i>{assignee.split(/\s+/).slice(0,2).map((part: string) => part[0]).join("").toUpperCase()}</i>}{assignee}</span></td>
                       <td><span className={`status-badge ${statusValue}`}>{label(statusValue)}</span></td>
                       <td><span className={`priority-badge ${priorityValue}`}>◆ {label(priorityValue)}</span></td>
                       <td>{String(row.due_date ?? "—")}</td>
