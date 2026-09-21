@@ -21,18 +21,19 @@ export default async function PortalLayout({
     <div className="platform-shell">
       <aside className="platform-sidebar">
         <Link className="platform-brand" href="/portal">
-          <Image className="platform-brand-logo" src={projectLogo} alt="Hamdan Studio Architectural Consultancy" priority />
+          <Image className="platform-brand-logo" src={projectLogo} alt="" priority />
+          <span>Hamdan Studio<small>PROJECT MONITOR</small></span>
         </Link>
 
         <nav aria-label="Workspace">
           <h2>WORKSPACE</h2>
-          <NavLink href="/portal">Dashboard</NavLink>
+          <NavLink href="/portal">Home</NavLink>
           <NavLink href={taskHref}>{["super_admin", "admin"].includes(profile.role) ? "Tasks" : "My Tasks"}</NavLink>
           <NavLink href="/portal/projects">Projects</NavLink>
-          {profile.role === "admin" && <NavLink href="/portal/teams">Project team</NavLink>}
-          <NavLink href="/?view=board">Project board</NavLink>
-          <NavLink href="/portal/notifications">Notifications</NavLink>
-          <NavLink href="/portal/search">Search</NavLink>
+          {profile.role === "admin" && <NavLink href="/portal/teams">Team</NavLink>}
+          <NavLink href="/?view=board">Board</NavLink>
+          <NavLink href="/portal/notifications">Updates</NavLink>
+          <NavLink href="/portal/search">Find</NavLink>
         </nav>
 
         {access && (
@@ -68,8 +69,8 @@ export default async function PortalLayout({
       </aside>
       <main className="platform-main">
         <header className="platform-topbar">
-          <span>PROJECT TASK MONITORING</span>
-          <Link href="/portal/search">Search workspace ↗</Link>
+          <span>PROJECT WORKSPACE</span>
+          <Link href="/portal/search">Find anything ↗</Link>
         </header>
         <div className="platform-body">{children}</div>
       </main>
