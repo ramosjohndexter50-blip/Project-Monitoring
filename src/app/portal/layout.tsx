@@ -1,4 +1,6 @@
 import Link from "next/link";
+import Image from "next/image";
+import projectLogo from "../../../image/project.png";
 import NavLink from "@/components/platform/nav-link";
 import { session, hasPermission } from "@/lib/platform/auth";
 
@@ -19,7 +21,7 @@ export default async function PortalLayout({
     <div className="platform-shell">
       <aside className="platform-sidebar">
         <Link className="platform-brand" href="/portal">
-          <i className="studio-mark" aria-hidden="true" /><span>Hamdan Studio<small>ARCHITECTURAL CONSULTANCY</small></span>
+          <Image className="platform-brand-logo" src={projectLogo} alt="Hamdan Studio Architectural Consultancy" priority />
         </Link>
 
         <nav aria-label="Workspace">
