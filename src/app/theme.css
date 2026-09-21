@@ -463,3 +463,72 @@ html[data-theme="dark"] .register-table td{border-color:#1c293f!important}
 .board-project-context{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:2px 0 14px;padding:12px 14px;border:1px solid #27354d;border-radius:12px;background:#101827}
 .board-project-context span,.board-project-context b{display:block}.board-project-context span{color:#7e8ba1;font-size:8px;text-transform:uppercase;letter-spacing:.8px}.board-project-context b{margin-top:3px;color:#eef3fb;font-size:11px}.board-project-context small{color:#8895a9;font-size:9px}
 @media(max-width:760px){.board-project-picker{min-width:180px}.board-project-context{align-items:flex-start;flex-direction:column}}
+
+
+/* Portal shell is intentionally dark-only so every authenticated page stays consistent. */
+body:has(.platform-shell){background:#090e1b!important;color:#f4f7ff!important}
+body:has(.platform-shell)>.theme-toggle{display:none!important}
+.platform-shell{
+  --pm-bg:#090e1b!important;
+  --pm-panel:#0e1525!important;
+  --pm-panel-2:#121a2c!important;
+  --pm-line:#263149!important;
+  --pm-text:#f4f7ff!important;
+  --pm-muted:#9aa6bb!important;
+  background:radial-gradient(circle at 65% 0,#18223b55,transparent 32%),#090e1b!important;
+  color:#f4f7ff!important;
+  min-height:100vh!important;
+}
+html[data-theme="light"] .platform-shell{
+  --pm-bg:#090e1b!important;
+  --pm-panel:#0e1525!important;
+  --pm-panel-2:#121a2c!important;
+  --pm-line:#263149!important;
+  --pm-text:#f4f7ff!important;
+  --pm-muted:#9aa6bb!important;
+  background:radial-gradient(circle at 65% 0,#18223b55,transparent 32%),#090e1b!important;
+  color:#f4f7ff!important;
+}
+.platform-sidebar{
+  position:fixed!important;
+  inset:0 auto 0 0!important;
+  width:220px!important;
+  max-width:none!important;
+  height:100vh!important;
+  margin:0!important;
+  z-index:50!important;
+  overflow-y:auto!important;
+}
+.platform-main{
+  margin-left:220px!important;
+  width:calc(100% - 220px)!important;
+  min-height:100vh!important;
+  background:#090e1b!important;
+}
+.platform-body{
+  min-height:calc(100vh - 68px)!important;
+  background:#090e1b!important;
+}
+.platform-topbar{
+  left:0!important;
+  right:0!important;
+  width:100%!important;
+  background:#090e1bf2!important;
+}
+.platform-heading h1,
+.platform-heading p,
+.page-crumb,
+.register-card,
+.register-table,
+.task-kpi,
+.board-project-context{
+  color:inherit;
+}
+@media(max-width:1100px){
+  .platform-sidebar{width:190px!important}
+  .platform-main{margin-left:190px!important;width:calc(100% - 190px)!important}
+}
+@media(max-width:840px){
+  .platform-sidebar{width:68px!important;height:100vh!important}
+  .platform-main{margin-left:68px!important;width:calc(100% - 68px)!important}
+}
