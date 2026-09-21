@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import TaskBoard from "@/app/task-board";
-import type { Profile } from "@/app/workspace";
+import type { Profile } from "@/app/task-types";
 import { createClient } from "@/lib/supabase/client";
 
 type Project = {

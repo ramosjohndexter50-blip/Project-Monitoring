@@ -1,34 +1,35 @@
 "use client";
 import { useState } from "react";
 import type { FormEvent } from "react";
-import type { Profile } from "./workspace";
-import { labels, statuses, type Status, type Task, type Discipline } from "./task-types";
+import { labels, statuses, type Status, type Task, type Discipline, type Profile } from "./task-types";
 
 export default function TaskEditor({
   task,
-  projectAdmin,
+  canManageTask,
   canReview,
   disciplines,
   people,
   disciplineId,
   saving,
+  currentUserId,
   onCancel,
   onSave,
 }: {
   task: Task | null;
-  projectAdmin: boolean;
+  canManageTask: boolean;
   canReview: boolean;
   disciplines: Discipline[];
   people: Profile[];
   disciplineId: string | null;
   saving: boolean;
+  currentUserId: string;
   onCancel: () => void;
   onSave: (values: Partial<Task>) => Promise<void>;
 }) {
   const [draft, setDraft] = useState({
     task_name: task?.task_name ?? "",
     discipline_id: task?.discipline_id ?? disciplineId ?? "",
-    owner: task?.owner ?? "",
+    owner: task?.owner ?? (canManageTask ? "" : currentUserId),
     due_date: task?.due_date ?? "",
     priority: task?.priority ?? "medium",
     status: task?.status ?? "not_started",
@@ -42,7 +43,7 @@ export default function TaskEditor({
   async function submit(event: FormEvent) {
     event.preventDefault();
     if (!draft.task_name.trim() || !editable) return;
-    if (!projectAdmin && task) {
+    if (!canManageTask && task) {
       await onSave({
         status: draft.status,
         percent_complete: draft.percent_complete,
@@ -53,7 +54,7 @@ export default function TaskEditor({
     await onSave({
       ...draft,
       task_name: draft.task_name.trim(),
-      owner: draft.owner || null,
+      owner: canManageTask ? (draft.owner || null) : currentUserId,
       due_date: draft.due_date || null,
       percent_complete:
         draft.status === "completed"
@@ -83,7 +84,7 @@ export default function TaskEditor({
             autoFocus
             required
             maxLength={300}
-            readOnly={!projectAdmin && !!task}
+            readOnly={!canManageTask && !!task}
             value={draft.task_name}
             onChange={(e) => setDraft({ ...draft, task_name: e.target.value })}
           />
@@ -112,11 +113,11 @@ export default function TaskEditor({
         <label>
           Owner
           <select
-            disabled={!projectAdmin && !!task}
+            disabled={!canManageTask}
             value={draft.owner}
             onChange={(e) => setDraft({ ...draft, owner: e.target.value })}
           >
-            <option value="">Unassigned</option>
+            {canManageTask && <option value="">Unassigned</option>}
             {draft.owner && !people.some((p) => p.id === draft.owner) && (
               <option value={draft.owner}>Assigned team member</option>
             )}
@@ -133,7 +134,7 @@ export default function TaskEditor({
           Due date
           <input
             type="date"
-            readOnly={!projectAdmin && !!task}
+            readOnly={!canManageTask && !!task}
             value={draft.due_date}
             onChange={(e) => setDraft({ ...draft, due_date: e.target.value })}
           />
@@ -141,7 +142,7 @@ export default function TaskEditor({
         <label>
           Priority
           <select
-            disabled={!projectAdmin && !!task}
+            disabled={!canManageTask && !!task}
             value={draft.priority}
             onChange={(e) =>
               setDraft({
@@ -176,7 +177,7 @@ export default function TaskEditor({
             {statuses
               .filter(
                 (s) =>
-                  projectAdmin ||
+                  canManageTask ||
                   canReview ||
                   ![
                     "approved",
@@ -213,7 +214,7 @@ export default function TaskEditor({
           Notes / blocker
           <textarea
             rows={3}
-            readOnly={!projectAdmin && !!task}
+            readOnly={!canManageTask && !!task}
             value={draft.notes}
             onChange={(e) => setDraft({ ...draft, notes: e.target.value })}
             placeholder="Scope, next steps, or what is blocking this task"
@@ -231,8 +232,9 @@ export default function TaskEditor({
         />
       </label>
       <p className="editor-hint">
-        Owners listed here follow your current profile access. Contact an admin
-        to assign another team member.
+        {canManageTask
+          ? "Choose an owner from the people available in this project and discipline."
+          : "New tasks are assigned to you automatically. An admin or project lead can reassign them."}
       </p>
       {editable ? (
         <button

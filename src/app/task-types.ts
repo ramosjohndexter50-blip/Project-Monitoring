@@ -1,3 +1,10 @@
+export type Profile = {
+  id: string;
+  full_name: string | null;
+  role: string;
+  discipline_id: string | null;
+};
+
 export type Status =
   | "not_started"
   | "in_progress"

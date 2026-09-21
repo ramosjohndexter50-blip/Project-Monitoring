@@ -1,36 +1,32 @@
+import { redirect } from "next/navigation";
 import { serverClient } from "@/lib/supabase/server";
 import LoginScreen from "./login-screen";
-import Workspace from "./workspace";
-import { redirect } from "next/navigation";
-export default async function Home({
-  searchParams,
-}: {
-  searchParams: Promise<{ view?: string }>;
-}) {
+
+export default async function Home() {
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return <LoginScreen />;
+
   const db = await serverClient();
-  const {
-    data: { user },
-  } = await db.auth.getUser();
+  const { data: { user } } = await db.auth.getUser();
   if (!user) return <LoginScreen />;
   if (user.app_metadata.must_change_password === true) redirect("/auth/reset");
-  const result = await db
+
+  const profile = await db
     .from("profiles")
-    .select("id, full_name, role, is_active, discipline_id")
+    .select("is_active")
     .eq("id", user.id)
     .single();
-  if (result.error || !result.data)
+
+  if (profile.error || !profile.data) {
     return (
       <main className="access-message">
         <h1>Workspace setup required</h1>
-        <p>
-          The platform database migration must be installed before this version
-          can load. No project records were changed by this page.
-        </p>
+        <p>The platform database must be ready before the workspace can load.</p>
         <a href="/auth/signout">Sign out</a>
       </main>
     );
-  if (!result.data.is_active)
+  }
+
+  if (!profile.data.is_active) {
     return (
       <main className="access-message">
         <h1>Account inactive</h1>
@@ -38,11 +34,7 @@ export default async function Home({
         <a href="/auth/signout">Sign out</a>
       </main>
     );
-  if (result.data.role === "super_admin" && (await searchParams).view !== "board") redirect("/admin");
-  if (
-    result.data.role !== "admin" &&
-    (await searchParams).view !== "board"
-  )
-    redirect("/portal");
-  return <Workspace user={{ id: user.id, email: user.email }} initialProfile={result.data} />;
+  }
+
+  redirect("/portal");
 }

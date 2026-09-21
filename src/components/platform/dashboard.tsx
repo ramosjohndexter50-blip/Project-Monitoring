@@ -53,6 +53,8 @@ export default async function Dashboard({
       )
     : 0;
 
+  const canCreateTask = !admin && ["admin","employee","team_member","discipline_lead","project_architect","project_manager"].includes(profile.role);
+
   const kpis = [
     { label: "Projects", value: results[0]?.count ?? 0, icon: "▦", tone: "blue", hint: `${aggregate.active_projects} active` },
     { label: "Overdue", value: results[1]?.count ?? 0, icon: "!", tone: "red", hint: "Needs attention" },
@@ -78,9 +80,10 @@ export default async function Dashboard({
           </p>
         </div>
         <div className="heading-actions">
-          <Link className="button primary" href="/portal/projects">
-            View Projects
-          </Link>
+          {canCreateTask && (
+            <Link className="button primary" href="/portal/board">+ Add Task</Link>
+          )}
+          <Link className="button secondary" href="/portal/projects">Projects</Link>
         </div>
       </div>
 

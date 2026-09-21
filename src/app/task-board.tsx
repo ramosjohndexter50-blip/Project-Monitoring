@@ -7,7 +7,7 @@ import LoadingSkeleton from "@/components/platform/loading-skeleton";
 import { labels, statuses, type Status, type Task, type Discipline } from "./task-types";
 const TaskEditor = dynamic(() => import("./task-editor"), { loading: () => <p role="status">Loading task details…</p> });
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Profile } from "./workspace";
+import type { Profile } from "./task-types";
 
 type History = {
   id: string;
@@ -409,7 +409,7 @@ export default function TaskBoard({
                 ? capabilities.create_disciplines.includes(d.id)
                 : canEdit(editor) && d.id === editor.discipline_id,
             )}
-            projectAdmin={role === "admin"}
+            canManageTask={["admin", "discipline_lead", "project_manager", "project_architect"].includes(role)}
             canReview={
               editor !== "new" &&
               !!capabilities.review_disciplines?.includes(editor.discipline_id)
@@ -417,6 +417,7 @@ export default function TaskBoard({
             people={people}
             disciplineId={disciplineId}
             saving={saving}
+            currentUserId={userId}
             onCancel={() => setEditor(null)}
             onSave={async (values) => {
               if (await persist(editor === "new" ? null : editor, values))

@@ -3,7 +3,6 @@ import { Manrope, DM_Mono } from "next/font/google";
 import projectIcon from "../../image/project.png";
 import "./globals.css";
 import "./theme.css";
-import ThemeToggle from "@/components/theme-toggle";
 
 const manrope = Manrope({
   variable: "--font-manrope",
@@ -33,8 +32,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       suppressHydrationWarning
       className={`${manrope.variable} ${dmMono.variable} h-full antialiased`}
     >
-      <head><script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem('project-monitor-theme');document.documentElement.dataset.theme=t==='dark'||t==='light'?t:'dark'}catch(e){document.documentElement.dataset.theme='light'}})()` }} /></head>
-      <body className="min-h-full flex flex-col"><ThemeToggle />{children}</body>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('project-monitor-theme');var s=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t==='dark'||t==='light'?t:s}catch(e){document.documentElement.dataset.theme='dark'}})()`,
+          }}
+        />
+      </head>
+      <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
 }
