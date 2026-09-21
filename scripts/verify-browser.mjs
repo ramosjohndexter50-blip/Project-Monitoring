@@ -46,7 +46,7 @@ try {
   await page.getByRole("textbox", { name: "Search tasks" }).fill("ground");
   await page.getByRole("button", { name: "Coordinate ground floor drawings verified", exact: true }).waitFor();
   check("Debounced search and complete empty/result states");
-  await page.getByRole("button", { name: "Kanban board", exact: true }).click();
+  await page.getByRole("button", { name: "Board", exact: true }).click();
   await page.locator(".kanban-card").first().waitFor();
   await page.getByRole("button", { name: "History", exact: true }).click();
   await page.getByRole("region", { name: "Task history" }).waitFor();
