@@ -88,9 +88,10 @@ export default function Workspace({ user, initialProfile }: { user: Pick<User, "
           <Link className="nav-item" href="/portal/projects">
             <span className="nav-icon">+</span>Project registers
           </Link>
-          <Link className="nav-item" href="/portal/notifications">
-            <span className="nav-icon">+</span>Notifications
-          </Link>
+          <Link className="nav-item" href="/portal/rfis"><span className="nav-icon">?</span>RFIs</Link>
+          <Link className="nav-item" href="/portal/reports"><span className="nav-icon">⌁</span>Gantt & reports</Link>
+          <Link className="nav-item" href="/portal/documents"><span className="nav-icon">□</span>Documents</Link>
+          <Link className="nav-item" href="/portal/notifications"><span className="nav-icon">•</span>Notifications</Link>
           {profile?.role === "super_admin" && (
             <Link className="nav-item" href="/admin">
               <span className="nav-icon">+</span>Control center
@@ -138,11 +139,11 @@ export default function Workspace({ user, initialProfile }: { user: Pick<User, "
       <section className="content">
         <header className="topbar">
           <div className="breadcrumbs">
-            <span>Workspace</span>
+            <span>My Project</span>
             <b>/</b>
             <strong>{project?.name ?? "Projects"}</strong>
           </div>
-          <span className="eyebrow">TEAM OPERATIONS</span>
+          <div className="workspace-search">⌕ Search workspace <kbd>⌘K</kbd></div>
         </header>
         <div className="mobile-workspace">
           <select
@@ -173,23 +174,18 @@ export default function Workspace({ user, initialProfile }: { user: Pick<User, "
           </button>
         </div>
         <div className="page-body">
-          <div className="page-heading">
+          <section className="workspace-hero">
             <div>
-              <div className="eyebrow">PLAN · ASSIGN · TRACK · COMPLETE</div>
-              <h1>
-                {section === "workflow"
-                  ? "A clear path to done."
-                  : section === "mine"
-                    ? "My work"
-                    : (project?.name ?? "Your project workspace")}
-              </h1>
-              <p>
-                {section === "mine"
-                  ? "Tasks assigned to you across the selected project."
-                  : "Keep every discipline moving in the same direction."}
-              </p>
+              <div className="eyebrow">PROJECT WORKSPACE · {profile.role.replaceAll("_", " ")}</div>
+              <h1>{section === "workflow" ? "A clear path to done." : `Welcome, ${name.split(" ")[0]}`}</h1>
+              <p>{section === "mine" ? "Your assigned work in this project." : "What do you plan to deliver today?"}</p>
             </div>
-          </div>
+            <div className="hero-project">
+              <span>Current project</span>
+              <strong>{project?.name ?? "Select a project"}</strong>
+              <small>{project?.target_date ? `Target ${project.target_date}` : "Project delivery workspace"}</small>
+            </div>
+          </section>
           {error && (
             <p className="task-message" role="alert">
               {error}
