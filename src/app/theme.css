@@ -401,3 +401,54 @@ html[data-theme="dark"] .register-table td{border-color:#1c293f!important}
   html[data-theme="dark"] .page-body{padding:18px 12px 30px!important}
   html[data-theme="dark"] .workspace-hero{padding:22px!important}
 }
+
+
+/* Overview uses the same dense visual system as My Tasks. */
+.dashboard-heading{margin-bottom:12px!important}
+.dashboard-kpis{margin-top:6px!important}
+.dashboard-kpis .task-kpi{min-height:112px}
+.dashboard-kpis .task-kpi small{display:block;margin-top:9px;color:#7f8da3;font-size:8px}
+.overview-main-grid{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(300px,.75fr);gap:14px;margin:0 0 14px}
+.overview-progress-card,.overview-work-card{padding:18px!important}
+.overview-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:16px}
+.overview-card-head.compact{margin-bottom:12px}
+.overview-card-head h2{margin:0!important;color:#f3f6fd!important;font-size:14px!important;font-weight:750!important;letter-spacing:-.2px!important}
+.overview-card-head p{margin:4px 0 0!important;color:#8290a6!important;font-size:8px!important}
+.overview-card-head>a{color:#a890ff!important;font-size:9px!important;text-decoration:none}
+.overview-completion{font-size:28px;color:#fff;letter-spacing:-1px}
+.overview-progress-list{display:grid;gap:13px}
+.overview-progress-row{display:grid;grid-template-columns:minmax(160px,1fr) 38px minmax(120px,.9fr);gap:12px;align-items:center}
+.overview-progress-row>div b{display:block;color:#eaf0fb;font-size:10px}
+.overview-progress-row>div small{display:block;margin-top:2px;color:#748197;font-size:8px}
+.overview-progress-row>span{color:#c9d2e1;font-size:9px;text-align:right}
+.overview-progress-row>i{display:block;height:7px;background:#202b40;border-radius:8px;overflow:hidden}
+.overview-progress-row>i em{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#7252f4,#a17cff)}
+.overview-empty{padding:26px 0;color:#8491a6}.overview-empty b{color:#dfe6f2}.overview-empty p{margin-top:5px;font-size:9px}
+.overview-work-card{display:flex;flex-direction:column}
+.overview-mini-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.overview-mini-grid>div{padding:13px 11px;border:1px solid #25334c;border-radius:10px;background:#0b1321}
+.overview-mini-grid span{display:block;color:#7f8ba0;font-size:8px}
+.overview-mini-grid strong{display:block;margin-top:5px;color:#f6f8fd;font-size:21px;letter-spacing:-.5px}
+.overview-primary-link{display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding:11px 13px;border-radius:9px;background:linear-gradient(135deg,#7a59ff,#5f3ee8);color:#fff!important;text-decoration:none;font-size:9px;font-weight:700}
+.overview-footnote{margin:10px 2px 0!important;color:#7f8ba0!important;font-size:8px!important}
+.dashboard-grid-consistent{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:14px!important}
+.dashboard-grid-consistent .register-card{padding:17px!important;min-width:0}
+.dashboard-row{display:grid!important;grid-template-columns:minmax(0,1fr) auto auto auto;gap:10px!important;align-items:center!important;padding:10px 0!important;border-bottom:1px solid #1e2b41!important;text-decoration:none!important}
+.dashboard-row:last-child{border-bottom:0!important}
+.dashboard-row b{min-width:0;color:#e9eef8!important;font-size:9px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dashboard-row>span:not(.status-badge){color:#9aa6b9!important;font-size:8px!important}
+.dashboard-row>strong{color:#d9e0ed!important;font-size:9px!important}
+.dashboard-row small{color:#6f7d92!important;font-size:8px!important;white-space:nowrap}
+@media(max-width:1180px){
+  .overview-main-grid{grid-template-columns:1fr}
+  .overview-work-card{min-height:0}
+}
+@media(max-width:860px){
+  .dashboard-grid-consistent{grid-template-columns:1fr!important}
+  .overview-progress-row{grid-template-columns:minmax(130px,1fr) 36px minmax(90px,.8fr)}
+}
+@media(max-width:560px){
+  .overview-mini-grid{grid-template-columns:1fr}
+  .overview-progress-row{grid-template-columns:1fr 36px}
+  .overview-progress-row>i{grid-column:1/-1}
+}

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { session } from "@/lib/platform/auth";
+
 export default async function Dashboard({
   admin = false,
 }: {
@@ -39,119 +40,156 @@ export default async function Dashboard({
   const projects = home.projects;
   const notifications = home.notifications;
   const activity = admin ? home.activity : null;
-  const results = data.counts.map(count => ({ count }));
+  const results = data.counts.map((count) => ({ count }));
   const aggregate = data.organization;
   const disciplineProgress = data.disciplines;
   const taskCount = disciplineProgress.reduce((sum, d) => sum + Number(d.tasks), 0);
-  const completion = taskCount ? Math.round(disciplineProgress.reduce((sum, d) => sum + Number(d.tasks) * Number(d.progress), 0) / taskCount) : 0;
+  const completion = taskCount
+    ? Math.round(
+        disciplineProgress.reduce(
+          (sum, d) => sum + Number(d.tasks) * Number(d.progress),
+          0,
+        ) / taskCount,
+      )
+    : 0;
+
+  const kpis = [
+    { label: "Projects", value: results[0]?.count ?? 0, icon: "▦", tone: "blue", hint: `${aggregate.active_projects} active` },
+    { label: "Overdue", value: results[1]?.count ?? 0, icon: "!", tone: "red", hint: "Needs attention" },
+    { label: "Open RFIs", value: results[2]?.count ?? 0, icon: "?", tone: "violet", hint: "Waiting for response" },
+    { label: "Critical", value: results[3]?.count ?? 0, icon: "◆", tone: "amber", hint: "High priority" },
+    { label: "For Approval", value: results[4]?.count ?? 0, icon: "✓", tone: "green", hint: "Ready for review" },
+  ];
+
   return (
     <>
-      <div className="platform-heading">
+      <div className="platform-heading dashboard-heading">
         <div>
-          <p className="eyebrow">
-            {admin
-              ? "ADMINISTRATION / CONTROL CENTER"
-              : "YOUR WORKSPACE"}
+          <p className="page-crumb">
+            {admin ? "Control Center" : "Project Monitor"} <span>/</span> Overview
           </p>
-          <h1>
-            {admin
-              ? "System settings"
-              : profile.role === "admin" ? "Project overview" : "My work"}
-          </h1>
-          {!admin && profile.role !== "admin" && (
-            <p>
-              You are viewing{" "}
-              {home.home_discipline ?? "your assigned discipline"}. Access
-              follows your discipline and project assignments.
-            </p>
-          )}
-          {profile.role === "admin" && <p>See project health, assign work, and keep the team moving.</p>}
-          {admin && <p>Manage people, access, disciplines, and system settings.</p>}
+          <h1>{admin ? "Control center" : "Overview"}</h1>
           <p>
-            {profile.full_name ?? "Welcome"} ·{" "}
-            {profile.role.replaceAll("_", " ")} · Results reflect your
-            authorized projects.
+            {admin
+              ? "Manage people, access, disciplines, and system settings from one place."
+              : profile.role === "admin"
+                ? "See project health, assign work, and keep the team moving."
+                : `Your projects, priorities, and progress in ${home.home_discipline ?? "your assigned discipline"}.`}
           </p>
         </div>
-        <Link className="button primary" href="/portal/projects">
-          View projects
-        </Link>
+        <div className="heading-actions">
+          <Link className="button primary" href="/portal/projects">
+            View Projects
+          </Link>
+        </div>
       </div>
-      <section className="metric-grid">
-        {[
-          "Projects",
-          "Overdue",
-          "Open RFIs",
-          "Critical",
-          "For approval",
-          admin ? "Active people" : "Team members",
-        ].map((label, i) => (
-          <article key={label}>
-            <span>{label}</span>
-            <strong>{results[i].count ?? 0}</strong>
+
+      <section className="task-kpi-grid dashboard-kpis" aria-label="Workspace summary">
+        {kpis.map((item) => (
+          <article className={`task-kpi ${item.tone}`} key={item.label}>
+            <span className="task-kpi-icon">{item.icon}</span>
+            <div>
+              <strong>{item.value}</strong>
+              <span>{item.label}</span>
+              <small>{item.hint}</small>
+            </div>
+            <i className="task-kpi-spark" aria-hidden="true" />
           </article>
         ))}
       </section>
-      <p className="data-note">
-        {aggregate.active_projects} active projects
-        {admin ? ` · ${aggregate.total_users} total users` : ""}
-      </p>
-      <section className="overview-grid" aria-label="Project overview">
-        <article className="overview-chart">
-          <div className="overview-title"><h2>Discipline progress</h2><span>Current snapshot</span></div>
-          {disciplineProgress.length ? <div className="discipline-bars">
-            {disciplineProgress.slice(0, 8).map((d, i) => <div className="discipline-bar" key={d.name}>
-              <div className="bar-track"><div className={i % 3 === 1 ? "bar-fill highlighted" : "bar-fill"} style={{ height: `${Math.max(3, Number(d.progress))}%` }} /><strong>{d.progress}%</strong></div>
-              <span title={d.name}>{d.name}</span><small>{d.tasks} tasks</small>
-            </div>)}
-          </div> : <div className="chart-empty"><span>Ready for your next project</span><p>Discipline progress appears here as your team records work.</p><Link href="/portal/projects">Explore projects ↗</Link></div>}
+
+      <section className="overview-main-grid">
+        <article className="register-card overview-progress-card">
+          <div className="overview-card-head">
+            <div>
+              <h2>Project progress</h2>
+              <p>Current progress across your visible disciplines.</p>
+            </div>
+            <strong className="overview-completion">{completion}%</strong>
+          </div>
+
+          {disciplineProgress.length ? (
+            <div className="overview-progress-list">
+              {disciplineProgress.slice(0, 8).map((discipline) => {
+                const progress = Math.max(0, Math.min(100, Number(discipline.progress)));
+                return (
+                  <div className="overview-progress-row" key={discipline.name}>
+                    <div>
+                      <b>{discipline.name}</b>
+                      <small>{discipline.tasks} tasks</small>
+                    </div>
+                    <span>{progress}%</span>
+                    <i><em style={{ width: `${progress}%` }} /></i>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="overview-empty">
+              <b>No progress data yet</b>
+              <p>Progress appears here as tasks are created and updated.</p>
+            </div>
+          )}
         </article>
-        <article className="overview-highlight">
-          <div className="overview-title"><h2>Overall progress</h2><Link href="/portal/reports" aria-label="Open progress report">↗</Link></div>
-          <div className="pulse-value">{completion}<span>%</span></div>
-          <p>Across your visible tasks</p>
-          <div className="pulse-orbit" aria-hidden="true"><i /><i /><i /></div>
-          <div className="pulse-footer"><span><b>{taskCount}</b> tracked tasks</span><span><b>{aggregate.active_projects}</b> active projects</span></div>
-        </article>
-        <article className="overview-focus">
-          <div className="overview-title"><h2>My tasks</h2><span className="focus-dot" /></div>
-          <strong>{work.length ?? 0}</strong><p>Open tasks assigned to you</p>
-          <Link href={`/portal/tasks?owner=${user.id}`}>Open my tasks <span>↗</span></Link>
-          <small>{notifications.length ? `${notifications.length} recent unread notifications` : "You're all caught up on notifications"}</small>
+
+        <article className="register-card overview-work-card">
+          <div className="overview-card-head">
+            <div>
+              <h2>{admin ? "Workspace" : "My work"}</h2>
+              <p>{admin ? "Quick system snapshot." : "What needs your attention now."}</p>
+            </div>
+          </div>
+          <div className="overview-mini-grid">
+            <div><span>Open tasks</span><strong>{work.length}</strong></div>
+            <div><span>{admin ? "Active people" : "Team members"}</span><strong>{results[5]?.count ?? 0}</strong></div>
+            <div><span>Updates</span><strong>{notifications.length}</strong></div>
+          </div>
+          {!admin && (
+            <Link className="overview-primary-link" href={`/portal/tasks?owner=${user.id}`}>
+              Open My Tasks <span>→</span>
+            </Link>
+          )}
+          <p className="overview-footnote">
+            {notifications.length
+              ? `${notifications.length} recent unread notification${notifications.length === 1 ? "" : "s"}`
+              : "You're all caught up."}
+          </p>
         </article>
       </section>
-      <div className="dashboard-grid">
+
+      <div className="dashboard-grid dashboard-grid-consistent">
         {recentProgress && (
           <section className="register-card">
-            <h2>Recent changes</h2>
+            <div className="overview-card-head compact">
+              <div>
+                <h2>Recent changes</h2>
+                <p>Latest task updates in your workspace.</p>
+              </div>
+            </div>
             {recentProgress.length ? (
               recentProgress.map((h) => (
-                <p key={h.id}>
-                  <Link href={`/portal/tasks?edit=${h.task_id}`}>
-                    {h.field_changed.replaceAll("_", " ")}
-                  </Link>
-                  : {h.old_value ?? "Empty"} → {h.new_value ?? "Empty"}
-                  <small> · {new Date(h.changed_at).toLocaleString()}</small>
-                </p>
+                <Link className="summary-row dashboard-row" key={h.id} href={`/portal/tasks?edit=${h.task_id}`}>
+                  <b>{h.field_changed.replaceAll("_", " ")}</b>
+                  <span>{h.old_value ?? "Empty"} → {h.new_value ?? "Empty"}</span>
+                  <small>{new Date(h.changed_at).toLocaleString()}</small>
+                </Link>
               ))
             ) : (
               <p>No recent progress changes.</p>
             )}
           </section>
         )}
+
         <section className="register-card">
-          <h2>Projects</h2>
+          <div className="overview-card-head compact">
+            <div><h2>Projects</h2><p>Your accessible project list.</p></div>
+            <Link href="/portal/projects">View all →</Link>
+          </div>
           {projects.length ? (
             projects.map((p) => (
-              <Link
-                className="summary-row"
-                key={p.id}
-                href={`/portal/projects?edit=${p.id}`}
-              >
+              <Link className="summary-row dashboard-row" key={p.id} href={`/portal/projects?edit=${p.id}`}>
                 <b>{p.name}</b>
-                <span className="status-badge">
-                  {p.status.replaceAll("_", " ")}
-                </span>
+                <span className={`status-badge ${p.status}`}>{p.status.replaceAll("_", " ")}</span>
                 <small>Target {p.target_date ?? "Not set"}</small>
               </Link>
             ))
@@ -159,38 +197,32 @@ export default async function Dashboard({
             <p>No projects assigned yet.</p>
           )}
         </section>
+
         <section className="register-card">
-          <h2>Upcoming milestones</h2>
+          <div className="overview-card-head compact">
+            <div><h2>Upcoming milestones</h2><p>Next project checkpoints.</p></div>
+          </div>
           {milestones.length ? (
             milestones.map((m) => (
-              <Link
-                className="summary-row"
-                key={m.id}
-                href={`/portal/milestones?project=${m.project_id}&edit=${m.id}`}
-              >
+              <Link className="summary-row dashboard-row" key={m.id} href={`/portal/milestones?project=${m.project_id}&edit=${m.id}`}>
                 <b>{m.name}</b>
-                <span
-                  className={m.due_date && m.due_date < today ? "overdue" : ""}
-                >
-                  {m.due_date ?? "No target date"}
-                </span>
+                <span className={m.due_date && m.due_date < today ? "overdue" : ""}>{m.due_date ?? "No target date"}</span>
               </Link>
             ))
           ) : (
             <p>No upcoming milestones.</p>
           )}
         </section>
+
         <section className="register-card">
-          <h2>What I need to do</h2>
+          <div className="overview-card-head compact">
+            <div><h2>What I need to do</h2><p>Your current assigned tasks.</p></div>
+          </div>
           {work.length ? (
             work.map((t) => (
-              <Link
-                className="summary-row"
-                key={t.id}
-                href={`/portal/tasks?project=${t.project_id}&edit=${t.id}`}
-              >
+              <Link className="summary-row dashboard-row" key={t.id} href={`/portal/tasks?project=${t.project_id}&edit=${t.id}`}>
                 <b>{t.task_name}</b>
-                <span>{t.status.replaceAll("_", " ")}</span>
+                <span className={`status-badge ${t.status}`}>{t.status.replaceAll("_", " ")}</span>
                 <strong>{t.percent_complete}%</strong>
                 <small>{t.due_date ?? "No due date"}</small>
               </Link>
@@ -199,47 +231,33 @@ export default async function Dashboard({
             <p>No open tasks assigned to you.</p>
           )}
         </section>
+
         <section className="register-card">
-          <h2>Updates</h2>
+          <div className="overview-card-head compact">
+            <div><h2>Updates</h2><p>Recent notifications.</p></div>
+            <Link href="/portal/notifications">View all →</Link>
+          </div>
           {notifications.length ? (
             notifications.map((n) => (
-              <p className="summary-row" key={n.id}>
-                {n.title}
+              <p className="summary-row dashboard-row" key={n.id}>
+                <b>{n.title}</b>
+                <small>{new Date(n.created_at).toLocaleString()}</small>
               </p>
             ))
           ) : (
             <p>You are up to date.</p>
           )}
-          <Link href="/portal/notifications">See all updates →</Link>
         </section>
+
         <section className="register-card">
-          <h2>Discipline progress</h2>
-          {disciplineProgress.length ? (
-            disciplineProgress.map((d) => (
-              <div className="summary-row" key={d.name}>
-                <b>{d.name}</b>
-                <span>
-                  {d.progress}% · {d.tasks} tasks
-                </span>
-                <progress value={d.progress} max={100} />
-              </div>
-            ))
-          ) : (
-            <p>No discipline work recorded yet.</p>
-          )}
-          <Link href="/portal/reports">View reports ↗</Link>
-        </section>
-        <section className="register-card">
-          <h2>My deliverables</h2>
+          <div className="overview-card-head compact">
+            <div><h2>My deliverables</h2><p>Deliverables currently visible to you.</p></div>
+          </div>
           {mine.length ? (
             mine.map((d) => (
-              <Link
-                className="summary-row"
-                key={d.id}
-                href={`/portal/deliverables?project=${d.project_id}&edit=${d.id}`}
-              >
+              <Link className="summary-row dashboard-row" key={d.id} href={`/portal/deliverables?project=${d.project_id}&edit=${d.id}`}>
                 <b>{d.title}</b>
-                <span>{d.status.replaceAll("_", " ")}</span>
+                <span className={`status-badge ${d.status}`}>{d.status.replaceAll("_", " ")}</span>
                 <small>{d.due_date ?? "No due date"}</small>
               </Link>
             ))
@@ -247,34 +265,37 @@ export default async function Dashboard({
             <p>No open deliverables assigned to you.</p>
           )}
         </section>
+
         {admin && (
           <>
             <section className="register-card">
-              <h2>Projects by phase / status</h2>
+              <div className="overview-card-head compact"><div><h2>Projects by status</h2><p>Current portfolio distribution.</p></div></div>
               {aggregate.project_status.map((s) => (
-                <p className="summary-row" key={s.status}>
-                  <b>{s.status.replaceAll("_", " ")}</b>
-                  <span>{s.count}</span>
+                <p className="summary-row dashboard-row" key={s.status}>
+                  <b>{s.status.replaceAll("_", " ")}</b><span>{s.count}</span>
                 </p>
               ))}
             </section>
             <section className="register-card">
-              <h2>Projects by discipline</h2>
+              <div className="overview-card-head compact"><div><h2>Projects by discipline</h2><p>Discipline coverage.</p></div></div>
               {aggregate.discipline_projects.map((d) => (
-                <p className="summary-row" key={d.name}>
-                  <b>{d.name}</b>
-                  <span>{d.count}</span>
+                <p className="summary-row dashboard-row" key={d.name}>
+                  <b>{d.name}</b><span>{d.count}</span>
                 </p>
               ))}
             </section>
           </>
         )}
+
         {activity && (
           <section className="register-card">
-            <h2>Recent activity</h2>
+            <div className="overview-card-head compact">
+              <div><h2>Recent activity</h2><p>Latest administration events.</p></div>
+              <Link href="/portal/audit">Audit →</Link>
+            </div>
             {activity.length ? (
               activity.map((a) => (
-                <p className="summary-row" key={a.id}>
+                <p className="summary-row dashboard-row" key={a.id}>
                   <b>{a.action} · {a.entity}</b>
                   <small>{a.created_at}</small>
                 </p>
@@ -282,7 +303,6 @@ export default async function Dashboard({
             ) : (
               <p>No recent activity.</p>
             )}
-            <Link href="/portal/audit">Audit & user activity ↗</Link>
           </section>
         )}
       </div>
