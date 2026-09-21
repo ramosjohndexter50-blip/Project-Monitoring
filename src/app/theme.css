@@ -504,3 +504,303 @@ html[data-theme="light"] .platform-topbar{background:#ffffffeb!important}
 .board-project-context span,.board-project-context small{color:var(--pm-muted)!important}.board-project-context b{color:var(--pm-text)!important}.portal-workflow-guide{margin-top:12px}.portal-workflow-guide .workflow-steps{margin-top:0}
 @media(max-width:1100px){.platform-sidebar{width:190px!important}.platform-main{margin-left:190px!important;width:calc(100% - 190px)!important}}
 @media(max-width:840px){.platform-sidebar{width:68px!important;height:100vh!important;padding:18px 8px!important}.platform-main{margin-left:68px!important;width:calc(100% - 68px)!important}}
+
+
+/* Readability pass: comfortable desktop sizing without changing the product layout. */
+.platform-shell{
+  font-size:13px!important;
+  line-height:1.5;
+}
+.platform-body{
+  max-width:1680px!important;
+  margin:0 auto!important;
+  padding:12px 28px 40px!important;
+}
+.platform-sidebar nav a{
+  min-height:46px!important;
+  font-size:13px!important;
+  font-weight:600!important;
+}
+.platform-sidebar nav h2{
+  font-size:10px!important;
+  letter-spacing:1.35px!important;
+}
+.platform-brand span{font-size:14px!important}
+.platform-brand small{font-size:8px!important}
+.platform-user b,.top-user b{font-size:11px!important}
+.platform-user small,.top-user small{font-size:9px!important}
+.platform-heading{margin-bottom:16px!important}
+.platform-heading h1{
+  font-size:30px!important;
+  line-height:1.15!important;
+}
+.platform-heading p{
+  font-size:12px!important;
+  line-height:1.6!important;
+}
+.page-crumb{
+  font-size:11px!important;
+  line-height:1.5!important;
+}
+.button{
+  min-height:40px!important;
+  padding:9px 16px!important;
+  font-size:12px!important;
+  font-weight:700!important;
+}
+.task-kpi{
+  min-height:116px!important;
+  padding:19px 18px!important;
+}
+.task-kpi strong{
+  font-size:31px!important;
+}
+.task-kpi div>span{
+  margin-top:6px!important;
+  font-size:11.5px!important;
+  font-weight:650!important;
+}
+.task-kpi small,
+.dashboard-kpis .task-kpi small{
+  font-size:10px!important;
+  line-height:1.45!important;
+}
+.register-filters{
+  gap:12px!important;
+  padding:16px!important;
+}
+.register-filters label{
+  gap:7px!important;
+  font-size:11px!important;
+  font-weight:600!important;
+}
+.register-filters input,
+.register-filters select{
+  height:42px!important;
+  padding:0 12px!important;
+  font-size:12px!important;
+}
+.register-filters .button,
+.register-filters>a{
+  height:42px!important;
+  min-height:42px!important;
+  font-size:12px!important;
+}
+.task-table-head{
+  min-height:54px!important;
+  padding:0 18px!important;
+}
+.task-table-head>b{
+  font-size:12px!important;
+}
+.task-table-head>div{
+  font-size:10.5px!important;
+}
+.task-table-head button{
+  height:34px!important;
+  font-size:10.5px!important;
+}
+.register-table{
+  min-width:1120px!important;
+}
+.register-table th{
+  padding:12px 14px!important;
+  font-size:10.5px!important;
+  font-weight:700!important;
+  letter-spacing:.2px!important;
+}
+.register-table td{
+  padding:14px!important;
+  font-size:11px!important;
+  line-height:1.45!important;
+}
+.task-main-cell{
+  min-width:290px!important;
+}
+.task-main-cell>a{
+  font-size:11.5px!important;
+  line-height:1.4!important;
+}
+.task-main-cell small{
+  margin-top:4px!important;
+  font-size:10px!important;
+  line-height:1.45!important;
+  max-width:320px!important;
+}
+.assignee-cell{
+  gap:8px!important;
+  font-size:11px!important;
+}
+.status-badge,
+.priority-badge{
+  font-size:10.5px!important;
+  line-height:1.25!important;
+}
+.status-badge{
+  padding:6px 9px!important;
+}
+.progress-cell{
+  min-width:128px!important;
+  gap:9px!important;
+}
+.progress-cell>b{
+  width:34px!important;
+  font-size:10.5px!important;
+}
+.progress-cell>i{
+  width:82px!important;
+  height:7px!important;
+}
+.pagination{
+  margin-top:14px!important;
+  font-size:11px!important;
+}
+.overview-card-head h2{
+  font-size:16px!important;
+}
+.overview-card-head p{
+  font-size:10.5px!important;
+  line-height:1.55!important;
+}
+.overview-card-head>a{
+  font-size:10.5px!important;
+}
+.overview-completion{
+  font-size:32px!important;
+}
+.overview-progress-row>div b{
+  font-size:11.5px!important;
+}
+.overview-progress-row>div small{
+  font-size:10px!important;
+}
+.overview-progress-row>span{
+  font-size:11px!important;
+}
+.overview-mini-grid span{
+  font-size:10px!important;
+}
+.overview-mini-grid strong{
+  font-size:24px!important;
+}
+.overview-primary-link{
+  min-height:42px!important;
+  font-size:11px!important;
+}
+.overview-footnote{
+  font-size:10px!important;
+}
+.dashboard-row{
+  min-height:46px!important;
+  padding:12px 0!important;
+}
+.dashboard-row b{
+  font-size:11px!important;
+}
+.dashboard-row>span:not(.status-badge),
+.dashboard-row>strong,
+.dashboard-row small{
+  font-size:10px!important;
+}
+.board-project-picker{
+  font-size:11px!important;
+}
+.board-project-picker select{
+  height:42px!important;
+  font-size:12px!important;
+}
+.board-project-context{
+  padding:14px 16px!important;
+}
+.board-project-context span{
+  font-size:9px!important;
+}
+.board-project-context b{
+  font-size:12.5px!important;
+}
+.board-project-context small{
+  font-size:10.5px!important;
+}
+.section-heading h2{
+  font-size:18px!important;
+}
+.section-heading p{
+  font-size:11px!important;
+}
+.board-toolbar{
+  padding:16px!important;
+  gap:10px!important;
+}
+.board-toolbar input,
+.board-toolbar select{
+  min-height:40px!important;
+  font-size:12px!important;
+}
+.view-toggle button,
+.filter-group button{
+  min-height:36px!important;
+  padding:8px 12px!important;
+  font-size:10.5px!important;
+}
+.filter-count{
+  font-size:9.5px!important;
+}
+.kanban-column>h3{
+  font-size:12px!important;
+}
+.kanban-card .task-title{
+  font-size:12px!important;
+}
+.kanban-card p,
+.task-note,
+.editor-hint{
+  font-size:10.5px!important;
+  line-height:1.55!important;
+}
+.task-editor{
+  padding:22px!important;
+}
+.task-editor label{
+  font-size:11px!important;
+}
+.task-editor input,
+.task-editor select,
+.task-editor textarea{
+  font-size:12px!important;
+  min-height:40px;
+}
+.workflow-steps article{
+  padding:20px!important;
+}
+.workflow-steps article h2,
+.guide-notes h2{
+  font-size:15px!important;
+}
+.workflow-steps article p,
+.guide-notes p{
+  font-size:11px!important;
+  line-height:1.65!important;
+}
+html[data-theme="light"] .status-badge.in_progress{background:#dbeafe!important;color:#1d4ed8!important}
+html[data-theme="light"] .status-badge.completed,
+html[data-theme="light"] .status-badge.approved{background:#dcfce7!important;color:#087443!important}
+html[data-theme="light"] .status-badge.blocked{background:#fee2e2!important;color:#b4232f!important}
+html[data-theme="light"] .status-badge.for_review{background:#e0e7ff!important;color:#3730a3!important}
+html[data-theme="light"] .status-badge.not_started,
+html[data-theme="light"] .status-badge.revision_required,
+html[data-theme="light"] .status-badge.cancelled{background:#eee9ff!important;color:#5b3fc0!important}
+@media(max-width:1180px){
+  .platform-body{padding-left:22px!important;padding-right:22px!important}
+}
+@media(max-width:840px){
+  .platform-body{padding:12px 16px 32px!important}
+  .platform-sidebar nav a{min-height:44px!important}
+}
+@media(max-width:560px){
+  .platform-body{padding:12px 12px 28px!important}
+  .platform-heading h1{font-size:26px!important}
+  .platform-heading p{font-size:11px!important}
+  .task-kpi strong{font-size:26px!important}
+  .task-kpi div>span{font-size:10.5px!important}
+  .register-table td{font-size:10.5px!important}
+}
