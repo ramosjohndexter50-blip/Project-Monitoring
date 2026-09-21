@@ -73,20 +73,23 @@ export default async function RegisterPage({
     ? db.from(config.table).select([...new Set([recordKey, ...config.columns, ...config.fields.map(f => f.key), ...(config.project ? ["project_id"] : []), ...(["tasks", "projects", "profiles", "disciplines"].includes(config.table) ? ["updated_at"] : [])])].join(",")).eq(recordKey, filters.edit).maybeSingle()
     : Promise.resolve(null);
   const createPromise = config.readOnly ? Promise.resolve(false) : hasPermission(moduleKey === "settings" ? "settings.manage" : `${config.permission}.create`, config.admin ? null : project, filters.discipline || null);
-  const taskSummaryPromise = moduleKey === "tasks" ? db.rpc("task_register_summary", { target_project: project }) : Promise.resolve(null);
   const pageSize = moduleKey === "tasks" ? 10 : 25;
-  const [choices, records, selectedResult, createAllowed, taskSummaryResult] = await Promise.all([
+  const [choices, records, selectedResult, createAllowed] = await Promise.all([
     choicesPromise,
     query.range((page - 1) * pageSize, page * pageSize - 1),
     selectedPromise,
     createPromise,
-    taskSummaryPromise,
   ]);
   if (records.error) throw new Error(records.error.message);
-  if (taskSummaryResult && taskSummaryResult.error) throw new Error(taskSummaryResult.error.message);
-  const taskSummary = taskSummaryResult?.data as { total: number; in_progress: number; completed: number; not_started: number; blocked: number } | null;
 
   const rows = (records.data ?? []) as unknown as DataRow[];
+  const taskSummary = moduleKey === "tasks" ? {
+    total: records.count ?? rows.length,
+    in_progress: rows.filter((row) => row.status === "in_progress").length,
+    completed: rows.filter((row) => row.status === "completed" || row.status === "approved").length,
+    not_started: rows.filter((row) => row.status === "not_started").length,
+    blocked: rows.filter((row) => row.status === "blocked").length,
+  } : null;
   const selected = selectedResult?.data as unknown as DataRow | null;
   if (filters.edit) {
     if (selectedResult?.error) throw new Error(selectedResult.error.message);
