@@ -10,21 +10,24 @@ create table storage.buckets(id text primary key,name text,public boolean,file_s
 create table storage.objects(id uuid primary key default gen_random_uuid(),bucket_id text,name text);
 alter table storage.objects enable row level security; grant select,insert,update,delete on storage.objects to authenticated;
 create publication supabase_realtime;`);
-for (const file of readdirSync("supabase/migrations")
-  .filter((f) => f.endsWith(".sql") && f < "20260917033350")
-  .sort()) {
+const migrations = readdirSync("supabase/migrations").filter((f) => f.endsWith(".sql")).sort();
+const applied = new Set();
+async function applyMigration(file) {
+  if (applied.has(file)) return;
   const sql = readFileSync("supabase/migrations/" + file, "utf8").replace(
     "create extension if not exists pgcrypto;",
     "-- gen_random_uuid is built into this PostgreSQL test runtime",
   );
   try {
     await db.exec(sql);
+    applied.add(file);
     console.log("PASS migration", file);
   } catch (e) {
     console.error("FAIL migration", file, e.message, e.where);
     process.exit(1);
   }
 }
+for (const file of migrations.filter((f) => f < "20260917033350")) await applyMigration(file);
 await db.exec(
   "grant select,insert,update,delete on all tables in schema public to authenticated; revoke update on public.notifications from authenticated; grant update(read_at) on public.notifications to authenticated;",
 );
@@ -493,12 +496,7 @@ console.log(
   "PASS private privilege boundaries, metadata isolation and notification integrity",
 );
 // Validate the stricter discipline model as an upgrade of an existing database.
-await db.exec(
-  readFileSync(
-    "supabase/migrations/20260917033350_discipline_control.sql",
-    "utf8",
-  ),
-);
+await applyMigration("20260917033350_discipline_control.sql");
 await db.query(
   "update public.profiles set discipline_id=$1,position='Designer' where role<>'super_admin'",
   [d],
@@ -801,7 +799,7 @@ await as('orgadmin',async()=>{
   assert.equal((await db.query('select * from public.projects')).rows.length,0);
 });
 console.log('PASS Admin project/task/team management, Super Admin account/settings management, cross-role denials and disabled Admin isolation');
-for (const file of readdirSync('supabase/migrations').filter(f=>f.endsWith('_password_onboarding_discipline_removal.sql'))) await db.exec(readFileSync('supabase/migrations/'+file,'utf8'));
+for (const file of migrations.filter(f=>f.endsWith('_password_onboarding_discipline_removal.sql'))) await applyMigration(file);
 await as('admin',async()=>{
   await denied('select public.remove_discipline($1)',[d]);
   const empty=(await db.query("insert into public.disciplines(name) values('Unused test discipline') returning id")).rows[0].id;
@@ -829,4 +827,17 @@ for(const name of ['admin','member','orgadmin']) {
 }
 await as('admin',async()=>assert.equal((await db.query("select public.has_permission('users.create') allowed")).rows[0].allowed,true));
 console.log('PASS password-change database gate, blocked active-employee deletion, unused deletion, historical preservation and reactivation guard');
+// Apply every migration added after the staged compatibility tests above. This prevents
+// new production migrations from silently escaping the regression suite.
+for (const file of migrations) await applyMigration(file);
+
+// Latest role-removal contract: protected/system/assigned roles cannot be hard-deleted.
+await as("admin", async () => {
+  await denied("select public.remove_role('admin')");
+  await denied("select public.remove_role('super_admin')");
+});
+await as("orgadmin", async () => {
+  await denied("select public.remove_role('viewer')");
+});
+console.log("PASS every migration and protected role-removal boundary");
 await db.close();
