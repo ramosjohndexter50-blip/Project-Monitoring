@@ -71,6 +71,8 @@ export default function TaskBoard({
   const historyRequest = useRef(0);
   const mutation = useRef(false);
   const pendingRealtime = useRef(false);
+  const kanbanRef = useRef<HTMLDivElement | null>(null);
+  const dragBoard = useRef({ active: false, startX: 0, startScrollLeft: 0 });
   const [capabilities, setCapabilities] = useState<{
     editable_tasks: string[];
     create_disciplines: string[];
@@ -176,6 +178,50 @@ export default function TaskBoard({
   const currentPage = resolvedPage;
   const displayed = tasks;
   const { done, progress } = summary;
+
+  function startBoardDrag(event: React.PointerEvent<HTMLDivElement>) {
+    if (event.pointerType !== "mouse" || event.button !== 0) return;
+    const target = event.target as HTMLElement;
+    if (target.closest("button, select, input, a, textarea")) return;
+    const board = kanbanRef.current;
+    if (!board) return;
+    dragBoard.current = {
+      active: true,
+      startX: event.clientX,
+      startScrollLeft: board.scrollLeft,
+    };
+    board.classList.add("is-dragging");
+    event.currentTarget.setPointerCapture(event.pointerId);
+  }
+
+  function moveBoardDrag(event: React.PointerEvent<HTMLDivElement>) {
+    const board = kanbanRef.current;
+    if (!board || !dragBoard.current.active) return;
+    board.scrollLeft =
+      dragBoard.current.startScrollLeft -
+      (event.clientX - dragBoard.current.startX);
+  }
+
+  function endBoardDrag(event: React.PointerEvent<HTMLDivElement>) {
+    if (!dragBoard.current.active) return;
+    dragBoard.current.active = false;
+    kanbanRef.current?.classList.remove("is-dragging");
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+  }
+
+  function moveBoardWithKeys(event: React.KeyboardEvent<HTMLDivElement>) {
+    const board = kanbanRef.current;
+    if (!board) return;
+    if (event.key === "ArrowRight") {
+      event.preventDefault();
+      board.scrollBy({ left: 320, behavior: "smooth" });
+    } else if (event.key === "ArrowLeft") {
+      event.preventDefault();
+      board.scrollBy({ left: -320, behavior: "smooth" });
+    }
+  }
 
   async function persist(task: Task | null, values: Partial<Task>) {
     if (mutation.current || !canEdit(task ?? undefined)) return false;
@@ -521,7 +567,17 @@ export default function TaskBoard({
             })}
           </div>
         ) : (
-          <div className="kanban">
+          <div
+            className="kanban draggable-kanban"
+            ref={kanbanRef}
+            tabIndex={0}
+            aria-label="Task status board. Drag horizontally to move across columns. Use left and right arrow keys when focused."
+            onPointerDown={startBoardDrag}
+            onPointerMove={moveBoardDrag}
+            onPointerUp={endBoardDrag}
+            onPointerCancel={endBoardDrag}
+            onKeyDown={moveBoardWithKeys}
+          >
             {statuses.map((status) => (
               <section key={status} className={`kanban-column ${status}`}>
                 <h3>
