@@ -216,6 +216,14 @@ export async function removeRecord(
       revalidatePath("/portal", "layout");
       return { ok: true, message: String(result.data) };
     }
+    if (moduleKey === "roles") {
+      await permission("roles.delete");
+      if (context.profile.role !== "super_admin") throw new Error("Super Admin required.");
+      const result = await context.db.rpc("remove_role", { target: id });
+      if (result.error) throw result.error;
+      revalidatePath("/portal", "layout");
+      return { ok: true, message: String(result.data) };
+    }
     if (config.project) {
       const row = await context.db
         .from(config.table)

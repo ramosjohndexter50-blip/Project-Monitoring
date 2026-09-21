@@ -123,6 +123,7 @@ export const modules: Record<string, Module> = {
     table: "roles",
     permission: "roles",
     admin: true,
+    removable: true,
     key: "key",
     search: "name",
     columns: ["key", "name", "description", "is_system"],

@@ -42,7 +42,7 @@ export default function TaskEditor({
   async function submit(event: FormEvent) {
     event.preventDefault();
     if (!draft.task_name.trim() || !editable) return;
-    if (!projectAdmin) {
+    if (!projectAdmin && task) {
       await onSave({
         status: draft.status,
         percent_complete: draft.percent_complete,
@@ -83,7 +83,7 @@ export default function TaskEditor({
             autoFocus
             required
             maxLength={300}
-            readOnly={!projectAdmin}
+            readOnly={!projectAdmin && !!task}
             value={draft.task_name}
             onChange={(e) => setDraft({ ...draft, task_name: e.target.value })}
           />
@@ -112,7 +112,7 @@ export default function TaskEditor({
         <label>
           Owner
           <select
-            disabled={!projectAdmin}
+            disabled={!projectAdmin && !!task}
             value={draft.owner}
             onChange={(e) => setDraft({ ...draft, owner: e.target.value })}
           >
@@ -133,7 +133,7 @@ export default function TaskEditor({
           Due date
           <input
             type="date"
-            readOnly={!projectAdmin}
+            readOnly={!projectAdmin && !!task}
             value={draft.due_date}
             onChange={(e) => setDraft({ ...draft, due_date: e.target.value })}
           />
@@ -141,7 +141,7 @@ export default function TaskEditor({
         <label>
           Priority
           <select
-            disabled={!projectAdmin}
+            disabled={!projectAdmin && !!task}
             value={draft.priority}
             onChange={(e) =>
               setDraft({
@@ -213,7 +213,7 @@ export default function TaskEditor({
           Notes / blocker
           <textarea
             rows={3}
-            readOnly={!projectAdmin}
+            readOnly={!projectAdmin && !!task}
             value={draft.notes}
             onChange={(e) => setDraft({ ...draft, notes: e.target.value })}
             placeholder="Scope, next steps, or what is blocking this task"
