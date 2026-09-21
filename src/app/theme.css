@@ -165,3 +165,5 @@ html[data-theme="dark"] .status-select.for_review { background: var(--accent-sof
 @media(max-width:760px){.workspace-search{display:none}.workspace-hero{min-height:210px;padding:24px;display:block}.hero-project{margin-top:24px;min-width:0}.workspace-hero h1{font-size:28px}}
 
 .dashboard-logo{display:block;width:min(100%,190px);height:auto;object-fit:contain;object-position:left center}.brand:has(.dashboard-logo){display:flex;align-items:center;min-height:58px;padding:6px 0}.brand:has(.dashboard-logo) .dashboard-logo{max-height:54px}@media(max-width:760px){.dashboard-logo{width:160px;max-height:48px}}
+
+.platform-brand-logo{display:block;width:auto;height:46px;max-width:210px;object-fit:contain;object-position:left center}@media(max-width:760px){.platform-brand-logo{height:42px;max-width:180px}}
