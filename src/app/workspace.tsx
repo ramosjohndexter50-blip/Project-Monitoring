@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import TaskBoard from "./task-board";
 import Link from "next/link";
+import Image from "next/image";
+import projectLogo from "../../image/project.png";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
@@ -56,11 +58,7 @@ export default function Workspace({ user, initialProfile }: { user: Pick<User, "
     <main className="app-shell">
       <aside className="sidebar">
         <div className="brand">
-          <span className="brand-mark" aria-hidden="true">H</span>
-          <span>
-            Hamdan Studio
-            <small>ARCHITECTURAL CONSULTANCY</small>
-          </span>
+          <Image className="dashboard-logo" src={projectLogo} alt="Hamdan Studio Architectural Consultancy" priority />
         </div>
         <div className="workspace-label">PROJECT WORKSPACE</div>
         <label className="project-label">
