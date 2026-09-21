@@ -117,7 +117,7 @@ export default async function Dashboard({
           <div className="overview-title"><h2>My tasks</h2><span className="focus-dot" /></div>
           <strong>{work.length ?? 0}</strong><p>Open tasks assigned to you</p>
           <Link href={`/portal/tasks?owner=${user.id}`}>Open my tasks <span>↗</span></Link>
-          <small>{notifications.length ? `${notifications.data.length} recent unread notifications` : "You're all caught up on notifications"}</small>
+          <small>{notifications.length ? `${notifications.length} recent unread notifications` : "You're all caught up on notifications"}</small>
         </article>
       </section>
       <div className="dashboard-grid">
