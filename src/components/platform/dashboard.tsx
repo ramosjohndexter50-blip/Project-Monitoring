@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { session, hasPermission } from "@/lib/platform/auth";
+import { session } from "@/lib/platform/auth";
 export default async function Dashboard({
   admin = false,
 }: {
@@ -7,29 +7,38 @@ export default async function Dashboard({
 }) {
   const { db, profile, user } = await session();
   const today = new Date().toISOString().slice(0, 10);
-  const [homeDiscipline, recentProgress, metrics, mine, activity, milestones, work, projects, notifications] = await Promise.all([
-    profile.discipline_id ? db.from("disciplines").select("name").eq("id", profile.discipline_id).maybeSingle() : null,
-    !admin ? db.from("task_history").select("id,task_id,field_changed,old_value,new_value,changed_at").order("changed_at", { ascending: false }).limit(8) : null,
-    db.rpc("dashboard_metrics"),
-    db.from("deliverables").select("id,title,status,project_id,due_date").eq("owner", user.id).not("status", "in", "(approved,issued)").order("due_date", { nullsFirst: false }).limit(8),
-    hasPermission("audit.view").then(allowed => allowed ? db.from("audit_logs").select("id,action,entity,created_at").order("created_at", { ascending: false }).limit(8) : null),
-    db.from("milestones").select("id,name,due_date,status,project_id").neq("status", "completed").order("due_date", { nullsFirst: false }).limit(8),
-    db.from("tasks").select("id,task_name,due_date,status,project_id,percent_complete").eq("owner", user.id).not("status", "in", "(completed,cancelled)").order("due_date", { nullsFirst: false }).limit(8),
-    db.from("projects").select("id,name,status,target_date").order("updated_at", { ascending: false }).limit(8),
-    db.from("notifications").select("id,title,created_at").eq("user_id", user.id).is("read_at", null).order("created_at", { ascending: false }).limit(6),
-  ]);
-  for (const result of [homeDiscipline, recentProgress, metrics, mine, milestones, work, projects, notifications]) {
-    if (result?.error) throw new Error(result.error.message);
-  }
-  const data = metrics.data as {
-    counts: number[];
-    organization: {
-      total_users: number; active_projects: number;
-      project_status: { status: string; count: number }[];
-      discipline_projects: { name: string; count: number }[];
+  const dashboard = await db.rpc("dashboard_home", { include_activity: admin });
+  if (dashboard.error) throw new Error(dashboard.error.message);
+
+  const home = dashboard.data as {
+    home_discipline: string | null;
+    metrics: {
+      counts: number[];
+      organization: {
+        total_users: number;
+        active_projects: number;
+        project_status: { status: string; count: number }[];
+        discipline_projects: { name: string; count: number }[];
+      };
+      disciplines: { name: string; tasks: number; progress: number }[];
     };
-    disciplines: { name: string; tasks: number; progress: number }[];
+    recent_progress: { id: string; task_id: string; field_changed: string; old_value: string | null; new_value: string | null; changed_at: string }[];
+    deliverables: { id: string; title: string; status: string; project_id: string; due_date: string | null }[];
+    milestones: { id: string; name: string; due_date: string | null; status: string; project_id: string }[];
+    tasks: { id: string; task_name: string; due_date: string | null; status: string; project_id: string; percent_complete: number }[];
+    projects: { id: string; name: string; status: string; target_date: string | null }[];
+    notifications: { id: string; title: string; created_at: string }[];
+    activity: { id: string; action: string; entity: string; created_at: string }[];
   };
+
+  const data = home.metrics;
+  const recentProgress = admin ? null : home.recent_progress;
+  const mine = home.deliverables;
+  const milestones = home.milestones;
+  const work = home.tasks;
+  const projects = home.projects;
+  const notifications = home.notifications;
+  const activity = admin ? home.activity : null;
   const results = data.counts.map(count => ({ count }));
   const aggregate = data.organization;
   const disciplineProgress = data.disciplines;
@@ -52,7 +61,7 @@ export default async function Dashboard({
           {!admin && profile.role !== "admin" && (
             <p>
               You are viewing{" "}
-              {homeDiscipline?.data?.name ?? "your assigned discipline"}. Access
+              {home.home_discipline ?? "your assigned discipline"}. Access
               follows your discipline and project assignments.
             </p>
           )}
@@ -106,17 +115,17 @@ export default async function Dashboard({
         </article>
         <article className="overview-focus">
           <div className="overview-title"><h2>My tasks</h2><span className="focus-dot" /></div>
-          <strong>{work.data?.length ?? 0}</strong><p>Open tasks assigned to you</p>
+          <strong>{work.length ?? 0}</strong><p>Open tasks assigned to you</p>
           <Link href={`/portal/tasks?owner=${user.id}`}>Open my tasks <span>↗</span></Link>
-          <small>{notifications.data?.length ? `${notifications.data.length} recent unread notifications` : "You're all caught up on notifications"}</small>
+          <small>{notifications.length ? `${notifications.data.length} recent unread notifications` : "You're all caught up on notifications"}</small>
         </article>
       </section>
       <div className="dashboard-grid">
         {recentProgress && (
           <section className="register-card">
             <h2>Recent changes</h2>
-            {recentProgress.data?.length ? (
-              recentProgress.data.map((h) => (
+            {recentProgress.length ? (
+              recentProgress.map((h) => (
                 <p key={h.id}>
                   <Link href={`/portal/tasks?edit=${h.task_id}`}>
                     {h.field_changed.replaceAll("_", " ")}
@@ -132,8 +141,8 @@ export default async function Dashboard({
         )}
         <section className="register-card">
           <h2>Projects</h2>
-          {projects.data?.length ? (
-            projects.data.map((p) => (
+          {projects.length ? (
+            projects.map((p) => (
               <Link
                 className="summary-row"
                 key={p.id}
@@ -152,8 +161,8 @@ export default async function Dashboard({
         </section>
         <section className="register-card">
           <h2>Upcoming milestones</h2>
-          {milestones.data?.length ? (
-            milestones.data.map((m) => (
+          {milestones.length ? (
+            milestones.map((m) => (
               <Link
                 className="summary-row"
                 key={m.id}
@@ -173,8 +182,8 @@ export default async function Dashboard({
         </section>
         <section className="register-card">
           <h2>What I need to do</h2>
-          {work.data?.length ? (
-            work.data.map((t) => (
+          {work.length ? (
+            work.map((t) => (
               <Link
                 className="summary-row"
                 key={t.id}
@@ -192,8 +201,8 @@ export default async function Dashboard({
         </section>
         <section className="register-card">
           <h2>Updates</h2>
-          {notifications.data?.length ? (
-            notifications.data.map((n) => (
+          {notifications.length ? (
+            notifications.map((n) => (
               <p className="summary-row" key={n.id}>
                 {n.title}
               </p>
@@ -222,8 +231,8 @@ export default async function Dashboard({
         </section>
         <section className="register-card">
           <h2>My deliverables</h2>
-          {mine.data?.length ? (
-            mine.data.map((d) => (
+          {mine.length ? (
+            mine.map((d) => (
               <Link
                 className="summary-row"
                 key={d.id}
@@ -263,17 +272,15 @@ export default async function Dashboard({
         {activity && (
           <section className="register-card">
             <h2>Recent activity</h2>
-            {activity.error ? (
-              <p>Activity could not be loaded.</p>
-            ) : (
-              activity.data?.map((a) => (
+            {activity.length ? (
+              activity.map((a) => (
                 <p className="summary-row" key={a.id}>
-                  <b>
-                    {a.action} · {a.entity}
-                  </b>
+                  <b>{a.action} · {a.entity}</b>
                   <small>{a.created_at}</small>
                 </p>
               ))
+            ) : (
+              <p>No recent activity.</p>
             )}
             <Link href="/portal/audit">Audit & user activity ↗</Link>
           </section>
