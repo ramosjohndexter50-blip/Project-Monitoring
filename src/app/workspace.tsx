@@ -57,8 +57,9 @@ export default function Workspace({ user, initialProfile }: { user: Pick<User, "
   return (
     <main className="app-shell">
       <aside className="sidebar">
-        <div className="brand">
-          <Image className="dashboard-logo" src={projectLogo} alt="Hamdan Studio Architectural Consultancy" priority />
+        <div className="brand workspace-brand">
+          <Image className="workspace-brand-logo" src={projectLogo} alt="" priority />
+          <span>Hamdan Studio<small>PROJECT MONITOR</small></span>
         </div>
         <div className="workspace-label">PROJECT WORKSPACE</div>
         <label className="project-label">
@@ -81,36 +82,43 @@ export default function Workspace({ user, initialProfile }: { user: Pick<User, "
           </select>
         </label>
         <nav className="main-nav" aria-label="Main navigation">
+          <button
+            title="Overview"
+            className={`nav-item ${section === "board" ? "active" : ""}`}
+            onClick={() => setSection("board")}
+          >
+            <span className="nav-icon">▦</span>Overview
+          </button>
           <Link className="nav-item" href="/portal">
-            <span className="nav-icon">+</span>Consultancy dashboard
+            <span className="nav-icon">＋</span>Consultancy dashboard
           </Link>
           <Link className="nav-item" href="/portal/projects">
-            <span className="nav-icon">+</span>Project registers
+            <span className="nav-icon">＋</span>Project registers
           </Link>
           <Link className="nav-item" href="/portal/rfis"><span className="nav-icon">?</span>RFIs</Link>
           <Link className="nav-item" href="/portal/reports"><span className="nav-icon">⌁</span>Gantt & reports</Link>
           <Link className="nav-item" href="/portal/documents"><span className="nav-icon">□</span>Documents</Link>
-          <Link className="nav-item" href="/portal/notifications"><span className="nav-icon">•</span>Notifications</Link>
+          <Link className="nav-item" href="/portal/notifications"><span className="nav-icon">♧</span>Notifications</Link>
           {profile?.role === "super_admin" && (
             <Link className="nav-item" href="/admin">
-              <span className="nav-icon">+</span>Control center
+              <span className="nav-icon">⚙</span>Control center
             </Link>
           )}
-          {[
-            ["board", "▦", "Overview"],
-            ["mine", "◉", "My tasks"],
-            ["workflow", "↗", "Workflow guide"],
-          ].map(([key, icon, title]) => (
-            <button
-              title={title}
-              key={key}
-              className={`nav-item ${section === key ? "active" : ""}`}
-              onClick={() => setSection(key)}
-            >
-              <span className="nav-icon">{icon}</span>
-              {title}
-            </button>
-          ))}
+          <span className="nav-divider" aria-hidden="true" />
+          <button
+            title="My tasks"
+            className={`nav-item ${section === "mine" ? "active" : ""}`}
+            onClick={() => setSection("mine")}
+          >
+            <span className="nav-icon">◉</span>My tasks
+          </button>
+          <button
+            title="Workflow guide"
+            className={`nav-item ${section === "workflow" ? "active" : ""}`}
+            onClick={() => setSection("workflow")}
+          >
+            <span className="nav-icon">▤</span>Workflow guide
+          </button>
         </nav>
         <div className="sidebar-foot">
           <div className="user-chip">
@@ -142,7 +150,7 @@ export default function Workspace({ user, initialProfile }: { user: Pick<User, "
             <b>/</b>
             <strong>{project?.name ?? "Projects"}</strong>
           </div>
-          <div className="workspace-search">⌕ Search workspace <kbd>⌘K</kbd></div>
+          <div className="workspace-search">⌕ Search workspace, tasks, documents... <kbd>Ctrl + K</kbd></div>
         </header>
         <div className="mobile-workspace">
           <select

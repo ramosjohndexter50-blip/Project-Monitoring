@@ -43,7 +43,7 @@ export default async function PortalLayout({ children }: { children: React.React
         </Link>
 
         <nav aria-label="Workspace">
-          <Item href="/portal" icon="home">Dashboard</Item>
+          <Item href="/portal" icon="home">Overview</Item>
           <Item href={taskHref} icon="tasks">{["super_admin", "admin"].includes(profile.role) ? "Tasks" : "My Tasks"}</Item>
           <Item href="/portal/projects" icon="projects">Projects</Item>
           <Item href="/?view=board" icon="board">Board</Item>
@@ -72,7 +72,7 @@ export default async function PortalLayout({ children }: { children: React.React
         <header className="platform-topbar">
           <form className="portal-search" action="/portal/search">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 4.5 4.5"/></svg>
-            <input name="q" placeholder="Search tasks, projects, or employees..." aria-label="Search workspace"/>
+            <input name="q" placeholder="Search workspace, tasks, documents..." aria-label="Search workspace"/>
             <kbd>Ctrl + K</kbd>
           </form>
           <div className="portal-top-actions">

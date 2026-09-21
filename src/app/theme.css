@@ -250,3 +250,154 @@ html[data-theme="light"] .platform-shell{--pm-bg:#f4f6fb;--pm-panel:#fff;--pm-pa
 @media(max-width:1180px){.task-kpi-grid{grid-template-columns:repeat(3,1fr)}.register-filters{grid-template-columns:repeat(4,1fr)}.theme-toggle{right:205px!important}}
 @media(max-width:840px){.platform-sidebar{width:68px!important;flex-basis:68px!important;padding:18px 8px!important}.platform-brand{justify-content:center!important;margin:0 0 24px!important}.platform-brand span,.platform-sidebar nav a span,.platform-sidebar nav h2,.platform-user>div{display:none!important}.platform-sidebar nav a{justify-content:center!important;padding:0!important}.platform-user{grid-template-columns:1fr!important;justify-items:center!important}.platform-user form{display:none!important}.platform-main{width:calc(100% - 68px)}.portal-search{width:min(430px,65vw)}.top-user>div{display:none}.theme-toggle{right:72px!important}.task-kpi-grid{grid-template-columns:repeat(2,1fr)}.register-filters{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:560px){.platform-topbar{padding:0 12px!important}.platform-body{padding:0 12px 28px!important}.portal-search kbd{display:none}.task-kpi-grid{grid-template-columns:1fr 1fr;gap:8px}.task-kpi{min-height:90px;padding:14px}.register-filters{grid-template-columns:1fr 1fr;padding:12px}.platform-heading{display:flex!important;gap:10px!important}.platform-heading h1{font-size:24px!important}.heading-actions .button{padding:8px 10px!important}.theme-toggle{display:none!important}}
+
+
+/* Unified product shell: workspace and portal now share one visual language. */
+html[data-theme="dark"] .app-shell,
+html[data-theme="dark"] .platform-shell{
+  background:
+    radial-gradient(circle at 62% 0,#1b274655,transparent 34%),
+    #090e1b!important;
+}
+html[data-theme="dark"] .sidebar,
+html[data-theme="dark"] .platform-sidebar{
+  width:220px!important;
+  flex:0 0 220px!important;
+  min-height:100vh;
+  background:linear-gradient(180deg,#0d1424 0%,#0a101d 100%)!important;
+  border-right:1px solid #202b42!important;
+  color:#d7deec!important;
+}
+.workspace-brand{display:flex!important;align-items:center!important;gap:10px!important;padding:0 8px!important;justify-content:flex-start!important}
+.workspace-brand-logo{width:35px!important;height:35px!important;object-fit:contain;flex:0 0 35px}
+.workspace-brand>span{display:flex;flex-direction:column;color:#fff!important;font-size:13px!important;font-weight:800!important;letter-spacing:-.2px!important}
+.workspace-brand small{margin-top:3px;color:#7f8da6;font-size:7px;letter-spacing:1.2px}
+html[data-theme="dark"] .workspace-label,
+html[data-theme="dark"] .project-label{color:#8a97ad!important}
+html[data-theme="dark"] .project-switcher{
+  background:#111a2b!important;
+  border-color:#2b3851!important;
+  color:#eef2fb!important;
+}
+.main-nav{gap:4px!important;margin-top:24px!important}
+.nav-divider{height:1px;background:#223049;margin:12px 10px;display:block}
+html[data-theme="dark"] .nav-item{
+  min-height:42px;
+  border-radius:9px!important;
+  color:#b2bdd0!important;
+  padding:0 12px!important;
+  font-size:11px!important;
+}
+html[data-theme="dark"] .nav-item:hover{background:#151f33!important;color:#fff!important}
+html[data-theme="dark"] .nav-item.active{
+  background:linear-gradient(100deg,#5e43ce,#302a6d)!important;
+  color:#fff!important;
+  box-shadow:inset 0 0 0 1px #8b73ff35,0 8px 22px #382b8e20!important;
+}
+html[data-theme="dark"] .nav-item.active .nav-icon{color:#d8ccff!important}
+html[data-theme="dark"] .sidebar-foot{border-top:1px solid #202b42;padding-top:14px}
+html[data-theme="dark"] .user-chip b{color:#fff!important}
+html[data-theme="dark"] .user-chip small{color:#8794a9!important}
+html[data-theme="dark"] .content,
+html[data-theme="dark"] .platform-main{background:transparent!important}
+html[data-theme="dark"] .topbar,
+html[data-theme="dark"] .platform-topbar{
+  height:68px!important;
+  background:#090e1bd9!important;
+  border-bottom:1px solid #1b263c!important;
+  backdrop-filter:blur(14px);
+}
+html[data-theme="dark"] .topbar{padding:0 24px!important}
+html[data-theme="dark"] .breadcrumbs,
+html[data-theme="dark"] .breadcrumbs strong{color:#aeb9cc!important}
+html[data-theme="dark"] .workspace-search{
+  min-width:390px;
+  border-color:#293650!important;
+  background:#111a2c!important;
+  color:#9da9bc!important;
+}
+html[data-theme="dark"] .workspace-search kbd{
+  background:#1a2439!important;
+  border:1px solid #34415b;
+  color:#bcc6d7!important;
+}
+html[data-theme="dark"] .page-body{max-width:none!important;padding:28px 24px 42px!important}
+html[data-theme="dark"] .workspace-hero{
+  border:1px solid #69448f!important;
+  background:
+    radial-gradient(circle at 76% 15%,#7b1f6544,transparent 34%),
+    linear-gradient(120deg,#a51f2e 0%,#df4d32 34%,#711b3d 62%,#28104d 100%)!important;
+  box-shadow:0 16px 44px #0000002e!important;
+}
+html[data-theme="dark"] .hero-project{
+  border-color:#8c649e!important;
+  background:#28153688!important;
+}
+html[data-theme="dark"] .stats-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:14px!important;margin-top:18px!important}
+html[data-theme="dark"] .stat-card{
+  min-height:130px!important;
+  background:linear-gradient(145deg,#142039,#0f1728)!important;
+  border:1px solid #2a3851!important;
+  border-radius:14px!important;
+  box-shadow:inset 0 1px #ffffff05,0 14px 34px #0000001b!important;
+}
+html[data-theme="dark"] .stat-label{color:#a9b6cc!important}
+html[data-theme="dark"] .stat-card strong{color:#f6f8ff!important}
+html[data-theme="dark"] .stat-card small{color:#9fabbd!important}
+html[data-theme="dark"] .task-panel{
+  background:#0e1627!important;
+  border:1px solid #26344d!important;
+  border-radius:16px!important;
+  box-shadow:0 18px 42px #00000020!important;
+}
+html[data-theme="dark"] .board-toolbar,
+html[data-theme="dark"] .board-filters{border-color:#243149!important;background:#10192a!important}
+html[data-theme="dark"] .board-toolbar input,
+html[data-theme="dark"] .board-toolbar select{
+  background:#0b1220!important;border-color:#2a3852!important;color:#e9eef8!important;border-radius:9px!important
+}
+html[data-theme="dark"] .filter-group button.selected,
+html[data-theme="dark"] .view-toggle button.selected{
+  background:linear-gradient(135deg,#7a59ff,#5d3be4)!important;color:#fff!important
+}
+html[data-theme="dark"] .kanban{background:#0c1321!important}
+html[data-theme="dark"] .kanban-column{
+  background:#111a2c!important;
+  border:1px solid #293750!important;
+  border-top-width:3px!important;
+  border-radius:13px!important;
+}
+html[data-theme="dark"] .kanban-card{background:#151f31!important;border-color:#2b3952!important}
+html[data-theme="dark"] .history-panel,
+html[data-theme="dark"] .guide-notes,
+html[data-theme="dark"] .workflow-steps article{
+  background:#10192a!important;border-color:#293750!important
+}
+html[data-theme="dark"] .platform-body{padding-top:10px!important}
+html[data-theme="dark"] .register-card,
+html[data-theme="dark"] .register-filters,
+html[data-theme="dark"] .register-form{
+  background:#101827!important;border-color:#27354e!important
+}
+html[data-theme="dark"] .register-table th{background:#141d30!important;border-color:#223049!important}
+html[data-theme="dark"] .register-table td{border-color:#1c293f!important}
+@media(max-width:1100px){
+  html[data-theme="dark"] .sidebar,html[data-theme="dark"] .platform-sidebar{width:190px!important;flex-basis:190px!important}
+  html[data-theme="dark"] .workspace-search{min-width:280px}
+}
+@media(max-width:840px){
+  html[data-theme="dark"] .sidebar,html[data-theme="dark"] .platform-sidebar{width:68px!important;flex-basis:68px!important;padding:18px 8px!important}
+  .workspace-brand{justify-content:center!important;padding:0!important}
+  .workspace-brand>span,.workspace-label,.project-label,.sidebar .nav-item:not(.active){font-size:0!important}
+  .workspace-brand-logo{width:34px!important;height:34px!important}
+  .sidebar .nav-item{justify-content:center!important;padding:0!important}
+  .sidebar .nav-icon{font-size:17px!important}
+  .sidebar-foot{display:none!important}
+  html[data-theme="dark"] .workspace-search{min-width:0;width:min(430px,65vw)}
+  html[data-theme="dark"] .stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+@media(max-width:560px){
+  html[data-theme="dark"] .workspace-search{display:none!important}
+  html[data-theme="dark"] .page-body{padding:18px 12px 30px!important}
+  html[data-theme="dark"] .workspace-hero{padding:22px!important}
+}
