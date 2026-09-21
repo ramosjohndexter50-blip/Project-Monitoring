@@ -681,9 +681,11 @@ console.log(
   "PASS invitation-only provisioning, discipline isolation, reserved assignments, 100% review progress, history, contributor revocation and profile-discipline changes",
 );
 // Performance migrations must be tested after the discipline-control upgrade.
-for (const file of readdirSync("supabase/migrations").filter(f => f.endsWith(".sql") && f > "20260917033350_discipline_control.sql" && !f.endsWith('_split_project_admin.sql') && !f.endsWith('_password_onboarding_discipline_removal.sql')).sort()) {
-  await db.exec(readFileSync("supabase/migrations/" + file, "utf8"));
-  console.log("PASS migration", file);
+for (const file of migrations.filter(f =>
+  f > "20260917033350_discipline_control.sql" &&
+  f < "20260918061952_split_project_admin.sql"
+)) {
+  await applyMigration(file);
 }
 await db.query("update public.profiles set discipline_id=$1 where id=$2", [d, ids.member]);
 await db.query(`insert into public.tasks(project_id,discipline_id,task_name,owner,due_date,notes)
@@ -752,9 +754,7 @@ mkdirSync('docs/performance',{recursive:true});
 writeFileSync('docs/performance/database.json',JSON.stringify(benchmark,null,2));
 console.log('PASS bounded pagination, stable sorting, complete aggregates, literal/name search, read-after-write, and RLS isolation for new RPCs');
 console.log('BENCHMARK',JSON.stringify({before:benchmark.before,after:benchmark.after}));
-for (const file of readdirSync('supabase/migrations').filter(f => f.endsWith('_split_project_admin.sql')).sort()) {
-  await db.exec(readFileSync('supabase/migrations/' + file, 'utf8'));
-}
+for (const file of migrations.filter(f => f.endsWith('_split_project_admin.sql'))) await applyMigration(file);
 await as('orgadmin', async () => {
   for (const key of ['projects.create','projects.update','teams.update','tasks.create','tasks.assign'])
     assert.equal((await db.query('select public.has_permission($1) allowed',[key])).rows[0].allowed,true,key);
