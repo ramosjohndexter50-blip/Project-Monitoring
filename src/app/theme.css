@@ -804,3 +804,33 @@ html[data-theme="light"] .status-badge.cancelled{background:#eee9ff!important;co
   .task-kpi div>span{font-size:10.5px!important}
   .register-table td{font-size:10.5px!important}
 }
+
+
+/* Premium board interaction: drag the canvas instead of showing a browser scrollbar. */
+.draggable-kanban{
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+  cursor:grab;
+  scrollbar-width:none;
+  -ms-overflow-style:none;
+  scroll-behavior:auto;
+  overscroll-behavior-x:contain;
+  touch-action:pan-x pan-y;
+  user-select:auto;
+}
+.draggable-kanban::-webkit-scrollbar{
+  display:none;
+  width:0;
+  height:0;
+}
+.draggable-kanban.is-dragging{
+  cursor:grabbing;
+  user-select:none;
+}
+.draggable-kanban.is-dragging *{
+  cursor:grabbing!important;
+}
+.draggable-kanban:focus-visible{
+  outline:2px solid #8060ff;
+  outline-offset:3px;
+}
