@@ -34,7 +34,7 @@ export default function WorkflowPage() {
           <h2>Access and responsibility</h2>
           <p>Your project membership, discipline, and role permissions determine what you can view or change. Regular employees work within their assigned project and discipline.</p>
           <h2>Task rules</h2>
-          <p>Employees can create tasks in an assigned project and discipline. A regular employee's new task is assigned to that employee automatically. Leads and administrators can manage broader assignments when their permissions allow it.</p>
+          <p>Employees can create tasks in an assigned project and discipline. New tasks created by a regular employee are assigned to that employee automatically. Leads and administrators can manage broader assignments when their permissions allow it.</p>
         </div>
       </section>
     </>
