@@ -42,12 +42,12 @@ export default async function Dashboard({
           <p className="eyebrow">
             {admin
               ? "ADMINISTRATION / CONTROL CENTER"
-              : "CONSULTANCY OPERATIONS"}
+              : "YOUR WORKSPACE"}
           </p>
           <h1>
             {admin
-              ? "Super Admin Control Center"
-              : profile.role === "admin" ? "Admin Project Center" : (homeDiscipline?.data?.name ?? "Discipline assignment pending")}
+              ? "System settings"
+              : profile.role === "admin" ? "Project overview" : "My work"}
           </h1>
           {!admin && profile.role !== "admin" && (
             <p>
@@ -56,8 +56,8 @@ export default async function Dashboard({
               follows your discipline and project assignments.
             </p>
           )}
-          {profile.role === "admin" && <p>Create projects, manage contributors, assign employees and monitor delivery.</p>}
-          {admin && <p>Manage user accounts, roles, disciplines and web settings. Project changes are handled by Admin.</p>}
+          {profile.role === "admin" && <p>See project health, assign work, and keep the team moving.</p>}
+          {admin && <p>Manage people, access, disciplines, and system settings.</p>}
           <p>
             {profile.full_name ?? "Welcome"} ·{" "}
             {profile.role.replaceAll("_", " ")} · Results reflect your
@@ -65,17 +65,17 @@ export default async function Dashboard({
           </p>
         </div>
         <Link className="button primary" href="/portal/projects">
-          Open project register
+          View projects
         </Link>
       </div>
       <section className="metric-grid">
         {[
-          "Accessible projects",
-          "Overdue tasks",
+          "Projects",
+          "Overdue",
           "Open RFIs",
-          "Critical issues",
-          "Pending approvals",
-          admin ? "Active users" : "Visible active people",
+          "Critical",
+          "For approval",
+          admin ? "Active people" : "Team members",
         ].map((label, i) => (
           <article key={label}>
             <span>{label}</span>
@@ -98,23 +98,23 @@ export default async function Dashboard({
           </div> : <div className="chart-empty"><span>Ready for your next project</span><p>Discipline progress appears here as your team records work.</p><Link href="/portal/projects">Explore projects ↗</Link></div>}
         </article>
         <article className="overview-highlight">
-          <div className="overview-title"><h2>Delivery pulse</h2><Link href="/portal/reports" aria-label="Open progress report">↗</Link></div>
+          <div className="overview-title"><h2>Overall progress</h2><Link href="/portal/reports" aria-label="Open progress report">↗</Link></div>
           <div className="pulse-value">{completion}<span>%</span></div>
-          <p>Average recorded task progress</p>
+          <p>Across your visible tasks</p>
           <div className="pulse-orbit" aria-hidden="true"><i /><i /><i /></div>
           <div className="pulse-footer"><span><b>{taskCount}</b> tracked tasks</span><span><b>{aggregate.active_projects}</b> active projects</span></div>
         </article>
         <article className="overview-focus">
-          <div className="overview-title"><h2>Your focus</h2><span className="focus-dot" /></div>
-          <strong>{work.data?.length ?? 0}</strong><p>Upcoming tasks assigned to you</p>
-          <Link href={`/portal/tasks?owner=${user.id}`}>View my tasks <span>↗</span></Link>
+          <div className="overview-title"><h2>My tasks</h2><span className="focus-dot" /></div>
+          <strong>{work.data?.length ?? 0}</strong><p>Open tasks assigned to you</p>
+          <Link href={`/portal/tasks?owner=${user.id}`}>Open my tasks <span>↗</span></Link>
           <small>{notifications.data?.length ? `${notifications.data.length} recent unread notifications` : "You're all caught up on notifications"}</small>
         </article>
       </section>
       <div className="dashboard-grid">
         {recentProgress && (
           <section className="register-card">
-            <h2>Recent discipline activity</h2>
+            <h2>Recent changes</h2>
             {recentProgress.data?.length ? (
               recentProgress.data.map((h) => (
                 <p key={h.id}>
@@ -131,7 +131,7 @@ export default async function Dashboard({
           </section>
         )}
         <section className="register-card">
-          <h2>Project portfolio</h2>
+          <h2>Projects</h2>
           {projects.data?.length ? (
             projects.data.map((p) => (
               <Link
@@ -151,7 +151,7 @@ export default async function Dashboard({
           )}
         </section>
         <section className="register-card">
-          <h2>Milestones to watch</h2>
+          <h2>Upcoming milestones</h2>
           {milestones.data?.length ? (
             milestones.data.map((m) => (
               <Link
@@ -172,7 +172,7 @@ export default async function Dashboard({
           )}
         </section>
         <section className="register-card">
-          <h2>My next actions</h2>
+          <h2>What I need to do</h2>
           {work.data?.length ? (
             work.data.map((t) => (
               <Link
@@ -191,7 +191,7 @@ export default async function Dashboard({
           )}
         </section>
         <section className="register-card">
-          <h2>Notifications</h2>
+          <h2>Updates</h2>
           {notifications.data?.length ? (
             notifications.data.map((n) => (
               <p className="summary-row" key={n.id}>
@@ -201,7 +201,7 @@ export default async function Dashboard({
           ) : (
             <p>You are up to date.</p>
           )}
-          <Link href="/portal/notifications">Open notification center →</Link>
+          <Link href="/portal/notifications">See all updates →</Link>
         </section>
         <section className="register-card">
           <h2>Discipline progress</h2>
@@ -218,7 +218,7 @@ export default async function Dashboard({
           ) : (
             <p>No discipline work recorded yet.</p>
           )}
-          <Link href="/portal/reports">Team workload & reports ↗</Link>
+          <Link href="/portal/reports">View reports ↗</Link>
         </section>
         <section className="register-card">
           <h2>My deliverables</h2>
