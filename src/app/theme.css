@@ -170,3 +170,23 @@ html[data-theme="dark"] .status-select.for_review { background: var(--accent-sof
 
 /* Keep the square project mark compact in the portal header. */
 .platform-brand{width:auto;max-width:190px;overflow:hidden}.platform-brand-logo{width:44px!important;height:44px!important;max-width:44px!important;object-fit:contain;flex:0 0 44px}@media(max-width:760px){.platform-brand{max-width:170px}.platform-brand-logo{width:40px!important;height:40px!important;max-width:40px!important;flex-basis:40px}}
+
+
+/* Everyday-user UX: calm hierarchy, readable actions, and a plug-and-play workspace. */
+.platform-brand{display:flex;align-items:center;gap:10px;overflow:visible;max-width:none;text-decoration:none}
+.platform-brand span{display:flex;flex-direction:column;line-height:1.05}
+.platform-brand small{margin-top:5px}
+.platform-sidebar nav a{font-weight:600}
+.platform-topbar{display:flex;justify-content:space-between;align-items:center}
+.platform-body{margin:0 auto;width:100%}
+.metric-grid article{min-height:108px;display:flex;flex-direction:column;justify-content:space-between}
+.register-card{box-shadow:0 8px 30px #1d132408}
+.summary-row{border-radius:14px;padding:11px 12px}
+.summary-row:hover{background:var(--surface-soft)}
+@media(max-width:760px){
+  .platform-brand{padding-right:48px}
+  .platform-brand-logo{flex:0 0 38px!important;width:38px!important;height:38px!important;max-width:38px!important}
+  .platform-topbar>span{display:none}
+  .metric-grid article{min-height:92px}
+  .platform-body{padding-top:16px}
+}
