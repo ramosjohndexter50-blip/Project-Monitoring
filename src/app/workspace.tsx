@@ -98,8 +98,8 @@ export default function Workspace({ user, initialProfile }: { user: Pick<User, "
             </Link>
           )}
           {[
-            ["board", "▦", "Project board"],
-            ["mine", "◉", "My work"],
+            ["board", "▦", "Overview"],
+            ["mine", "◉", "My tasks"],
             ["workflow", "↗", "Workflow guide"],
           ].map(([key, icon, title]) => (
             <button
