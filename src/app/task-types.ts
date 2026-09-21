@@ -21,6 +21,7 @@ export type Task = {
   owner: string | null;
   status: Status;
   priority: "low" | "medium" | "high" | "critical";
+  start_date: string | null;
   due_date: string | null;
   percent_complete: number;
   notes: string | null;

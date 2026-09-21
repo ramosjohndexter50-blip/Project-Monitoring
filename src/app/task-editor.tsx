@@ -30,6 +30,7 @@ export default function TaskEditor({
     task_name: task?.task_name ?? "",
     discipline_id: task?.discipline_id ?? disciplineId ?? "",
     owner: task?.owner ?? (canManageTask ? "" : currentUserId),
+    start_date: task?.start_date ?? "",
     due_date: task?.due_date ?? "",
     priority: task?.priority ?? "medium",
     status: task?.status ?? "not_started",
@@ -55,6 +56,7 @@ export default function TaskEditor({
       ...draft,
       task_name: draft.task_name.trim(),
       owner: canManageTask ? (draft.owner || null) : currentUserId,
+      start_date: draft.start_date || null,
       due_date: draft.due_date || null,
       percent_complete:
         draft.status === "completed"
@@ -131,10 +133,21 @@ export default function TaskEditor({
           </select>
         </label>
         <label>
+          Start date
+          <input
+            type="date"
+            readOnly={!canManageTask && !!task}
+            max={draft.due_date || undefined}
+            value={draft.start_date}
+            onChange={(e) => setDraft({ ...draft, start_date: e.target.value })}
+          />
+        </label>
+        <label>
           Due date
           <input
             type="date"
             readOnly={!canManageTask && !!task}
+            min={draft.start_date || undefined}
             value={draft.due_date}
             onChange={(e) => setDraft({ ...draft, due_date: e.target.value })}
           />

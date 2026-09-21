@@ -26,7 +26,7 @@ type Props = {
   onlyMine: boolean;
 };
 const fields =
-  "id, task_name, discipline_id, owner, status, priority, due_date, percent_complete, notes, progress_note, updated_at";
+  "id, task_name, discipline_id, owner, status, priority, start_date, due_date, percent_complete, notes, progress_note, updated_at";
 const errorText = (error: unknown) =>
   error && typeof error === "object" && "message" in error
     ? String(error.message)
@@ -35,6 +35,23 @@ function today() {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
+const dayMs = 86_400_000;
+const dateMs = (value: string) => Date.parse(`${value}T00:00:00Z`);
+const isoDay = (value: number) => new Date(value).toISOString().slice(0, 10);
+const shortDate = (value: string | null) =>
+  value
+    ? new Intl.DateTimeFormat("en", { month: "short", day: "numeric" }).format(new Date(`${value}T00:00:00Z`))
+    : "No date";
+const statusHelp: Record<Status, string> = {
+  not_started: "New work ready to be picked up.",
+  in_progress: "Tasks currently being worked on.",
+  for_review: "Work waiting for review or feedback.",
+  revision_required: "Tasks that need another pass.",
+  approved: "Reviewed work that has been approved.",
+  completed: "Finished work kept here for reference.",
+  blocked: "Work waiting on an issue or dependency.",
+  cancelled: "Tasks that are no longer active.",
+};
 
 export default function TaskBoard({
   supabase,
@@ -172,12 +189,45 @@ export default function TaskBoard({
   const peopleById = useMemo(() => new Map(people.map(p => [p.id, p.full_name])), [people]);
   const disciplinesById = useMemo(() => new Map(disciplines.map(d => [d.id, d.name])), [disciplines]);
   const personName = (id: string | null) => id ? (peopleById.get(id) ?? (id === userId ? "You" : "Assigned team member")) : "Unassigned";
+  const personInitials = (id: string | null) =>
+    personName(id).split(/\s+/).slice(0, 2).map((part) => part[0]?.toUpperCase()).join("") || "—";
   const disciplineName = (id: string) => disciplinesById.get(id) ?? "Unknown discipline";
   const overdue = (task: Task) => !["completed", "cancelled"].includes(task.status) && !!task.due_date && task.due_date < today();
   const pageCount = Math.max(1, Math.ceil(total / 25));
   const currentPage = resolvedPage;
   const displayed = tasks;
   const { done, progress } = summary;
+  const ganttModel = useMemo(() => {
+    const now = dateMs(today());
+    const rows = displayed.map((task) => {
+      let start = task.start_date ? dateMs(task.start_date) : task.due_date ? dateMs(task.due_date) - (6 * dayMs) : now;
+      let due = task.due_date ? dateMs(task.due_date) : task.start_date ? dateMs(task.start_date) + (6 * dayMs) : now + (6 * dayMs);
+      if (due < start) [start, due] = [due, start];
+      return { task, start, due };
+    });
+    const rawStart = rows.length ? Math.min(...rows.map((row) => row.start)) : now;
+    const rawEnd = rows.length ? Math.max(...rows.map((row) => row.due)) : now + (14 * dayMs);
+    const start = rawStart - dayMs;
+    const end = Math.max(rawEnd + dayMs, start + (14 * dayMs));
+    const span = Math.max(dayMs, end - start);
+    const ticks = Array.from({ length: 6 }, (_, index) => {
+      const at = start + ((span * index) / 5);
+      return { at, label: shortDate(isoDay(at)) };
+    });
+    const todayPosition = ((now - start) / span) * 100;
+    return {
+      start,
+      end,
+      span,
+      ticks,
+      todayPosition: Math.max(0, Math.min(100, todayPosition)),
+      rows: rows.map((row) => ({
+        ...row,
+        left: Math.max(0, ((row.start - start) / span) * 100),
+        width: Math.max(2.2, ((Math.max(dayMs, row.due - row.start + dayMs)) / span) * 100),
+      })),
+    };
+  }, [displayed]);
 
   function startBoardDrag(event: React.PointerEvent<HTMLDivElement>) {
     if (event.pointerType !== "mouse" || event.button !== 0) return;
@@ -555,16 +605,64 @@ export default function TaskBoard({
             </table>
           </div>
         ) : view === "gantt" ? (
-          <div className="gantt-board">
-            <div className="gantt-scale"><span>Task</span><span>Progress timeline</span><span>Due</span></div>
-            {displayed.map((task) => {
-              const pct = Math.max(4, Math.min(100, task.percent_complete || 4));
-              return <div className="gantt-row" key={task.id}>
-                <button className="task-title" onClick={() => setEditor(task)}>{task.task_name}<small>{disciplineName(task.discipline_id)}</small></button>
-                <div className="gantt-track"><i style={{ width: `${pct}%` }} /><span>{task.percent_complete}%</span></div>
-                <time className={overdue(task) ? "overdue" : ""}>{task.due_date ?? "No due date"}</time>
-              </div>;
-            })}
+          <div className="gantt-detail">
+            <div className="gantt-detail-title">
+              <div>
+                <b>Task timeline</b>
+                <small>{shortDate(isoDay(ganttModel.start))} – {shortDate(isoDay(ganttModel.end))} · one row per task</small>
+              </div>
+              <div className="gantt-legend" aria-label="Gantt status legend">
+                <span className="in_progress">In progress</span>
+                <span className="for_review">For review</span>
+                <span className="blocked">Blocked</span>
+                <span className="completed">Completed</span>
+              </div>
+            </div>
+            <div className="gantt-detail-scroll">
+              <div className="gantt-detail-head">
+                <span>Task</span>
+                <span>Owner</span>
+                <span>Status</span>
+                <span>Schedule</span>
+                <span>Progress</span>
+                <div className="gantt-axis">
+                  {ganttModel.ticks.map((tick) => <span key={tick.at}>{tick.label}</span>)}
+                </div>
+              </div>
+              {ganttModel.rows.map(({ task, start, due, left, width }) => (
+                <div className="gantt-task-row" key={task.id}>
+                  <button className="gantt-task-cell" onClick={() => setEditor(task)}>
+                    <b>{task.task_name}</b>
+                    <small>{disciplineName(task.discipline_id)} · {task.priority} priority</small>
+                  </button>
+                  <div className="gantt-owner-cell">
+                    <i>{personInitials(task.owner)}</i>
+                    <span>{personName(task.owner)}</span>
+                  </div>
+                  <span className={`status-badge ${task.status}`}>{labels[task.status]}</span>
+                  <div className="gantt-date-cell">
+                    <b>{shortDate(isoDay(start))} → {shortDate(isoDay(due))}</b>
+                    <small>{task.start_date ? "Planned start" : "Start estimated"} · {task.due_date ? "Due date set" : "Due estimated"}</small>
+                  </div>
+                  <div className="gantt-progress-cell">
+                    <b>{task.percent_complete}%</b>
+                    <i><em style={{ width: `${task.percent_complete}%` }} /></i>
+                  </div>
+                  <div className="gantt-timeline">
+                    {ganttModel.todayPosition > 0 && ganttModel.todayPosition < 100 && (
+                      <span className="gantt-today" style={{ left: `${ganttModel.todayPosition}%` }} title="Today" />
+                    )}
+                    <i
+                      className={`gantt-task-bar ${task.status}`}
+                      style={{ left: `${left}%`, width: `${Math.min(width, 100 - left)}%` }}
+                      title={`${task.task_name}: ${shortDate(isoDay(start))} to ${shortDate(isoDay(due))}`}
+                    >
+                      <em style={{ width: `${task.percent_complete}%` }} />
+                    </i>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         ) : (
           <div
@@ -578,57 +676,76 @@ export default function TaskBoard({
             onPointerCancel={endBoardDrag}
             onKeyDown={moveBoardWithKeys}
           >
-            {statuses.map((status) => (
-              <section key={status} className={`kanban-column ${status}`}>
-                <h3>
-                  {labels[status]}{" "}
-                  <span>
-                    {(matchingStatuses[status] ?? 0)}
-                  </span>
-                </h3>
-                {displayed
-                  .filter((task) => task.status === status)
-                  .map((task) => (
-                    <article className="kanban-card" key={task.id}>
-                      <span className="eyebrow">
-                        {disciplineName(task.discipline_id)}
-                      </span>
-                      <button
-                        className="task-title"
-                        onClick={() => {
-                          setEditor(task);
-                          setHistoryTask(null);
-                        }}
-                      >
-                        {task.task_name}
-                      </button>
-                      <p>{personName(task.owner)}</p>
-                      <div className="card-meta">
-                        <span className={overdue(task) ? "overdue" : ""}>
-                          {task.due_date ?? "No date"}
-                          {overdue(task) ? " · Overdue" : ""}
-                        </span>
-                        <span className={`priority ${task.priority}`}>
-                          {task.priority}
-                        </span>
-                      </div>
-                      {statusControl(task)}
-                      <div className="card-meta">
-                        <span>{task.percent_complete}% complete</span>
+            {statuses.map((status) => {
+              const columnTasks = displayed.filter((task) => task.status === status);
+              return (
+                <section key={status} className={`kanban-column ${status}`}>
+                  <header className="kanban-column-head">
+                    <span className="kanban-status-mark" aria-hidden="true" />
+                    <div>
+                      <h3>{labels[status]}</h3>
+                      <small>{statusHelp[status]}</small>
+                    </div>
+                    <b>{matchingStatuses[status] ?? 0}</b>
+                  </header>
+                  <div className="kanban-column-body">
+                    {columnTasks.map((task) => (
+                      <article className="kanban-card" key={task.id}>
+                        <div className="kanban-card-top">
+                          <span className="kanban-discipline">{disciplineName(task.discipline_id)}</span>
+                          <button
+                            className="kanban-card-menu"
+                            aria-label={`Open ${task.task_name}`}
+                            onClick={() => {
+                              setEditor(task);
+                              setHistoryTask(null);
+                            }}
+                          >•••</button>
+                        </div>
                         <button
-                          className="text-button"
-                          onClick={() => void showHistory(task)}
+                          className="task-title kanban-task-title"
+                          onClick={() => {
+                            setEditor(task);
+                            setHistoryTask(null);
+                          }}
                         >
-                          History
+                          {task.task_name}
                         </button>
+                        {task.notes && <p className="kanban-card-note">{task.notes}</p>}
+                        <div className="kanban-assignee">
+                          <i>{personInitials(task.owner)}</i>
+                          <span>{personName(task.owner)}</span>
+                        </div>
+                        <div className="kanban-meta-grid">
+                          <span>
+                            <small>Due</small>
+                            <b className={overdue(task) ? "overdue" : ""}>{task.due_date ? shortDate(task.due_date) : "No date"}</b>
+                          </span>
+                          <span>
+                            <small>Priority</small>
+                            <b className={`priority ${task.priority}`}>{task.priority}</b>
+                          </span>
+                        </div>
+                        {statusControl(task)}
+                        <div className="kanban-progress-head">
+                          <span>Progress</span>
+                          <b>{task.percent_complete}%</b>
+                        </div>
+                        <div className="kanban-progress"><i style={{ width: `${task.percent_complete}%` }} /></div>
+                        <button className="kanban-history" onClick={() => void showHistory(task)}>View history →</button>
+                      </article>
+                    ))}
+                    {!columnTasks.length && (
+                      <div className="kanban-empty">
+                        <span aria-hidden="true">○</span>
+                        <b>No tasks here</b>
+                        <small>{statusHelp[status]}</small>
                       </div>
-                    </article>
-                  ))}
-                {!displayed.some((task) => task.status === status) && (
-                  <p className="task-empty">No tasks here</p>
-                )}
-              </section>
-            ))}
+                    )}
+                  </div>
+                </section>
+              );
+            })}
           </div>
         )}
       </section>
