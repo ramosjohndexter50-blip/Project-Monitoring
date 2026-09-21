@@ -33,7 +33,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       suppressHydrationWarning
       className={`${manrope.variable} ${dmMono.variable} h-full antialiased`}
     >
-      <head><script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem('project-monitor-theme');document.documentElement.dataset.theme=t==='dark'||t==='light'?t:matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}catch(e){document.documentElement.dataset.theme='light'}})()` }} /></head>
+      <head><script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem('project-monitor-theme');document.documentElement.dataset.theme=t==='dark'||t==='light'?t:'dark'}catch(e){document.documentElement.dataset.theme='light'}})()` }} /></head>
       <body className="min-h-full flex flex-col"><ThemeToggle />{children}</body>
     </html>
   );

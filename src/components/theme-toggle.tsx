@@ -24,7 +24,7 @@ function subscribe(callback: () => void) {
 }
 
 export default function ThemeToggle() {
-  const theme = useSyncExternalStore(subscribe, () => document.documentElement.dataset.theme ?? "light", () => "light");
+  const theme = useSyncExternalStore(subscribe, () => document.documentElement.dataset.theme ?? "light", () => "dark");
   const dark = theme === "dark";
   return (
     <button className="theme-toggle" type="button" aria-label="Dark mode" aria-pressed={dark} title={dark ? "Switch to light mode" : "Switch to dark mode"}

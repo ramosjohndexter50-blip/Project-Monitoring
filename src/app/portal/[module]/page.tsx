@@ -44,12 +44,14 @@ export default async function RegisterPage({
 
   const choicesPromise = choicesFor(db, config, project, !!(filters.edit || filters.new) || moduleKey === "users");
   const recordKey = config.key ?? "id";
-  const columns = [...new Set([...config.columns, ...(moduleKey === "role_permissions" ? [] : [recordKey]), ...(config.project ? ["project_id"] : [])])].join(",");
+  const columns = [...new Set([...config.columns, ...(moduleKey === "tasks" ? ["notes"] : []), ...(moduleKey === "role_permissions" ? [] : [recordKey]), ...(config.project ? ["project_id"] : [])])].join(",");
   let query = db.from(config.table).select(columns, { count: "exact" });
   if (moduleKey === "disciplines") query = query.is("deleted_at", null);
-  query = query.order(moduleKey === "notifications" ? "created_at" : moduleKey === "role_permissions" ? "role_key" : recordKey, {
-    ascending: moduleKey !== "notifications",
-  });
+  query = moduleKey === "tasks"
+    ? query.order("due_date", { ascending: true, nullsFirst: false }).order(recordKey)
+    : query.order(moduleKey === "notifications" ? "created_at" : moduleKey === "role_permissions" ? "role_key" : recordKey, {
+        ascending: moduleKey !== "notifications",
+      });
   if (moduleKey === "role_permissions") query = query.order("permission_key");
   if (moduleKey === "notifications") query = query.order("id");
 
@@ -71,13 +73,18 @@ export default async function RegisterPage({
     ? db.from(config.table).select([...new Set([recordKey, ...config.columns, ...config.fields.map(f => f.key), ...(config.project ? ["project_id"] : []), ...(["tasks", "projects", "profiles", "disciplines"].includes(config.table) ? ["updated_at"] : [])])].join(",")).eq(recordKey, filters.edit).maybeSingle()
     : Promise.resolve(null);
   const createPromise = config.readOnly ? Promise.resolve(false) : hasPermission(moduleKey === "settings" ? "settings.manage" : `${config.permission}.create`, config.admin ? null : project, filters.discipline || null);
-  const [choices, records, selectedResult, createAllowed] = await Promise.all([
+  const taskSummaryPromise = moduleKey === "tasks" ? db.rpc("task_register_summary", { target_project: project }) : Promise.resolve(null);
+  const pageSize = moduleKey === "tasks" ? 10 : 25;
+  const [choices, records, selectedResult, createAllowed, taskSummaryResult] = await Promise.all([
     choicesPromise,
-    query.range((page - 1) * 25, page * 25 - 1),
+    query.range((page - 1) * pageSize, page * pageSize - 1),
     selectedPromise,
     createPromise,
+    taskSummaryPromise,
   ]);
   if (records.error) throw new Error(records.error.message);
+  if (taskSummaryResult && taskSummaryResult.error) throw new Error(taskSummaryResult.error.message);
+  const taskSummary = taskSummaryResult?.data as { total: number; in_progress: number; completed: number; not_started: number; blocked: number } | null;
 
   const rows = (records.data ?? []) as unknown as DataRow[];
   const selected = selectedResult?.data as unknown as DataRow | null;
@@ -119,16 +126,34 @@ export default async function RegisterPage({
     <>
       <div className="platform-heading">
         <div>
-          <p className="eyebrow">{config.admin ? "CONTROL CENTER" : "PROJECT TASK MONITORING"}</p>
+          <p className="page-crumb">Project Monitor <span>/</span> {config.title}</p>
           <h1>{config.title}</h1>
-          <p>{records.count ?? 0} accessible records · page {page}</p>
+          <p>{moduleKey === "tasks" ? "Monitor and manage all project tasks in one place." : `${records.count ?? 0} accessible records · page ${page}`}</p>
         </div>
         <div className="heading-actions">
           {canCreate && (!config.project || project) && (
-            <Link className="button primary" href={link({ new: "1", edit: "" })}>+ {moduleKey === "projects" ? "New project" : moduleKey === "tasks" ? "New task" : moduleKey === "teams" ? "Assign employee" : "New record"}</Link>
+            <Link className="button primary" href={link({ new: "1", edit: "" })}>+ {moduleKey === "projects" ? "New Project" : moduleKey === "tasks" ? "Create Task" : moduleKey === "teams" ? "Assign Employee" : "New Record"}</Link>
           )}
         </div>
       </div>
+
+      {moduleKey === "tasks" && taskSummary && (
+        <section className="task-kpi-grid" aria-label="Task summary">
+          {[
+            ["Total Tasks", taskSummary.total, "▦", "blue"],
+            ["In Progress", taskSummary.in_progress, "♧", "violet"],
+            ["Completed", taskSummary.completed, "✓", "green"],
+            ["Not Started", taskSummary.not_started, "◴", "amber"],
+            ["Blocked", taskSummary.blocked, "×", "red"],
+          ].map(([title, value, icon, tone]) => (
+            <article className={`task-kpi ${tone}`} key={String(title)}>
+              <span className="task-kpi-icon">{icon}</span>
+              <div><strong>{value}</strong><span>{title}</span></div>
+              <i className="task-kpi-spark" aria-hidden="true" />
+            </article>
+          ))}
+        </section>
+      )}
 
       <Form className="register-filters" action={`/portal/${moduleKey}`}>
         {!config.admin && config.project && (
@@ -171,12 +196,14 @@ export default async function RegisterPage({
             </select>
           </label>
         )}
-        {config.columns.includes("due_date") && (
+        {config.columns.includes("due_date") && (moduleKey === "tasks" ? (
+          <label>Due date<input name="to" type="date" defaultValue={filters.to} /></label>
+        ) : (
           <>
             <label>Due from<input name="from" type="date" defaultValue={filters.from} /></label>
             <label>Due to<input name="to" type="date" defaultValue={filters.to} /></label>
           </>
-        )}
+        ))}
         {moduleKey === "users" && (
           <>
             <label>Role<select name="role" defaultValue={filters.role ?? ""}><option value="">All roles</option>{choices.roles?.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label>
@@ -202,37 +229,72 @@ export default async function RegisterPage({
         />
       )}
 
-      <div className="register-card table-wrap">
-        <table className="register-table">
-          <thead><tr>{config.columns.map((column) => <th key={column}>{label(column)}</th>)}<th>Actions</th></tr></thead>
-          <tbody>
-            {rows.map((row, index) => {
-              const id = String(row[config.key ?? "id"] ?? row.role_key ?? index);
-              return (
-                <tr key={id + index}>
-                  {config.columns.map((column) => <td key={column}>{column === "status" ? <span className="status-badge">{label(String(row[column]))}</span> : recordLabel(column, row[column], choices)}</td>)}
-                  <td>
-                    <div className="row-actions">
-                      {!config.readOnly && moduleKey !== "role_permissions" && <Link prefetch={false} href={link({ edit: id, new: "", project: config.project ? String(row.project_id) : (project ?? "") })}>Details</Link>}
-                      {moduleKey === "projects" && <Link href={`/portal/tasks?project=${id}`}>Open tasks</Link>}
-                      {moduleKey === "projects" && profile.role === "admin" && <Link href={`/portal/teams?project=${id}`}>Manage team</Link>}
-                      {moduleKey === "users" && <ActionButton kind="reset" id={id} />}
-                      {moduleKey === "notifications" && !row.read_at && <ActionButton kind="read" id={id} />}
-                      {config.removable && <ActionButton kind="remove" moduleKey={moduleKey} id={id} extra={String(row.permission_key ?? "")} />}
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+      <div className={moduleKey === "tasks" ? "register-card table-wrap task-register-card" : "register-card table-wrap"}>
+        {moduleKey === "tasks" ? (
+          <>
+            <div className="task-table-head">
+              <b>{records.count ?? 0} tasks found</b>
+              <div><span>Sort by</span><button type="button">Due Date (Soonest)⌄</button></div>
+            </div>
+            <table className="register-table task-register-table">
+              <thead><tr><th className="select-col">□</th><th>Task</th><th>Discipline</th><th>Project</th><th>Assignee</th><th>Status</th><th>Priority</th><th>Due date</th><th>Progress</th><th>Actions</th></tr></thead>
+              <tbody>
+                {rows.map((row, index) => {
+                  const id = String(row.id ?? index);
+                  const assignee = recordLabel("owner", row.owner, choices);
+                  const statusValue = String(row.status ?? "");
+                  const priorityValue = String(row.priority ?? "");
+                  const progress = Math.max(0, Math.min(100, Number(row.percent_complete ?? 0)));
+                  return (
+                    <tr key={id}>
+                      <td className="select-col">□</td>
+                      <td className="task-main-cell"><Link prefetch={false} href={link({ edit: id, new: "", project: String(row.project_id ?? project ?? "") })}>{String(row.task_name ?? "Untitled task")}</Link><small>{String(row.notes ?? "").slice(0, 72) || "No description added."}</small></td>
+                      <td>{recordLabel("discipline_id", row.discipline_id, choices)}</td>
+                      <td>{recordLabel("project_id", row.project_id, choices)}</td>
+                      <td><span className="assignee-cell">{assignee !== "—" && <i>{assignee.split(/\s+/).slice(0,2).map((part) => part[0]).join("").toUpperCase()}</i>}{assignee}</span></td>
+                      <td><span className={`status-badge ${statusValue}`}>{label(statusValue)}</span></td>
+                      <td><span className={`priority-badge ${priorityValue}`}>◆ {label(priorityValue)}</span></td>
+                      <td>{String(row.due_date ?? "—")}</td>
+                      <td><span className="progress-cell"><b>{progress}%</b><i><em style={{ width: `${progress}%` }} /></i></span></td>
+                      <td><Link className="task-more" prefetch={false} href={link({ edit: id, new: "", project: String(row.project_id ?? project ?? "") })}>⋮</Link></td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </>
+        ) : (
+          <table className="register-table">
+            <thead><tr>{config.columns.map((column) => <th key={column}>{label(column)}</th>)}<th>Actions</th></tr></thead>
+            <tbody>
+              {rows.map((row, index) => {
+                const id = String(row[config.key ?? "id"] ?? row.role_key ?? index);
+                return (
+                  <tr key={id + index}>
+                    {config.columns.map((column) => <td key={column}>{column === "status" ? <span className={`status-badge ${String(row[column])}`}>{label(String(row[column]))}</span> : recordLabel(column, row[column], choices)}</td>)}
+                    <td>
+                      <div className="row-actions">
+                        {!config.readOnly && moduleKey !== "role_permissions" && <Link prefetch={false} href={link({ edit: id, new: "", project: config.project ? String(row.project_id) : (project ?? "") })}>Details</Link>}
+                        {moduleKey === "projects" && <Link href={`/portal/tasks?project=${id}`}>Open tasks</Link>}
+                        {moduleKey === "projects" && profile.role === "admin" && <Link href={`/portal/teams?project=${id}`}>Manage team</Link>}
+                        {moduleKey === "users" && <ActionButton kind="reset" id={id} />}
+                        {moduleKey === "notifications" && !row.read_at && <ActionButton kind="read" id={id} />}
+                        {config.removable && <ActionButton kind="remove" moduleKey={moduleKey} id={id} extra={String(row.permission_key ?? "")} />}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
         {!rows.length && <div className="empty-board"><h2>No records found</h2><p>There are no monitoring records matching the current filters.</p></div>}
       </div>
 
       <nav className="pagination" aria-label="Pagination">
         {page > 1 && <Link href={link({ page: String(page - 1) })}>← Previous</Link>}
         <span>Page {page} · {records.count ?? 0} records</span>
-        {page * 25 < (records.count ?? 0) && <Link href={link({ page: String(page + 1) })}>Next →</Link>}
+        {page * pageSize < (records.count ?? 0) && <Link href={link({ page: String(page + 1) })}>Next →</Link>}
       </nav>
     </>
   );

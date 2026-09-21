@@ -4,18 +4,35 @@ import projectLogo from "../../../image/project.png";
 import NavLink from "@/components/platform/nav-link";
 import { session } from "@/lib/platform/auth";
 
-export default async function PortalLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+type IconName = "home" | "tasks" | "projects" | "board" | "updates" | "find" | "people" | "roles" | "permissions" | "settings";
+
+function Icon({ name }: { name: IconName }) {
+  const paths: Record<IconName, React.ReactNode> = {
+    home: <><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13v-9.5"/><path d="M9 20v-6h6v6"/></>,
+    tasks: <><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M8 11h8M8 15h5"/></>,
+    projects: <><path d="M3.5 7h6l1.6 2H20.5v10H3.5z"/><path d="M3.5 7V5h6l1.5 2"/></>,
+    board: <><rect x="4" y="4" width="6" height="16" rx="1.5"/><rect x="14" y="4" width="6" height="16" rx="1.5"/></>,
+    updates: <><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></>,
+    find: <><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 4.5 4.5"/></>,
+    people: <><path d="M8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM16 10a2.5 2.5 0 1 0 0-5"/><path d="M3 20v-2a5 5 0 0 1 10 0v2M14 14a4 4 0 0 1 7 3v2"/></>,
+    roles: <><circle cx="12" cy="8" r="3"/><path d="M5 20a7 7 0 0 1 14 0"/><path d="M18 4.5 20 6l-2 1.5"/></>,
+    permissions: <><path d="M12 3 5 6v5c0 4.8 3 8.1 7 10 4-1.9 7-5.2 7-10V6z"/><path d="m9 12 2 2 4-4"/></>,
+    settings: <><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1l2-1.5-2-3.4-2.4 1A8 8 0 0 0 15 6l-.3-2.6h-4L10.5 6A8 8 0 0 0 9 7.1l-2.4-1-2 3.4 2 1.5a7 7 0 0 0 0 2l-2 1.5 2 3.4 2.4-1A8 8 0 0 0 10.5 18l.3 2.6h4L15 18a8 8 0 0 0 1.5-1.1l2.4 1 2-3.4-2-1.5c.1-.3.1-.7.1-1Z"/></>,
+  };
+  return <svg className="portal-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name]}</svg>;
+}
+
+function Item({ href, icon, children }: { href: string; icon: IconName; children: React.ReactNode }) {
+  return <NavLink href={href}><Icon name={icon}/><span>{children}</span></NavLink>;
+}
+
+export default async function PortalLayout({ children }: { children: React.ReactNode }) {
   const { db, profile } = await session();
-  // Avoid an extra permission RPC on every portal navigation. The role grant
-  // query is already needed to build the control center and is protected by RLS.
   const grants = await db.from("role_permissions").select("permission_key").eq("role_key", profile.role);
   const allowed = new Set((grants.data ?? []).map((g) => g.permission_key));
   const access = allowed.has("admin.access");
   const taskHref = ["super_admin", "admin"].includes(profile.role) ? "/portal/tasks" : `/portal/tasks?owner=${profile.id}`;
+  const initials = (profile.full_name ?? "Team member").split(/\s+/).slice(0,2).map((part) => part[0]?.toUpperCase()).join("");
 
   return (
     <div className="platform-shell">
@@ -26,51 +43,46 @@ export default async function PortalLayout({
         </Link>
 
         <nav aria-label="Workspace">
-          <h2>WORKSPACE</h2>
-          <NavLink href="/portal">Home</NavLink>
-          <NavLink href={taskHref}>{["super_admin", "admin"].includes(profile.role) ? "Tasks" : "My Tasks"}</NavLink>
-          <NavLink href="/portal/projects">Projects</NavLink>
-          {profile.role === "admin" && <NavLink href="/portal/teams">Team</NavLink>}
-          <NavLink href="/?view=board">Board</NavLink>
-          <NavLink href="/portal/notifications">Updates</NavLink>
-          <NavLink href="/portal/search">Find</NavLink>
+          <Item href="/portal" icon="home">Dashboard</Item>
+          <Item href={taskHref} icon="tasks">{["super_admin", "admin"].includes(profile.role) ? "Tasks" : "My Tasks"}</Item>
+          <Item href="/portal/projects" icon="projects">Projects</Item>
+          <Item href="/?view=board" icon="board">Board</Item>
+          <Item href="/portal/notifications" icon="updates">Updates</Item>
+          <Item href="/portal/search" icon="find">Find</Item>
         </nav>
 
         {access && (
-          <nav aria-label="Administration">
-            <h2>CONTROL CENTER</h2>
-            <NavLink href="/admin">Admin overview</NavLink>
-            {[
-              ["users", "Employee management", "users.view"],
-              ["roles", "Roles", "roles.view"],
-              ["permissions", "Permission catalog", "roles.view"],
-              ["role_permissions", "Role permissions", "roles.view"],
-              ["disciplines", "Disciplines", "disciplines.view"],
-              ["overrides", "Permission overrides", "roles.view"],
-              ["settings", "Web settings", "settings.manage"],
-            ]
-              .filter(([, , right]) => allowed.has(right))
-              .map(([key, name]) => (
-                <NavLink key={key} href={`/portal/${key}`}>
-                  {name}
-                </NavLink>
-              ))}
+          <nav aria-label="Administration" className="management-nav">
+            <h2>MANAGEMENT</h2>
+            {allowed.has("users.view") && <Item href="/portal/users" icon="people">Employees</Item>}
+            {allowed.has("roles.view") && <Item href="/portal/roles" icon="roles">Roles</Item>}
+            {allowed.has("roles.view") && <Item href="/portal/permissions" icon="permissions">Permissions</Item>}
+            {allowed.has("settings.manage") && <Item href="/portal/settings" icon="settings">Settings</Item>}
           </nav>
         )}
 
         <div className="platform-user">
-          <b>{profile.full_name ?? "Team member"}</b>
-          <small>{profile.role.replaceAll("_", " ")}</small>
-          <Link href="/auth/reset">Change password</Link>
-          <form action="/auth/signout" method="post">
-            <button>Sign out</button>
-          </form>
+          <span className="platform-avatar">{initials || "TM"}</span>
+          <div><b>{profile.full_name ?? "Team member"}</b><small>{profile.role.replaceAll("_", " ")}</small></div>
+          <form action="/auth/signout" method="post"><button aria-label="Sign out">↗</button></form>
         </div>
       </aside>
+
       <main className="platform-main">
         <header className="platform-topbar">
-          <span>PROJECT WORKSPACE</span>
-          <Link href="/portal/search">Find anything ↗</Link>
+          <form className="portal-search" action="/portal/search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 4.5 4.5"/></svg>
+            <input name="q" placeholder="Search tasks, projects, or employees..." aria-label="Search workspace"/>
+            <kbd>Ctrl + K</kbd>
+          </form>
+          <div className="portal-top-actions">
+            <Link className="top-icon notification-dot" href="/portal/notifications" aria-label="Notifications">♧</Link>
+            <div className="top-user">
+              <span className="platform-avatar compact">{initials || "TM"}</span>
+              <div><b>{profile.full_name ?? "Team member"}</b><small>{profile.role.replaceAll("_", " ")}</small></div>
+              <span className="top-chevron">⌄</span>
+            </div>
+          </div>
         </header>
         <div className="platform-body">{children}</div>
       </main>
