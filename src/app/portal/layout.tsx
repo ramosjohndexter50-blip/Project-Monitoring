@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import projectLogo from "../../../image/project.png";
 import NavLink from "@/components/platform/nav-link";
-import { session, hasPermission } from "@/lib/platform/auth";
+import { session } from "@/lib/platform/auth";
 
 export default async function PortalLayout({
   children,
@@ -10,11 +10,11 @@ export default async function PortalLayout({
   children: React.ReactNode;
 }) {
   const { db, profile } = await session();
-  const [access, grants] = await Promise.all([
-    hasPermission("admin.access"),
-    db.from("role_permissions").select("permission_key").eq("role_key", profile.role),
-  ]);
+  // Avoid an extra permission RPC on every portal navigation. The role grant
+  // query is already needed to build the control center and is protected by RLS.
+  const grants = await db.from("role_permissions").select("permission_key").eq("role_key", profile.role);
   const allowed = new Set((grants.data ?? []).map((g) => g.permission_key));
+  const access = allowed.has("admin.access");
   const taskHref = ["super_admin", "admin"].includes(profile.role) ? "/portal/tasks" : `/portal/tasks?owner=${profile.id}`;
 
   return (
