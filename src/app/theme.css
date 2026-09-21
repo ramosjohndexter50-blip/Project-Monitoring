@@ -834,3 +834,31 @@ html[data-theme="light"] .status-badge.cancelled{background:#eee9ff!important;co
   outline:2px solid #8060ff;
   outline-offset:3px;
 }
+
+
+/* Remove native scroll chrome from the task board; navigation is drag/swipe based. */
+.task-panel{
+  overflow:hidden!important;
+}
+.kanban,
+.draggable-kanban,
+.board-filters{
+  scrollbar-width:none!important;
+  -ms-overflow-style:none!important;
+}
+.kanban::-webkit-scrollbar,
+.draggable-kanban::-webkit-scrollbar,
+.board-filters::-webkit-scrollbar{
+  display:none!important;
+  width:0!important;
+  height:0!important;
+}
+.draggable-kanban{
+  padding-bottom:20px!important;
+  border-bottom:0!important;
+  background:
+    linear-gradient(90deg,var(--pm-panel) 0,var(--pm-panel) 12px,transparent 30px),
+    linear-gradient(270deg,var(--pm-panel) 0,var(--pm-panel) 12px,transparent 30px),
+    var(--pm-bg)!important;
+  background-attachment:local,local,scroll!important;
+}
