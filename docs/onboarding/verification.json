@@ -1,0 +1,14 @@
+{
+  "passed": true,
+  "environment": "Isolated synthetic Auth with real PostgreSQL policies",
+  "checks": [
+    "Super Admin sets temporary password without link",
+    "first login and direct project URL require new password",
+    "password save enables workspace",
+    "new password logs in",
+    "admin password reset gates next login",
+    "active employee prevents discipline deletion",
+    "unused discipline can be deleted",
+    "no browser runtime errors"
+  ]
+}

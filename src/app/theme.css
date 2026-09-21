@@ -92,6 +92,10 @@ body { background: var(--paper); color: var(--ink); }
 .register-filters, .register-form { background: var(--surface-soft); border-color: var(--line); border-radius: 23px; }
 .register-form input, .register-form select, .register-form textarea, .register-filters input, .register-filters select, .task-editor input, .task-editor select, .task-editor textarea, .login-form input { background: var(--surface); color: var(--ink); border-color: var(--line); border-radius: 12px; accent-color: var(--accent); }
 .row-actions a, .pagination a, .register-filters a, .register-card > a { color: var(--accent); }
+.row-actions details { min-width: 160px; }.row-actions summary { cursor: pointer; color: var(--accent); }
+.row-actions details label { display: grid; gap: 6px; margin: 12px 0; color: var(--muted); }
+.row-actions details input { width: 100%; min-width: 0; padding: 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface-soft); color: var(--ink); }
+.platform-user > a { color: var(--muted); font-size: 11px; text-decoration: none; }
 .register-table th, .task-table th { color: var(--muted); background: var(--surface-soft); }
 .register-table td, .task-table td { border-color: var(--line); color: var(--ink); }
 .register-table tbody tr:hover, .task-table tbody tr:hover { background: var(--surface-soft); }

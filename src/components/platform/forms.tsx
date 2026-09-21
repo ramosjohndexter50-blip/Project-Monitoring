@@ -304,7 +304,7 @@ export function ActionButton({
         onClick={async () => {
           if (
             kind === "remove" &&
-            !confirm("Remove this assignment? Access may change immediately.")
+            !confirm(moduleKey === "disciplines" ? "Delete this discipline? Active employees must be reassigned first. Existing project history will be preserved." : "Remove this assignment? Access may change immediately.")
           )
             return;
           setBusy(true);

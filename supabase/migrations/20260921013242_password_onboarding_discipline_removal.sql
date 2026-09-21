@@ -51,7 +51,7 @@ begin
    delete from public.disciplines where id=target;
    if not found then raise exception 'Discipline deletion denied'; end if;
    return 'Discipline deleted.';
- exception when foreign_key_violation then
+ exception when foreign_key_violation or restrict_violation then
    update public.disciplines set is_active=false,deleted_at=now() where id=target;
    return 'Discipline removed from the catalog. Historical references were preserved.';
  end;

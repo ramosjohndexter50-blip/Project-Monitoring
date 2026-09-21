@@ -58,6 +58,7 @@ export default async function PortalLayout({
         <div className="platform-user">
           <b>{profile.full_name ?? "Team member"}</b>
           <small>{profile.role.replaceAll("_", " ")}</small>
+          <Link href="/auth/reset">Change password</Link>
           <form action="/auth/signout" method="post">
             <button>Sign out</button>
           </form>

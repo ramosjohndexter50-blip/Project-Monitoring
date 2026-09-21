@@ -808,8 +808,9 @@ await as('admin',async()=>{
   await db.query('select public.remove_discipline($1)',[empty]);
   assert.equal((await db.query('select id from public.disciplines where id=$1',[empty])).rows.length,0);
 });
-// An inactive employee keeps their historical discipline but prevents hard deletion.
+// Project history prevents hard deletion; inactive employee references stay intact.
 const retired=(await db.query("insert into public.disciplines(name) values('Retired test discipline') returning id")).rows[0].id;
+await db.query('insert into public.project_disciplines(project_id,discipline_id) values($1,$2)',[p,retired]);
 await db.query('update public.profiles set discipline_id=$1 where id=$2',[retired,ids.disabled]);
 await as('admin',async()=>{
   await db.query('select public.remove_discipline($1)',[retired]);
