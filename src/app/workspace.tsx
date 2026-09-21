@@ -150,7 +150,6 @@ export default function Workspace({ user, initialProfile }: { user: Pick<User, "
             <b>/</b>
             <strong>{project?.name ?? "Projects"}</strong>
           </div>
-          <div className="workspace-search">⌕ Search workspace, tasks, documents... <kbd>Ctrl + K</kbd></div>
         </header>
         <div className="mobile-workspace">
           <select
@@ -231,35 +230,35 @@ function WorkflowGuide() {
   return (
     <section className="workflow-guide">
       <p className="guide-intro">
-        Isang board bawat project. Bawat deliverable ay task na may discipline,
-        owner, priority, at deadline.
+        Use one board for each project. Every deliverable should be tracked as a task with a discipline,
+        owner, priority, and deadline.
       </p>
       <div className="workflow-steps">
         {[
           [
             "01",
             "Plan & assign",
-            "Admin: gumawa ng task, pumili ng discipline at owner, ilagay ang due date at priority.",
+            "Create the task, choose the correct discipline and owner, then set the due date and priority.",
           ],
           [
             "02",
             "Not started",
-            "Nakapila ang task. Tingnan ang scope at notes bago simulan.",
+            "The task is queued. Review the scope and notes before starting work.",
           ],
           [
             "03",
             "In progress",
-            "I-update ang progress habang ginagawa. Ilagay sa notes ang mahahalagang detalye.",
+            "Update progress while the work is being done and record important details in the notes.",
           ],
           [
             "04",
             "Blocked → resolve",
-            "Kung may blocker, piliin ang Blocked at ilagay ang dahilan sa notes. Kapag resolved, ibalik sa In progress.",
+            "If something is stopping the work, set the task to Blocked and explain the reason in the notes. Move it back to In Progress once resolved.",
           ],
           [
             "05",
             "Review & complete",
-            "Ilagay sa For review at ipa-review sa lead. Ang awtorisadong reviewer ang maglalagay ng Completed; magiging 100% ang progress.",
+            "Move the task to For Review when it is ready. An authorized reviewer can complete it, which sets progress to 100%.",
           ],
         ].map(([step, title, description]) => (
           <article key={step}>
@@ -272,21 +271,20 @@ function WorkflowGuide() {
       <div className="guide-notes">
         <h2>Daily team routine</h2>
         <p>
-          Buksan ang My work → unahin ang overdue at high priority → i-update
-          ang status at notes → tingnan ang History para makita ang mga
-          pagbabago.
+          Open My Tasks → handle overdue and high-priority work first → update
+          the status and notes → check History when you need to review changes.
         </p>
         <h2>Access at responsibility</h2>
         <p>
-          Project membership at role permissions ang nagtatakda ng access.
-          Managers at leads ang nagre-review; team members ang gumagawa ng
-          assigned work. Viewer ay read-only.
+          Project membership and role permissions control access. Managers and
+          leads review work, team members handle their assigned tasks, and viewers
+          have read-only access.
         </p>
         <h2>Automatic behavior</h2>
         <p>
-          Completed = 100%. Not started = 0%. Use For review before approval.
-          Deliverables use the configurable approval queue in Project registers.
-          In-app notifications track assignments and reviews.
+          Completed tasks are automatically set to 100%, while Not Started tasks
+          remain at 0%. Use For Review before approval. Deliverables follow the
+          configured approval flow, and notifications track assignments and reviews.
         </p>
       </div>
     </section>

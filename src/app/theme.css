@@ -452,3 +452,14 @@ html[data-theme="dark"] .register-table td{border-color:#1c293f!important}
   .overview-progress-row{grid-template-columns:1fr 36px}
   .overview-progress-row>i{grid-column:1/-1}
 }
+
+
+/* Board now lives inside the portal shell; remove the non-working global search. */
+.portal-topbar-clean{justify-content:flex-end!important}
+.portal-topbar-clean .portal-top-actions{margin-left:auto}
+.board-page-heading{align-items:flex-end!important}
+.board-project-picker{display:grid;gap:6px;min-width:240px;color:#93a0b5;font-size:9px}
+.board-project-picker select{height:38px;padding:0 11px;border:1px solid #2b3852;border-radius:9px;background:#0b1220;color:#edf2fb;font-size:10px}
+.board-project-context{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:2px 0 14px;padding:12px 14px;border:1px solid #27354d;border-radius:12px;background:#101827}
+.board-project-context span,.board-project-context b{display:block}.board-project-context span{color:#7e8ba1;font-size:8px;text-transform:uppercase;letter-spacing:.8px}.board-project-context b{margin-top:3px;color:#eef3fb;font-size:11px}.board-project-context small{color:#8895a9;font-size:9px}
+@media(max-width:760px){.board-project-picker{min-width:180px}.board-project-context{align-items:flex-start;flex-direction:column}}
