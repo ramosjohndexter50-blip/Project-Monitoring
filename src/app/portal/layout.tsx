@@ -32,7 +32,7 @@ export default async function PortalLayout({ children }: { children: React.React
   const allowed = new Set((grants.data ?? []).map((g) => g.permission_key));
   const access = allowed.has("admin.access");
   const taskHref = ["super_admin", "admin"].includes(profile.role) ? "/portal/tasks" : `/portal/tasks?owner=${profile.id}`;
-  const initials = (profile.full_name ?? "Team member").split(/\s+/).slice(0,2).map((part) => part[0]?.toUpperCase()).join("");
+  const initials = (profile.full_name ?? "Team member").split(/\s+/).slice(0,2).map((part: string) => part[0]?.toUpperCase()).join("");
 
   return (
     <div className="platform-shell">
