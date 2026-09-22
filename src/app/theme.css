@@ -3311,3 +3311,81 @@ label[role="button"]:focus-visible{
     display:flex!important;
   }
 }
+
+
+/* Final form sizing baseline: all standard fields use the same dimensions. */
+:root{
+  --hs-field-height:36px;
+}
+.register-form input:not([type="checkbox"]),
+.register-form select,
+.register-filters input,
+.register-filters select,
+.employee-account-fields input:not([type="checkbox"]),
+.employee-account-fields select,
+.employee-record-fields input:not([type="checkbox"]),
+.employee-record-fields select,
+.employee-reset-field input,
+.employee-password-reset input,
+.task-editor input:not([type="checkbox"]),
+.task-editor select,
+.board-toolbar input,
+.board-toolbar select,
+.board-project-picker select{
+  width:100%!important;
+  height:var(--hs-field-height)!important;
+  min-height:var(--hs-field-height)!important;
+  max-height:var(--hs-field-height)!important;
+  box-sizing:border-box!important;
+  padding:0 10px!important;
+  border-radius:8px!important;
+  font-size:9.5px!important;
+  line-height:1!important;
+}
+.employee-account-fields,
+.employee-record-fields{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  align-items:end!important;
+}
+.employee-account-fields>label,
+.employee-record-fields>label{
+  min-width:0!important;
+  width:100%!important;
+}
+.employee-reset-field{
+  min-width:0!important;
+}
+.employee-reset-field>label{
+  min-width:0!important;
+}
+.employee-reset-field .employee-reset-inline,
+.employee-record-actions .button,
+.employee-create-submit,
+.employee-create-submit-mobile,
+.register-filters .button,
+.register-filters>a{
+  height:var(--hs-field-height)!important;
+  min-height:var(--hs-field-height)!important;
+  box-sizing:border-box!important;
+}
+@media(max-width:1180px){
+  .employee-account-fields,
+  .employee-record-fields{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+}
+@media(max-width:760px){
+  :root{
+    --hs-field-height:40px;
+  }
+  .employee-account-fields,
+  .employee-record-fields{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+}
+@media(max-width:430px){
+  .employee-account-fields,
+  .employee-record-fields{
+    grid-template-columns:1fr!important;
+  }
+}
