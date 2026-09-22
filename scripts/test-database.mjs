@@ -876,11 +876,11 @@ const requiredTaskColumns = (
     from information_schema.columns
     where table_schema='public'
       and table_name='tasks'
-      and column_name in ('progress_stage','owner','start_date','due_date','notes','progress_note')
+      and column_name in ('progress_stage','design_stage','owner','start_date','due_date','notes','progress_note')
     order by column_name
   `)
 ).rows;
-assert.equal(requiredTaskColumns.length, 6);
+assert.equal(requiredTaskColumns.length, 7);
 assert.ok(requiredTaskColumns.every((column) => column.is_nullable === "NO"));
 assert.equal(
   Number(
@@ -889,6 +889,7 @@ assert.equal(
         select count(*) n
         from public.tasks
         where progress_stage is null
+           or design_stage is null
            or owner is null
            or start_date is null
            or due_date is null
@@ -926,5 +927,16 @@ const taskStatusConstraint = (
 assert.match(taskStatusConstraint, /submitted/);
 assert.match(taskStatusConstraint, /for_resubmission/);
 console.log("PASS submitted and resubmission task statuses");
+
+const designStageConstraint = (
+  await db.query(`
+    select pg_get_constraintdef(oid) definition
+    from pg_constraint
+    where conrelid='public.tasks'::regclass and conname='tasks_design_stage_check'
+  `)
+).rows[0]?.definition ?? "";
+for (const stage of ["concept", "schematic", "detailed", "tender"])
+  assert.match(designStageConstraint, new RegExp(stage));
+console.log("PASS mandatory design stage options");
 
 await db.close();

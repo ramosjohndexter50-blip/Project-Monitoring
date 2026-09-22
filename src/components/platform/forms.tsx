@@ -65,7 +65,7 @@ export function RecordForm({
   const defaultValue = (field: Field) =>
     String(
       row?.[field.key] ??
-        (field.key === "progress_stage" ? "" : field.options?.[0]) ??
+        (["progress_stage", "design_stage"].includes(field.key) ? "" : field.options?.[0]) ??
         (field.key === "project_id"
           ? (project ?? "")
           : field.key === "role"
@@ -243,6 +243,7 @@ export function RecordForm({
                         "approved",
                         "completed",
                         "revision_required",
+                        "for_resubmission",
                         "cancelled",
                       ].includes(option) ||
                       option === row?.status,
@@ -256,7 +257,14 @@ export function RecordForm({
                             coordination: "Coordination - % Complete",
                             sheet: "Sheet - % Complete",
                           } as Record<string, string>)[option]
-                        : option.replaceAll("_", " ")}
+                        : field.key === "design_stage"
+                          ? ({
+                              concept: "Concept",
+                              schematic: "Schematic",
+                              detailed: "Detailed",
+                              tender: "Tender",
+                            } as Record<string, string>)[option]
+                          : option.replaceAll("_", " ")}
                     </option>
                   ))}
                 {field.reference &&

@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import type { FormEvent } from "react";
-import { labels, progressStageLabels, progressStages, statuses, type Status, type Task, type Discipline, type Profile, type ProgressStage } from "./task-types";
+import { designStageLabels, designStages, labels, progressStageLabels, progressStages, statuses, type DesignStage, type Status, type Task, type Discipline, type Profile, type ProgressStage } from "./task-types";
 
 export default function TaskEditor({
   task,
@@ -34,6 +34,7 @@ export default function TaskEditor({
     due_date: task?.due_date ?? "",
     priority: task?.priority ?? "medium",
     progress_stage: task?.progress_stage ?? "",
+    design_stage: task?.design_stage ?? "",
     status: task?.status ?? "not_started",
     notes: task?.notes ?? "",
     progress_note: task?.progress_note ?? "",
@@ -44,7 +45,7 @@ export default function TaskEditor({
   async function submit(event: FormEvent) {
     event.preventDefault();
     if (!draft.task_name.trim() || !editable) return;
-    if (!task && (!draft.progress_stage || !draft.owner || !draft.start_date || !draft.due_date)) return;
+    if (!task && (!draft.progress_stage || !draft.design_stage || !draft.owner || !draft.start_date || !draft.due_date)) return;
     if (!canManageTask && task) {
       await onSave({
         status: draft.status,
@@ -59,6 +60,7 @@ export default function TaskEditor({
       start_date: draft.start_date,
       due_date: draft.due_date,
       progress_stage: draft.progress_stage as ProgressStage,
+      design_stage: draft.design_stage as DesignStage,
     });
   }
   return (
@@ -164,6 +166,20 @@ export default function TaskEditor({
           >
             {["low", "medium", "high", "critical"].map((p) => (
               <option key={p}>{p}</option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Design Stage
+          <select
+            required
+            disabled={!canManageTask && !!task}
+            value={draft.design_stage}
+            onChange={(e) => setDraft({ ...draft, design_stage: e.target.value as DesignStage })}
+          >
+            <option value="">Choose design stage</option>
+            {designStages.map((stage) => (
+              <option key={stage} value={stage}>{designStageLabels[stage]}</option>
             ))}
           </select>
         </label>
