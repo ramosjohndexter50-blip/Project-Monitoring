@@ -65,7 +65,7 @@ export function RecordForm({
   const defaultValue = (field: Field) =>
     String(
       row?.[field.key] ??
-        field.options?.[0] ??
+        (field.key === "progress_stage" ? "" : field.options?.[0]) ??
         (field.key === "project_id"
           ? (project ?? "")
           : field.key === "role"
@@ -79,7 +79,7 @@ export function RecordForm({
   const locked = (field: Field) =>
     moduleKey === "tasks" &&
     !projectAdmin &&
-    !["status", "percent_complete", "progress_note"].includes(field.key);
+    !["status", "progress_note"].includes(field.key);
   return (
     <form
       className={moduleKey === "users" ? "register-form employee-record-form" : "register-form"}
@@ -249,7 +249,14 @@ export function RecordForm({
                   )
                   .map((option) => (
                     <option key={option} value={option}>
-                      {option.replaceAll("_", " ")}
+                      {field.key === "progress_stage"
+                        ? ({
+                            model: "Model - % Complete",
+                            annotation: "Annotation - % Complete",
+                            coordination: "Coordination - % Complete",
+                            sheet: "Sheet - % Complete",
+                          } as Record<string, string>)[option]
+                        : option.replaceAll("_", " ")}
                     </option>
                   ))}
                 {field.reference &&
