@@ -830,18 +830,14 @@ console.log('PASS password-change database gate, blocked active-employee deletio
 // Normalize intentionally sparse legacy fixtures before testing the newer
 // mandatory-task-field migration. Production rows are created through scoped forms,
 // but these early regression fixtures predate that contract.
-const requiredOwnerD2 = "10000000-0000-4000-8000-999999999999";
+const requiredOwnerD2 = ids.viewer;
 await db.query(
-  "insert into auth.users(id,email,email_confirmed_at) values($1,'required-owner@example.invalid',now())",
-  [requiredOwnerD2],
-);
-await db.query(
-  "update public.profiles set role='team_member',discipline_id=$1,position='Fixture owner',is_active=true where id=$2",
+  "update public.profiles set discipline_id=$1,position='Fixture owner',is_active=true where id=$2",
   [d2, requiredOwnerD2],
 );
 await db.query(
-  "insert into public.project_members(project_id,user_id,role_key,discipline_id) values($1,$2,'team_member',$3) on conflict do nothing",
-  [p, requiredOwnerD2, d2],
+  "update public.project_members set discipline_id=$1 where project_id=$2 and user_id=$3",
+  [d2, p, requiredOwnerD2],
 );
 await db.query(
   "insert into public.project_members(project_id,user_id,role_key,discipline_id) values($1,$2,'team_member',$3) on conflict do nothing",
