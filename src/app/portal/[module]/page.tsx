@@ -205,14 +205,12 @@ export default async function RegisterPage({
                 </select>
               </label>
             )}
-            {config.columns.includes("due_date") && (moduleKey === "tasks" ? (
-              <label>Due date<input name="to" type="date" defaultValue={filters.to} /></label>
-            ) : (
+            {config.columns.includes("due_date") && (
               <>
                 <label>Due from<input name="from" type="date" defaultValue={filters.from} /></label>
                 <label>Due to<input name="to" type="date" defaultValue={filters.to} /></label>
               </>
-            ))}
+            )}
             {moduleKey === "users" && (
               <>
                 <label>Role<select name="role" defaultValue={filters.role ?? ""}><option value="">All roles</option>{choices.roles?.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label>
