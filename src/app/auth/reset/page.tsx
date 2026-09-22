@@ -26,7 +26,7 @@ export default function ResetPassword() {
           <div className="login-copy">
             <div className="eyebrow">ACCOUNT SECURITY</div>
             <h1>Set your password</h1>
-            <p>Choose your own password before opening the workspace. Use at least 12 characters.</p>
+            <p>Choose your own password before opening the workspace. Use at least 6 characters.</p>
           </div>
           <form
             className="login-form"
@@ -57,19 +57,19 @@ export default function ResetPassword() {
               New password
               <input
                 name="password"
-                minLength={12}
+                minLength={6}
                 maxLength={128}
                 type="password"
                 required
                 autoComplete="new-password"
-                placeholder="Minimum 12 characters"
+                placeholder="Minimum 6 characters"
               />
             </label>
             <label>
               Confirm password
               <input
                 name="confirm"
-                minLength={12}
+                minLength={6}
                 maxLength={128}
                 type="password"
                 required
