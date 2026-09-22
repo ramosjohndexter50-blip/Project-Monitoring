@@ -298,14 +298,14 @@ export function RecordForm({
                 onChange={(e) => setResetPasswordValue(e.target.value)}
                 placeholder="New temporary password"
                 autoComplete="new-password"
-                minLength={12}
+                minLength={6}
                 maxLength={128}
               />
             </label>
             <button
               type="button"
               className="button secondary employee-reset-inline"
-              disabled={resetBusy || resetPasswordValue.length < 12}
+              disabled={resetBusy || resetPasswordValue.length < 6}
               onClick={async () => {
                 setResetBusy(true);
                 setResetResult(null);
@@ -433,7 +433,7 @@ function TemporaryPasswordForm({ id }: { id: string }) {
       setResult(response);
       if (response.ok) form.reset();
     } finally { setBusy(false); }
-  }}><b>Set temporary password</b><label>Temporary password<input name="password" type="password" autoComplete="new-password" required minLength={12} maxLength={128} /></label><button className="button secondary" disabled={busy}>Set password</button><Result result={result} /></form></details>;
+  }}><b>Set temporary password</b><label>Temporary password<input name="password" type="password" autoComplete="new-password" required minLength={6} maxLength={128} /></label><button className="button secondary" disabled={busy}>Set password</button><Result result={result} /></form></details>;
 }
 export function AccountForm({ choices }: { choices: Choices }) {
   const [result, setResult] = useState<ActionResult | null>(null);
@@ -496,7 +496,7 @@ export function AccountForm({ choices }: { choices: Choices }) {
           </label>
           <label>
             Temporary password
-            <input name="password" type="password" placeholder="Minimum 12 characters" autoComplete="new-password" minLength={12} maxLength={128} required />
+            <input name="password" type="password" placeholder="Minimum 6 characters" autoComplete="new-password" minLength={6} maxLength={128} required />
           </label>
           <label>
             Role
