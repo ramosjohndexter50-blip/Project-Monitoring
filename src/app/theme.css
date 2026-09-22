@@ -3841,3 +3841,32 @@ label[role="button"]:focus-visible{
     justify-self:start;
   }
 }
+
+
+/* Keep profile name and role visible after wrapping the sidebar identity in a link. */
+.platform-user>.platform-profile-link{
+  grid-column:1 / -1!important;
+  width:100%!important;
+  min-width:0!important;
+}
+.platform-profile-link .platform-user-copy{
+  min-width:0!important;
+  overflow:hidden!important;
+}
+.platform-profile-link .platform-user-copy b{
+  display:block!important;
+  color:var(--pm-text)!important;
+  opacity:1!important;
+  visibility:visible!important;
+}
+.platform-profile-link .platform-user-copy small{
+  display:block!important;
+  color:var(--pm-muted)!important;
+}
+@media(max-width:840px){
+  .platform-sidebar .platform-user>.platform-profile-link{
+    grid-column:1 / -1!important;
+    grid-template-columns:34px minmax(0,1fr)!important;
+    width:100%!important;
+  }
+}
