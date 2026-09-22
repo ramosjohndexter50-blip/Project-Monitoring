@@ -5493,3 +5493,90 @@ html[data-theme="dark"] .gantt-pro{
 .login-aside-brand>span:last-child{display:grid;gap:4px}.login-aside-brand strong{font-size:14px;line-height:1;color:#fff;letter-spacing:-.2px}.login-aside-brand small{color:#b9adff;font-size:7px;font-weight:800;letter-spacing:1.5px}
 .login-aside-eyebrow{margin-bottom:14px!important}
 @media(max-width:1180px){.login-aside-brand{margin-bottom:16px}.login-aside-logo-wrap{width:44px;height:44px}.login-aside-logo-wrap img{width:31px;height:31px}}
+
+
+/* Global portal route-transition overlay: instant feedback on every internal navigation. */
+.route-transition-overlay{
+  position:fixed;
+  inset:0;
+  z-index:9999;
+  display:grid;
+  place-items:center;
+  padding:24px;
+  background:color-mix(in srgb,var(--pm-bg) 82%,transparent);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  animation:routeOverlayIn .14s ease-out;
+}
+.route-transition-card{
+  width:min(320px,calc(100vw - 36px));
+  padding:22px 20px 18px;
+  display:grid;
+  justify-items:center;
+  gap:12px;
+  border:1px solid color-mix(in srgb,var(--hs-purple) 30%,var(--pm-line));
+  border-radius:18px;
+  background:linear-gradient(145deg,color-mix(in srgb,var(--hs-purple) 8%,var(--pm-panel)),var(--pm-panel));
+  box-shadow:0 24px 70px #00000028,0 0 34px color-mix(in srgb,var(--hs-purple) 12%,transparent);
+}
+.route-transition-logo{
+  width:58px;
+  height:58px;
+  display:grid;
+  place-items:center;
+  border-radius:16px;
+  background:var(--pm-panel-2);
+  border:1px solid var(--pm-line);
+}
+.route-transition-logo img{
+  width:40px;
+  height:40px;
+  object-fit:contain;
+  filter:drop-shadow(0 0 12px color-mix(in srgb,var(--hs-purple) 28%,transparent));
+}
+.route-transition-copy{
+  display:grid;
+  gap:4px;
+  text-align:center;
+}
+.route-transition-copy strong{
+  color:var(--pm-text);
+  font-size:13px;
+}
+.route-transition-copy span{
+  color:var(--pm-muted);
+  font-size:9px;
+}
+.route-transition-track{
+  width:170px;
+  height:3px;
+  overflow:hidden;
+  border-radius:999px;
+  background:var(--pm-line);
+}
+.route-transition-track i{
+  display:block;
+  width:38%;
+  height:100%;
+  border-radius:inherit;
+  background:linear-gradient(90deg,#6d4cff,#b45fff);
+  animation:routeOverlayTrack .95s ease-in-out infinite;
+}
+@keyframes routeOverlayIn{
+  from{opacity:0}
+  to{opacity:1}
+}
+@keyframes routeOverlayTrack{
+  0%{transform:translateX(-125%)}
+  100%{transform:translateX(365%)}
+}
+@media(max-width:760px){
+  .route-transition-overlay{padding:18px}
+  .route-transition-card{width:min(290px,calc(100vw - 28px));padding:20px 16px 16px;border-radius:16px}
+  .route-transition-logo{width:52px;height:52px}
+  .route-transition-logo img{width:36px;height:36px}
+}
+@media(prefers-reduced-motion:reduce){
+  .route-transition-overlay{animation:none}
+  .route-transition-track i{animation:none;width:68%}
+}
