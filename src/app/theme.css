@@ -5484,3 +5484,12 @@ html[data-theme="dark"] .gantt-pro{
 @keyframes pageLoaderBars{0%,100%{transform:scaleY(.58);opacity:.55}50%{transform:scaleY(1);opacity:1}}@keyframes pageLoaderTrack{0%{transform:translateX(-110%)}100%{transform:translateX(350%)}}@keyframes pageLoaderIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 @media(max-width:760px){.page-transition-loader{min-height:calc(100vh - 125px)}.page-loader-mark{width:52px;height:52px;border-radius:14px}}
 @media(prefers-reduced-motion:reduce){.page-loader-mark span,.page-loader-track i{animation:none}.page-loader-track i{width:65%}}
+
+
+/* Login hero branding */
+.login-aside-brand{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.login-aside-logo-wrap{width:50px;height:50px;display:grid;place-items:center;border:1px solid rgba(255,255,255,.12);border-radius:14px;background:rgba(255,255,255,.055);box-shadow:0 12px 30px rgba(86,61,206,.24),inset 0 1px rgba(255,255,255,.08);backdrop-filter:blur(10px)}
+.login-aside-logo-wrap img{width:36px;height:36px;object-fit:contain;filter:drop-shadow(0 0 10px rgba(155,106,255,.28))}
+.login-aside-brand>span:last-child{display:grid;gap:4px}.login-aside-brand strong{font-size:14px;line-height:1;color:#fff;letter-spacing:-.2px}.login-aside-brand small{color:#b9adff;font-size:7px;font-weight:800;letter-spacing:1.5px}
+.login-aside-eyebrow{margin-bottom:14px!important}
+@media(max-width:1180px){.login-aside-brand{margin-bottom:16px}.login-aside-logo-wrap{width:44px;height:44px}.login-aside-logo-wrap img{width:31px;height:31px}}
