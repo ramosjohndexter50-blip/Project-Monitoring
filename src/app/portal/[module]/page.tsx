@@ -233,7 +233,7 @@ export default async function RegisterPage({
           </Form>
         </details>
       ) : (
-        <Form className="register-filters" action={`/portal/${moduleKey}`}>
+        <Form className={`register-filters ${moduleKey}-filters`} action={`/portal/${moduleKey}`}>
           {!config.admin && config.project && (
             <label>
               Project
@@ -314,7 +314,7 @@ export default async function RegisterPage({
         />
       )}
 
-      <div className={moduleKey === "tasks" ? "register-card table-wrap task-register-card" : moduleKey === "users" ? "register-card employee-list-card" : "register-card table-wrap"}>
+      <div className={moduleKey === "tasks" ? "register-card table-wrap task-register-card tasks-register-card" : moduleKey === "users" ? "register-card employee-list-card users-register-card" : `register-card table-wrap ${moduleKey}-register-card`}>
         {moduleKey === "users" ? (
           <>
             <div className="employee-list-head">

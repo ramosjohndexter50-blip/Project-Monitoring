@@ -4903,3 +4903,546 @@ html[data-theme="light"] .status-badge.for_resubmission{background:#ffedd5!impor
   background:transparent;
   color:var(--pm-text);
 }
+
+
+/* ========================================================================
+   Portal visual baseline v2 — readable, compact and consistent everywhere
+   ======================================================================== */
+@media(min-width:841px){
+  .platform-body{
+    padding:12px 26px 30px!important;
+  }
+  .platform-heading{
+    min-height:58px;
+    margin:0 0 12px!important;
+    padding-top:0!important;
+  }
+  .platform-heading h1{
+    margin:2px 0 3px!important;
+    font-size:28px!important;
+    line-height:1.08!important;
+    letter-spacing:-.65px!important;
+  }
+  .platform-heading p{
+    font-size:11px!important;
+    line-height:1.4!important;
+  }
+  .page-crumb{
+    margin:0 0 3px!important;
+    font-size:9.5px!important;
+    line-height:1.35!important;
+  }
+}
+
+/* Shared cards */
+.register-card,
+.register-filters,
+.task-kpi,
+.overview-progress-card,
+.overview-work-card,
+.progress-dashboard-filter,
+.progress-dashboard-card,
+.gantt-pro{
+  border-radius:12px!important;
+  box-shadow:0 8px 24px color-mix(in srgb,#18233b 8%,transparent)!important;
+}
+html[data-theme="dark"] .register-card,
+html[data-theme="dark"] .register-filters,
+html[data-theme="dark"] .task-kpi,
+html[data-theme="dark"] .overview-progress-card,
+html[data-theme="dark"] .overview-work-card,
+html[data-theme="dark"] .progress-dashboard-filter,
+html[data-theme="dark"] .progress-dashboard-card,
+html[data-theme="dark"] .gantt-pro{
+  box-shadow:0 10px 28px #00000018!important;
+}
+
+/* Generic filter bars: same control rhythm on every module. */
+.register-filters{
+  min-height:68px;
+  margin:0 0 12px!important;
+  padding:10px 12px!important;
+  gap:10px!important;
+  align-items:end!important;
+}
+.register-filters label{
+  gap:4px!important;
+  font-size:9.5px!important;
+  font-weight:650!important;
+}
+.register-filters input,
+.register-filters select{
+  height:38px!important;
+  min-height:38px!important;
+  padding:0 10px!important;
+  border-radius:8px!important;
+  font-size:10.5px!important;
+}
+.register-filters .button,
+.register-filters>a{
+  height:38px!important;
+  min-height:38px!important;
+  padding:0 13px!important;
+  border-radius:8px!important;
+  font-size:10px!important;
+}
+.register-filters .button{
+  background:linear-gradient(135deg,#7654f7,#5b38df)!important;
+  border-color:#7654f7!important;
+  color:#fff!important;
+  box-shadow:0 5px 12px #6543e626!important;
+}
+.register-filters>a{
+  background:var(--pm-panel-2)!important;
+  border:1px solid var(--pm-line)!important;
+  color:var(--pm-text)!important;
+}
+
+/* Projects should not stretch four controls across the whole screen. */
+.projects-filters{
+  grid-template-columns:minmax(230px,300px) minmax(190px,240px) 128px 88px!important;
+  justify-content:start!important;
+}
+.projects-register-card{
+  padding:18px 20px!important;
+}
+.projects-register-card .register-table{
+  min-width:880px!important;
+}
+.projects-register-card .register-table th{
+  padding:10px 12px!important;
+  font-size:9.5px!important;
+}
+.projects-register-card .register-table td{
+  padding:12px!important;
+  font-size:10.5px!important;
+}
+.projects-register-card .row-actions{
+  gap:5px!important;
+}
+.projects-register-card .row-actions a{
+  font-size:9.5px!important;
+  line-height:1.4!important;
+}
+
+/* Tasks: keep the dense information, but make every label readable. */
+.tasks-filters{
+  grid-template-columns:minmax(175px,1.05fr) minmax(175px,1fr) minmax(145px,.82fr) minmax(145px,.82fr) minmax(145px,.82fr) 126px 70px!important;
+}
+.task-kpi-grid{
+  gap:10px!important;
+  margin:6px 0 12px!important;
+}
+.task-kpi{
+  min-height:96px!important;
+  padding:14px 15px!important;
+}
+.task-kpi-icon{
+  width:31px!important;
+  height:31px!important;
+  font-size:14px!important;
+}
+.task-kpi strong{
+  font-size:27px!important;
+}
+.task-kpi div>span{
+  margin-top:4px!important;
+  font-size:10.5px!important;
+}
+.task-register-card{
+  overflow-x:auto!important;
+}
+.task-table-head{
+  min-height:48px!important;
+  padding:0 14px!important;
+}
+.task-table-head>b{
+  font-size:10.5px!important;
+}
+.task-register-table{
+  min-width:1300px!important;
+}
+.task-register-table th{
+  padding:9px 10px!important;
+  font-size:9px!important;
+  letter-spacing:.18px!important;
+}
+.task-register-table td{
+  padding:10px!important;
+  font-size:10px!important;
+}
+.task-main-cell{
+  min-width:240px!important;
+}
+.task-main-cell>a{
+  font-size:10.5px!important;
+}
+.task-main-cell small{
+  margin-top:3px!important;
+  font-size:8.5px!important;
+}
+.assignee-cell{
+  font-size:9.5px!important;
+}
+.status-badge,
+.priority-badge{
+  min-height:24px;
+  display:inline-flex;
+  align-items:center;
+  font-size:8.8px!important;
+}
+.progress-cell{
+  min-width:104px!important;
+}
+.progress-cell>b{
+  font-size:9.5px!important;
+}
+.task-revision-badge{
+  min-height:23px!important;
+  padding:0 8px!important;
+  font-size:8.8px!important;
+}
+
+/* Progress page: stronger hierarchy and consistent five-card summary. */
+.progress-dashboard-filter{
+  min-height:68px!important;
+  margin-bottom:10px!important;
+  padding:10px 12px!important;
+  grid-template-columns:minmax(300px,520px) minmax(240px,1fr)!important;
+  align-items:center!important;
+}
+.progress-dashboard-filter label{
+  gap:4px!important;
+  font-size:9.5px!important;
+}
+.progress-dashboard-filter select{
+  height:38px!important;
+  min-height:38px!important;
+  font-size:10.5px!important;
+}
+.progress-dashboard-filter>div{
+  padding:3px 0 0 2px;
+}
+.progress-dashboard-filter>div>span,
+.progress-dashboard-filter>div>small{
+  font-size:8.8px!important;
+}
+.progress-dashboard-filter>div>strong{
+  font-size:11.5px!important;
+}
+.progress-dashboard-grid{
+  gap:10px!important;
+  margin-bottom:10px!important;
+}
+.progress-dashboard-card{
+  min-height:112px!important;
+  padding:13px!important;
+  gap:9px!important;
+}
+.progress-dashboard-card-head span{
+  font-size:9.5px!important;
+}
+.progress-dashboard-card-head strong{
+  font-size:25px!important;
+}
+.progress-dashboard-card small{
+  font-size:8.5px!important;
+}
+.progress-dashboard-track{
+  height:6px!important;
+}
+.progress-project-table .overview-card-head{
+  padding:12px 14px!important;
+}
+.progress-project-table .overview-card-head h2{
+  font-size:13.5px!important;
+}
+.progress-project-table .overview-card-head p{
+  font-size:9px!important;
+}
+.progress-project-head{
+  min-height:38px!important;
+  font-size:8.8px!important;
+}
+.progress-project-row{
+  min-height:50px!important;
+}
+.progress-project-row span b{
+  font-size:10.3px!important;
+}
+.progress-project-row span small{
+  font-size:8px!important;
+}
+.progress-project-row>strong{
+  font-size:10.5px!important;
+}
+.progress-project-overall{
+  font-size:11.5px!important;
+}
+
+/* Overview: use the available width while keeping text comfortable. */
+.dashboard-heading{
+  margin-bottom:8px!important;
+}
+.dashboard-kpis{
+  gap:10px!important;
+  margin:4px 0 10px!important;
+}
+.dashboard-kpis .task-kpi{
+  min-height:98px!important;
+}
+.overview-main-grid{
+  grid-template-columns:minmax(0,1.7fr) minmax(320px,.78fr)!important;
+  gap:10px!important;
+  margin-bottom:10px!important;
+}
+.overview-progress-card,
+.overview-work-card{
+  padding:14px!important;
+}
+.overview-card-head{
+  margin-bottom:11px!important;
+}
+.overview-card-head h2{
+  font-size:13.5px!important;
+}
+.overview-card-head p{
+  font-size:9px!important;
+}
+.overview-completion{
+  font-size:27px!important;
+}
+.overview-progress-list{
+  gap:9px!important;
+}
+.overview-progress-row{
+  grid-template-columns:minmax(150px,1fr) 42px minmax(130px,.85fr)!important;
+  gap:10px!important;
+}
+.overview-progress-row>div b{
+  font-size:10px!important;
+}
+.overview-progress-row>div small,
+.overview-progress-row>span{
+  font-size:8.5px!important;
+}
+.overview-mini-grid{
+  gap:7px!important;
+  margin-bottom:9px!important;
+}
+.overview-mini-grid>div{
+  padding:10px!important;
+}
+.overview-mini-grid span{
+  font-size:8.5px!important;
+}
+.overview-mini-grid strong{
+  margin-top:3px!important;
+  font-size:19px!important;
+}
+.overview-primary-link{
+  padding:9px 11px!important;
+  font-size:9.5px!important;
+}
+.dashboard-grid-consistent{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:10px!important;
+}
+.dashboard-grid-consistent .register-card{
+  min-height:150px!important;
+  padding:13px!important;
+}
+.dashboard-row{
+  min-height:34px!important;
+  padding:7px 0!important;
+  gap:8px!important;
+}
+.dashboard-row b{
+  font-size:9.5px!important;
+}
+.dashboard-row>span:not(.status-badge),
+.dashboard-row>strong,
+.dashboard-row small{
+  font-size:8.3px!important;
+}
+
+/* Gantt: timeline should dominate the width, but the page should not show a giant empty canvas. */
+@media(min-width:841px){
+  .gantt-workspace{
+    height:auto!important;
+    min-height:0!important;
+    gap:8px!important;
+    overflow:visible!important;
+  }
+  .gantt-workspace .gantt-page-heading{
+    min-height:54px!important;
+  }
+  .gantt-workspace .gantt-page-heading h1{
+    font-size:28px!important;
+  }
+  .gantt-workspace .gantt-page-heading p{
+    font-size:10.5px!important;
+  }
+  .gantt-workspace-controls{
+    padding:9px 10px!important;
+    grid-template-columns:minmax(260px,.85fr) minmax(360px,1.3fr) auto!important;
+  }
+  .gantt-workspace>.gantt-pro{
+    flex:0 0 auto!important;
+    min-height:0!important;
+  }
+}
+.gantt-pro{
+  --gantt-left:600px;
+  min-height:0!important;
+}
+.gantt-pro-titlebar{
+  min-height:52px!important;
+  padding:8px 10px!important;
+}
+.gantt-pro-titlebar b{
+  font-size:11.5px!important;
+}
+.gantt-pro-titlebar small{
+  font-size:8.8px!important;
+}
+.gantt-details-toggle,
+.gantt-pro-zoom button{
+  min-height:30px!important;
+  font-size:8.5px!important;
+}
+.gantt-pro-shell{
+  flex:0 1 auto!important;
+  min-height:0!important;
+  max-height:calc(100dvh - 260px)!important;
+  overflow-y:auto!important;
+}
+.gantt-pro-left,
+.gantt-pro-timeline-pane,
+.gantt-pro-timeline,
+.gantt-pro-timeline-body{
+  min-height:0!important;
+}
+.gantt-pro-left-head{
+  height:54px!important;
+  grid-template-columns:42px minmax(210px,1.55fr) 100px 58px 76px 76px 58px!important;
+}
+.gantt-pro-left-head>span{
+  padding:0 7px!important;
+  font-size:8.3px!important;
+}
+.gantt-pro-left-row{
+  height:38px!important;
+  grid-template-columns:42px minmax(210px,1.55fr) 100px 58px 76px 76px 58px!important;
+}
+.gantt-pro-left-row>span{
+  padding:0 7px!important;
+  font-size:8.8px!important;
+}
+.gantt-name>b{
+  font-size:9.5px!important;
+}
+.gantt-pro-calendar{
+  height:54px!important;
+}
+.gantt-pro-months,
+.gantt-pro-months span{
+  height:27px!important;
+}
+.gantt-pro-months span{
+  font-size:8.8px!important;
+}
+.gantt-pro-ticks{
+  inset:27px 0 0!important;
+  height:27px!important;
+}
+.gantt-pro-ticks span{
+  height:27px!important;
+  font-size:7.8px!important;
+}
+.gantt-pro-timeline-body::after{
+  background:repeating-linear-gradient(
+    to bottom,
+    transparent 0 37px,
+    color-mix(in srgb,var(--pm-line) 72%,transparent) 37px 38px
+  )!important;
+}
+.gantt-pro-time-row{
+  height:38px!important;
+}
+.gantt-pro-bar{
+  top:9px!important;
+  height:20px!important;
+}
+.gantt-pro-bar.summary{
+  top:15px!important;
+  height:8px!important;
+}
+.gantt-pro-note{
+  padding:7px 10px!important;
+  font-size:8px!important;
+}
+
+@media(min-width:1181px) and (max-width:1500px){
+  .gantt-pro{--gantt-left:540px!important}
+  .gantt-pro-left-head,
+  .gantt-pro-left-row{
+    grid-template-columns:40px minmax(190px,1.5fr) 92px 54px 72px 72px 54px!important;
+  }
+}
+
+@media(max-width:1180px){
+  .dashboard-grid-consistent{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+  .projects-filters{
+    grid-template-columns:minmax(220px,1fr) minmax(180px,.8fr) 120px 82px!important;
+  }
+}
+
+@media(max-width:760px){
+  .platform-heading{
+    min-height:0!important;
+    margin-bottom:10px!important;
+  }
+  .register-filters{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+  .register-filters .button,
+  .register-filters>a{
+    width:100%!important;
+  }
+  .projects-filters,
+  .tasks-filters{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+  .projects-register-card{
+    padding:0!important;
+  }
+  .dashboard-grid-consistent{
+    grid-template-columns:1fr!important;
+  }
+  .progress-dashboard-filter{
+    grid-template-columns:1fr!important;
+  }
+  .progress-dashboard-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+  .gantt-pro{
+    --gantt-left:100%!important;
+    min-height:0!important;
+  }
+  .gantt-pro-shell{
+    max-height:calc(100dvh - 250px)!important;
+  }
+}
+@media(max-width:420px){
+  .register-filters,
+  .projects-filters,
+  .tasks-filters{
+    grid-template-columns:1fr!important;
+  }
+  .progress-dashboard-grid{
+    grid-template-columns:1fr!important;
+  }
+}
