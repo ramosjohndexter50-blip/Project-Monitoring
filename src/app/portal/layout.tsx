@@ -73,8 +73,10 @@ export default async function PortalLayout({ children }: { children: React.React
         </div>
 
         <div className="platform-user">
-          <span className="platform-avatar">{initials || "TM"}</span>
-          <div><b>{profile.full_name ?? "Team member"}</b><small>{profile.role.replaceAll("_", " ")}</small></div>
+          <Link className="platform-profile-link" href="/portal/profile">
+            <span className="platform-avatar">{initials || "TM"}</span>
+            <span className="platform-user-copy"><b>{profile.full_name ?? "Team member"}</b><small>{profile.role.replaceAll("_", " ")}</small></span>
+          </Link>
           <form className="platform-signout-form" action="/auth/signout" method="post">
             <button className="portal-signout" aria-label="Sign out">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -105,11 +107,11 @@ export default async function PortalLayout({ children }: { children: React.React
           <div className="portal-top-actions">
             <ThemeToggle />
             <Link className="top-icon notification-dot" href="/portal/notifications" aria-label="Notifications">♧</Link>
-            <div className="top-user">
+            <Link className="top-user" href="/portal/profile" aria-label="Open profile">
               <span className="platform-avatar compact">{initials || "TM"}</span>
-              <div><b>{profile.full_name ?? "Team member"}</b><small>{profile.role.replaceAll("_", " ")}</small></div>
+              <span className="top-user-copy"><b>{profile.full_name ?? "Team member"}</b><small>{profile.role.replaceAll("_", " ")}</small></span>
               <span className="top-chevron">⌄</span>
-            </div>
+            </Link>
           </div>
         </header>
         <div className="platform-body">

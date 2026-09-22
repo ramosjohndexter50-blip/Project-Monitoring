@@ -3650,3 +3650,194 @@ label[role="button"]:focus-visible{
     max-width:calc(100vw - 28px)!important;
   }
 }
+
+
+/* Employee self-profile */
+.platform-profile-link{
+  min-width:0;
+  display:grid;
+  grid-template-columns:34px minmax(0,1fr);
+  align-items:center;
+  gap:9px;
+  color:inherit!important;
+  text-decoration:none!important;
+}
+.platform-profile-link:hover .platform-user-copy b{
+  color:var(--hs-purple)!important;
+}
+.platform-user-copy,
+.top-user-copy{
+  min-width:0;
+  display:block;
+}
+.platform-user-copy b,
+.platform-user-copy small,
+.top-user-copy b,
+.top-user-copy small{
+  display:block;
+}
+.platform-user-copy b,
+.top-user-copy b{
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.top-user{
+  color:inherit!important;
+  text-decoration:none!important;
+}
+.top-user:hover{
+  color:var(--hs-purple)!important;
+}
+.employee-profile-card{
+  max-width:980px;
+  border:1px solid var(--pm-line);
+  border-radius:var(--hs-radius-md);
+  background:var(--pm-panel);
+  box-shadow:var(--hs-shadow);
+  overflow:hidden;
+}
+.employee-profile-hero{
+  min-height:92px;
+  padding:16px 18px;
+  display:grid;
+  grid-template-columns:56px minmax(0,1fr) auto;
+  align-items:center;
+  gap:13px;
+  border-bottom:1px solid var(--pm-line);
+  background:linear-gradient(135deg,color-mix(in srgb,var(--hs-purple) 8%,var(--pm-panel)),var(--pm-panel));
+}
+.employee-profile-avatar{
+  width:56px;
+  height:56px;
+  display:grid;
+  place-items:center;
+  border-radius:16px;
+  background:linear-gradient(135deg,var(--hs-purple),var(--hs-purple-2));
+  color:#fff;
+  font-size:17px;
+  font-weight:800;
+  box-shadow:0 9px 22px rgba(92,54,229,.18);
+}
+.employee-profile-hero h2{
+  margin:0;
+  color:var(--pm-text);
+  font-size:18px;
+  line-height:1.2;
+}
+.employee-profile-hero p{
+  margin:4px 0 0;
+  color:var(--pm-muted);
+  font-size:10px;
+}
+.employee-profile-grid{
+  padding:14px;
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+}
+.employee-profile-field{
+  min-width:0;
+  min-height:68px;
+  padding:11px 12px;
+  border:1px solid var(--pm-line);
+  border-radius:10px;
+  background:var(--pm-panel-2);
+}
+.employee-profile-field>span{
+  display:block;
+  margin-bottom:5px;
+  color:var(--pm-muted);
+  font-size:8.5px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:.55px;
+}
+.employee-profile-field>strong{
+  display:block;
+  color:var(--pm-text);
+  font-size:11px;
+  line-height:1.35;
+  overflow-wrap:anywhere;
+}
+.employee-profile-projects{
+  grid-column:1 / -1;
+  min-height:auto;
+}
+.employee-profile-project-list{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;
+}
+.employee-profile-project-list a{
+  min-width:0;
+  padding:9px 10px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  border:1px solid var(--pm-line);
+  border-radius:8px;
+  background:var(--pm-panel);
+  color:var(--pm-text)!important;
+  text-decoration:none;
+  transition:transform .16s ease,border-color .16s ease,background .16s ease;
+}
+.employee-profile-project-list a:hover{
+  transform:translateY(-1px);
+  border-color:color-mix(in srgb,var(--hs-purple) 32%,var(--pm-line));
+  background:color-mix(in srgb,var(--hs-purple) 5%,var(--pm-panel));
+}
+.employee-profile-project-list b{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-size:10px;
+}
+.employee-profile-project-list small{
+  flex:0 0 auto;
+  color:var(--pm-muted);
+  font-size:8px;
+}
+@media(max-width:760px){
+  .employee-profile-card{
+    max-width:none;
+  }
+  .employee-profile-hero{
+    grid-template-columns:48px minmax(0,1fr) auto;
+    padding:13px;
+  }
+  .employee-profile-avatar{
+    width:48px;
+    height:48px;
+    border-radius:14px;
+    font-size:14px;
+  }
+  .employee-profile-hero h2{
+    font-size:15px;
+  }
+  .employee-profile-grid{
+    grid-template-columns:1fr;
+    padding:11px;
+    gap:8px;
+  }
+  .employee-profile-projects{
+    grid-column:auto;
+  }
+  .employee-profile-project-list{
+    grid-template-columns:1fr;
+  }
+  .platform-profile-link{
+    width:100%;
+  }
+}
+@media(max-width:390px){
+  .employee-profile-hero{
+    grid-template-columns:44px minmax(0,1fr);
+  }
+  .employee-profile-hero>.employee-status{
+    grid-column:2;
+    justify-self:start;
+  }
+}
