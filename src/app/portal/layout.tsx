@@ -37,6 +37,7 @@ export default async function PortalLayout({ children }: { children: React.React
 
   return (
     <div className="platform-shell">
+      <input className="mobile-nav-toggle" id="mobile-nav-toggle" type="checkbox" aria-hidden="true" />
       <aside className="platform-sidebar">
         <Link className="platform-brand" href="/portal">
           <Image className="platform-brand-logo" src={projectLogo} alt="" priority />
@@ -77,9 +78,21 @@ export default async function PortalLayout({ children }: { children: React.React
           </form>
         </div>
       </aside>
+      <label className="mobile-nav-backdrop" htmlFor="mobile-nav-toggle" aria-hidden="true" />
 
       <main className="platform-main">
         <header className="platform-topbar portal-topbar-clean">
+          <div className="mobile-topbar-brand">
+            <label className="mobile-menu-button" htmlFor="mobile-nav-toggle" aria-label="Open navigation">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
+                <path d="M4 7h16M4 12h16M4 17h16"/>
+              </svg>
+            </label>
+            <Link className="mobile-brand" href="/portal">
+              <Image src={projectLogo} alt="" priority />
+              <span>Hamdan Studio<small>PROJECT MONITOR</small></span>
+            </Link>
+          </div>
           <div className="portal-top-actions">
             <ThemeToggle />
             <Link className="top-icon notification-dot" href="/portal/notifications" aria-label="Notifications">♧</Link>

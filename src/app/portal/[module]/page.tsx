@@ -158,6 +158,16 @@ export default async function RegisterPage({
         </section>
       )}
 
+      {moduleKey === "users" && (
+        <div className="employee-mobile-toolbar">
+          <Form className="employee-mobile-search" action="/portal/users">
+            <span aria-hidden="true">⌕</span>
+            <input name="q" placeholder="Search employees..." defaultValue={filters.q} />
+            <button type="submit" aria-label="Search employees">Search</button>
+          </Form>
+        </div>
+      )}
+
       {moduleKey === "users" ? (
         <details className="employee-filter-shell">
           <summary>
@@ -284,6 +294,12 @@ export default async function RegisterPage({
         </Form>
       )}
 
+      {moduleKey === "users" && profile.role === "super_admin" && selected && (
+        <Link className="employee-mobile-create-link" href="/portal/users">
+          <span aria-hidden="true">＋</span>
+          Create employee account
+        </Link>
+      )}
       {moduleKey === "users" && profile.role === "super_admin" && !selected && <AccountForm choices={choices} />}
       {(selected || filters.new) && !config.readOnly && (
         <RecordForm
@@ -349,24 +365,29 @@ export default async function RegisterPage({
                 const lastLogin = row.last_login_at ? new Date(String(row.last_login_at)).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "Never";
                 return (
                   <article className="employee-mobile-card" key={id}>
-                    <div className="employee-mobile-card-top">
-                      <div>
-                        <b>{String(row.full_name ?? "Unnamed employee")}</b>
-                        <small>{String(row.email ?? "—")}</small>
+                    <span className="employee-mobile-avatar" aria-hidden="true">
+                      {String(row.full_name ?? "Employee").split(/\s+/).slice(0,2).map((part) => part[0]?.toUpperCase()).join("")}
+                    </span>
+                    <div className="employee-mobile-content">
+                      <div className="employee-mobile-card-top">
+                        <div>
+                          <b>{String(row.full_name ?? "Unnamed employee")}</b>
+                          <small>{String(row.email ?? "—")}</small>
+                        </div>
+                        <ActionButton kind="reset" id={id} />
                       </div>
-                      <ActionButton kind="reset" id={id} />
-                    </div>
-                    <div className="employee-mobile-badges">
-                      <span className={`role-badge ${roleValue}`}>{label(roleValue)}</span>
-                      <span className={active ? "employee-status active" : "employee-status inactive"}><i />{active ? "Active" : "Inactive"}</span>
-                    </div>
-                    <div className="employee-mobile-meta">
-                      <span>{recordLabel("discipline_id", row.discipline_id, choices)}</span>
-                      <span>{String(row.position ?? "—")}</span>
-                    </div>
-                    <div className="employee-mobile-footer">
-                      <small>Last login: {lastLogin}</small>
-                      <Link prefetch={false} href={link({ edit: id, new: "" })}>Details</Link>
+                      <div className="employee-mobile-status-row">
+                        <div className="employee-mobile-badges">
+                          <span className={`role-badge ${roleValue}`}>{label(roleValue)}</span>
+                          <span className="employee-mobile-divider">|</span>
+                          <span className="employee-mobile-discipline">{recordLabel("discipline_id", row.discipline_id, choices)}</span>
+                        </div>
+                        <span className={active ? "employee-status active" : "employee-status inactive"}><i />{active ? "Active" : "Inactive"}</span>
+                      </div>
+                      <div className="employee-mobile-footer">
+                        <small><span aria-hidden="true">◷</span> Last login: {lastLogin}</small>
+                        <Link prefetch={false} href={link({ edit: id, new: "" })}>Details</Link>
+                      </div>
                     </div>
                   </article>
                 );

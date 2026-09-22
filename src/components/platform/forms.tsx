@@ -439,7 +439,7 @@ export function AccountForm({ choices }: { choices: Choices }) {
   const [result, setResult] = useState<ActionResult | null>(null);
   const [busy, setBusy] = useState(false);
   return (
-    <details className="employee-create-shell">
+    <details className="employee-create-shell" id="employee-create-form">
       <summary className="employee-create-mobile-summary">
         <span aria-hidden="true">♙</span>
         Create employee account
