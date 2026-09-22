@@ -4593,3 +4593,248 @@ label[role="button"]:focus-visible{
     grid-template-columns:36px minmax(160px,1fr) 66px 66px!important;
   }
 }
+
+
+/* Mobile top bar: profile lives in the drawer, so keep the header uncluttered. */
+@media(max-width:840px){
+  .platform-topbar .top-user{
+    display:none!important;
+  }
+  .platform-topbar .portal-top-actions{
+    margin-left:auto!important;
+    gap:8px!important;
+  }
+}
+
+/* Gantt detail panel can collapse so the timeline gets the full workspace. */
+.gantt-details-toggle{
+  min-height:32px;
+  padding:0 10px;
+  border:1px solid var(--pm-line);
+  border-radius:8px;
+  background:var(--pm-panel-2);
+  color:var(--pm-text);
+  font-size:9px;
+  font-weight:750;
+  cursor:pointer;
+  transition:background .16s ease,border-color .16s ease,color .16s ease,transform .16s ease;
+}
+.gantt-details-toggle:hover{
+  transform:translateY(-1px);
+  border-color:color-mix(in srgb,var(--hs-purple) 38%,var(--pm-line));
+  background:color-mix(in srgb,var(--hs-purple) 7%,var(--pm-panel-2));
+}
+.gantt-details-toggle-mobile{
+  display:none;
+}
+.gantt-pro.details-collapsed .gantt-pro-shell{
+  grid-template-columns:0 minmax(0,1fr)!important;
+}
+.gantt-pro.details-collapsed .gantt-pro-left{
+  width:0!important;
+  min-width:0!important;
+  overflow:hidden!important;
+  border-right:0!important;
+  visibility:hidden;
+}
+.gantt-pro.details-collapsed .gantt-pro-timeline-pane{
+  min-width:0!important;
+}
+.gantt-pro.details-collapsed .gantt-pro-timeline{
+  min-width:100%!important;
+}
+
+@media(max-width:760px){
+  .gantt-workspace{
+    gap:7px!important;
+  }
+  .gantt-page-heading{
+    margin-bottom:2px!important;
+  }
+  .gantt-page-heading .page-crumb{
+    display:none!important;
+  }
+  .gantt-page-heading h1{
+    font-size:22px!important;
+  }
+  .gantt-page-heading p{
+    font-size:9.5px!important;
+    line-height:1.35!important;
+  }
+  .gantt-workspace-controls{
+    margin:0!important;
+    padding:9px!important;
+    gap:8px!important;
+  }
+  .gantt-workspace-summary{
+    min-height:30px!important;
+    gap:6px!important;
+  }
+  .gantt-workspace-summary span{
+    min-height:28px!important;
+    padding:0 8px!important;
+  }
+  .gantt-pro{
+    --gantt-left:100%;
+    min-height:540px!important;
+  }
+  .gantt-pro-titlebar{
+    gap:9px!important;
+    padding:10px!important;
+  }
+  .gantt-pro-titlebar>div:first-child{
+    width:100%;
+  }
+  .gantt-pro-titlebar b{
+    font-size:13px!important;
+  }
+  .gantt-pro-titlebar small{
+    font-size:9px!important;
+    line-height:1.35!important;
+  }
+  .gantt-pro-actions{
+    width:100%!important;
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+    gap:7px!important;
+  }
+  .gantt-details-toggle{
+    min-height:36px!important;
+    width:100%;
+  }
+  .gantt-details-toggle-desktop{
+    display:none;
+  }
+  .gantt-details-toggle-mobile{
+    display:inline;
+  }
+  .gantt-pro-zoom{
+    width:100%!important;
+    min-height:36px;
+  }
+  .gantt-pro-actions>.button{
+    min-height:36px!important;
+    width:100%;
+    justify-content:center;
+  }
+  .gantt-pro-actions>.button.primary{
+    grid-column:2;
+  }
+
+  /* Mobile has two clean modes:
+     timeline-first by default, or a readable task-details table on demand. */
+  .gantt-pro-shell{
+    display:block!important;
+    min-height:0;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+  }
+  .gantt-pro-left{
+    display:block!important;
+    width:100%!important;
+    min-width:0!important;
+    border-right:0!important;
+  }
+  .gantt-pro-timeline-pane{
+    display:none!important;
+    width:100%!important;
+    min-width:0!important;
+    overflow-x:auto!important;
+  }
+  .gantt-pro.details-collapsed .gantt-pro-left{
+    display:none!important;
+  }
+  .gantt-pro.details-collapsed .gantt-pro-timeline-pane{
+    display:block!important;
+    visibility:visible!important;
+  }
+  .gantt-pro-left-head,
+  .gantt-pro-left-row{
+    width:100%!important;
+    grid-template-columns:42px minmax(0,1.55fr) minmax(88px,.75fr) 72px!important;
+  }
+  .gantt-pro-left-head>span:nth-child(3),
+  .gantt-pro-left-row>span:nth-child(3){
+    display:flex!important;
+  }
+  .gantt-pro-left-head>span:nth-child(4),
+  .gantt-pro-left-row>span:nth-child(4){
+    display:none!important;
+  }
+  .gantt-pro-left-head>span:nth-child(5),
+  .gantt-pro-left-row>span:nth-child(5){
+    display:none!important;
+  }
+  .gantt-pro-left-head>span:nth-child(6),
+  .gantt-pro-left-row>span:nth-child(6){
+    display:none!important;
+  }
+  .gantt-pro-left-head>span:nth-child(7),
+  .gantt-pro-left-row>span:nth-child(7){
+    display:flex!important;
+    grid-column:auto!important;
+  }
+  .gantt-pro-left-head{
+    position:sticky;
+    top:0;
+    z-index:5;
+    height:48px!important;
+  }
+  .gantt-pro-left-row{
+    min-height:44px!important;
+    height:44px!important;
+  }
+  .gantt-pro-left-row>span{
+    padding:0 7px!important;
+    font-size:9px!important;
+  }
+  .gantt-name>b{
+    font-size:10px!important;
+  }
+  .gantt-owner{
+    font-size:8.7px!important;
+  }
+
+  .gantt-pro.details-collapsed .gantt-pro-timeline{
+    width:max(100%,680px)!important;
+    min-width:680px!important;
+  }
+  .gantt-pro-calendar{
+    position:sticky!important;
+    top:0;
+    z-index:5;
+  }
+  .gantt-pro-timeline-pane{
+    cursor:grab;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+  }
+  .gantt-pro-note{
+    font-size:8px!important;
+  }
+}
+@media(max-width:420px){
+  .gantt-pro-actions{
+    grid-template-columns:1fr!important;
+  }
+  .gantt-pro-actions>.button.primary{
+    grid-column:auto;
+  }
+  .gantt-pro-left-head,
+  .gantt-pro-left-row{
+    grid-template-columns:38px minmax(0,1.45fr) minmax(80px,.75fr) 62px!important;
+  }
+}
+@media print{
+  .gantt-details-toggle{
+    display:none!important;
+  }
+  .gantt-pro.details-collapsed .gantt-pro-left{
+    display:block!important;
+    width:auto!important;
+    visibility:visible!important;
+  }
+  .gantt-pro.details-collapsed .gantt-pro-shell{
+    grid-template-columns:var(--gantt-left) minmax(0,1fr)!important;
+  }
+}

@@ -78,15 +78,21 @@ export default function DetailedGantt({
   newTabHref?: string;
 }) {
   const [zoom, setZoom] = useState<Zoom>(overall ? "month" : "week");
+  const [detailsCollapsed, setDetailsCollapsed] = useState(false);
   const [paneWidth, setPaneWidth] = useState(760);
   const timelineRef = useRef<HTMLDivElement | null>(null);
   const drag = useRef({ active: false, startX: 0, scrollLeft: 0 });
 
   useEffect(() => {
+    const mobile = window.matchMedia("(max-width: 760px)");
+    if (mobile.matches) setDetailsCollapsed(true);
+  }, []);
+
+  useEffect(() => {
     const pane = timelineRef.current;
     if (!pane) return;
 
-    const update = () => setPaneWidth(Math.max(520, Math.round(pane.clientWidth)));
+    const update = () => setPaneWidth(Math.max(320, Math.round(pane.clientWidth)));
     update();
 
     const observer = new ResizeObserver(update);
@@ -269,13 +275,22 @@ export default function DetailedGantt({
   }
 
   return (
-    <section className="gantt-pro">
+    <section className={`gantt-pro ${detailsCollapsed ? "details-collapsed" : ""}`}>
       <div className="gantt-pro-titlebar">
         <div>
           <b>Detailed task Gantt</b>
           <small>{scopeLabel} · {tasks.length} task{tasks.length === 1 ? "" : "s"} · drag timeline to move</small>
         </div>
         <div className="gantt-pro-actions">
+          <button
+            className="gantt-details-toggle"
+            type="button"
+            onClick={() => setDetailsCollapsed((value) => !value)}
+            aria-pressed={!detailsCollapsed}
+          >
+            <span className="gantt-details-toggle-desktop">{detailsCollapsed ? "Show details" : "Hide details"}</span>
+            <span className="gantt-details-toggle-mobile">{detailsCollapsed ? "Task details" : "Timeline"}</span>
+          </button>
           <div className="gantt-pro-zoom" aria-label="Gantt zoom">
             {(["day", "week", "month"] as Zoom[]).map((item) => (
               <button key={item} className={zoom === item ? "selected" : ""} onClick={() => setZoom(item)}>
