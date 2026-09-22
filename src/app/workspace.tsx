@@ -210,6 +210,7 @@ export default function Workspace({ user, initialProfile }: { user: Pick<User, "
               role={profile?.role ?? "viewer"}
               disciplineId={profile?.discipline_id ?? null}
               projectId={project.id}
+              projectName={project.name}
               userId={user.id}
               onlyMine={section === "mine"}
             />

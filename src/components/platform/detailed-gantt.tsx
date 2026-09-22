@@ -2,7 +2,6 @@
 
 import { useMemo, useRef, useState } from "react";
 import type { Discipline, Profile, Status, Task } from "@/app/task-types";
-import { labels } from "@/app/task-types";
 
 export type DetailedGanttTask = Task & {
   project_id?: string;
