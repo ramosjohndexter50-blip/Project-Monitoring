@@ -28,7 +28,7 @@ type Props = {
   onlyMine: boolean;
 };
 const fields =
-  "id, task_name, discipline_id, owner, status, priority, start_date, due_date, percent_complete, notes, progress_note, updated_at";
+  "id, task_name, discipline_id, owner, status, priority, progress_stage, start_date, due_date, percent_complete, notes, progress_note, updated_at";
 const errorText = (error: unknown) =>
   error && typeof error === "object" && "message" in error
     ? String(error.message)
@@ -281,15 +281,7 @@ export default function TaskBoard({
     }
   }
   async function changeStatus(task: Task, status: Status) {
-    await persist(task, {
-      status,
-      percent_complete:
-        status === "completed"
-          ? 100
-          : status === "not_started" || task.status === "completed"
-            ? 0
-            : task.percent_complete,
-    });
+    await persist(task, { status });
   }
   async function showHistory(task: Task) {
     const version = ++historyRequest.current;

@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import type { FormEvent } from "react";
-import { labels, statuses, type Status, type Task, type Discipline, type Profile } from "./task-types";
+import { labels, progressStageLabels, progressStages, statuses, type Status, type Task, type Discipline, type Profile, type ProgressStage } from "./task-types";
 
 export default function TaskEditor({
   task,
@@ -33,8 +33,8 @@ export default function TaskEditor({
     start_date: task?.start_date ?? "",
     due_date: task?.due_date ?? "",
     priority: task?.priority ?? "medium",
+    progress_stage: task?.progress_stage ?? "",
     status: task?.status ?? "not_started",
-    percent_complete: task?.percent_complete ?? 0,
     notes: task?.notes ?? "",
     progress_note: task?.progress_note ?? "",
   });
@@ -44,10 +44,10 @@ export default function TaskEditor({
   async function submit(event: FormEvent) {
     event.preventDefault();
     if (!draft.task_name.trim() || !editable) return;
+    if (!task && (!draft.progress_stage || !draft.owner || !draft.start_date || !draft.due_date)) return;
     if (!canManageTask && task) {
       await onSave({
         status: draft.status,
-        percent_complete: draft.percent_complete,
         progress_note: draft.progress_note,
       });
       return;
@@ -56,14 +56,9 @@ export default function TaskEditor({
       ...draft,
       task_name: draft.task_name.trim(),
       owner: canManageTask ? (draft.owner || null) : currentUserId,
-      start_date: draft.start_date || null,
-      due_date: draft.due_date || null,
-      percent_complete:
-        draft.status === "completed"
-          ? 100
-          : draft.status === "not_started"
-            ? 0
-            : draft.percent_complete,
+      start_date: draft.start_date,
+      due_date: draft.due_date,
+      progress_stage: draft.progress_stage as ProgressStage,
     });
   }
   return (
@@ -115,11 +110,12 @@ export default function TaskEditor({
         <label>
           Owner
           <select
+            required
             disabled={!canManageTask}
             value={draft.owner}
             onChange={(e) => setDraft({ ...draft, owner: e.target.value })}
           >
-            {canManageTask && <option value="">Unassigned</option>}
+            {canManageTask && <option value="">Choose owner</option>}
             {draft.owner && !people.some((p) => p.id === draft.owner) && (
               <option value={draft.owner}>Assigned team member</option>
             )}
@@ -136,6 +132,7 @@ export default function TaskEditor({
           Start date
           <input
             type="date"
+            required
             readOnly={!canManageTask && !!task}
             max={draft.due_date || undefined}
             value={draft.start_date}
@@ -146,6 +143,7 @@ export default function TaskEditor({
           Due date
           <input
             type="date"
+            required
             readOnly={!canManageTask && !!task}
             min={draft.start_date || undefined}
             value={draft.due_date}
@@ -170,21 +168,27 @@ export default function TaskEditor({
           </select>
         </label>
         <label>
+          Model
+          <select
+            required
+            disabled={!canManageTask && !!task}
+            value={draft.progress_stage}
+            onChange={(e) => setDraft({ ...draft, progress_stage: e.target.value as ProgressStage })}
+          >
+            <option value="">Choose progress category</option>
+            {progressStages.map((stage) => (
+              <option key={stage} value={stage}>{progressStageLabels[stage]}</option>
+            ))}
+          </select>
+        </label>
+        <label>
           Status
           <select
+            required
             value={draft.status}
             onChange={(e) => {
               const status = e.target.value as Status;
-              setDraft({
-                ...draft,
-                status,
-                percent_complete:
-                  status === "completed"
-                    ? 100
-                    : status === "not_started" || draft.status === "completed"
-                      ? 0
-                      : draft.percent_complete,
-              });
+              setDraft({ ...draft, status });
             }}
           >
             {statuses
@@ -206,22 +210,6 @@ export default function TaskEditor({
                 </option>
               ))}
           </select>
-        </label>
-        <label>
-          Progress (%)
-          <input
-            type="number"
-            min="0"
-            max="100"
-            required
-            disabled={
-              draft.status === "completed" || draft.status === "not_started"
-            }
-            value={draft.percent_complete}
-            onChange={(e) =>
-              setDraft({ ...draft, percent_complete: Number(e.target.value) })
-            }
-          />
         </label>
         <label className="wide">
           Notes / blocker

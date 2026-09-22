@@ -14,6 +14,7 @@ export type Status =
   | "completed"
   | "blocked"
   | "cancelled";
+export type ProgressStage = "model" | "annotation" | "coordination" | "sheet";
 export type Task = {
   id: string;
   task_name: string;
@@ -21,6 +22,7 @@ export type Task = {
   owner: string | null;
   status: Status;
   priority: "low" | "medium" | "high" | "critical";
+  progress_stage: ProgressStage;
   start_date: string | null;
   due_date: string | null;
   percent_complete: number;
@@ -40,3 +42,11 @@ export const labels: Record<Status, string> = {
   cancelled: "Cancelled",
 };
 export const statuses = Object.keys(labels) as Status[];
+
+export const progressStageLabels: Record<ProgressStage, string> = {
+  model: "Model - % Complete",
+  annotation: "Annotation - % Complete",
+  coordination: "Coordination - % Complete",
+  sheet: "Sheet - % Complete",
+};
+export const progressStages = Object.keys(progressStageLabels) as ProgressStage[];
