@@ -135,11 +135,23 @@ export function RecordForm({
     >
       {moduleKey === "users" ? (
         <div className="employee-record-head">
-          <span className="employee-record-icon" aria-hidden="true">♙</span>
-          <div>
-            <h2>Record details</h2>
-            <p>{row ? "Update employee account details and access." : "Create a new employee account."}</p>
+          <div className="employee-record-title">
+            <span className="employee-record-icon" aria-hidden="true">♙</span>
+            <div>
+              <h2>Record details</h2>
+              <p>{row ? "Update employee account details and access." : "Create a new employee account."}</p>
+            </div>
           </div>
+          {row && (
+            <button
+              type="button"
+              className="button secondary employee-add-user"
+              onClick={() => router.push("/portal/users")}
+            >
+              <span aria-hidden="true">＋</span>
+              Add new user
+            </button>
+          )}
         </div>
       ) : (
         <h2>{row ? "Record details" : `New ${config.title.toLowerCase()} record`}</h2>
@@ -276,6 +288,41 @@ export function RecordForm({
             )}
           </label>
         ))}
+        {moduleKey === "users" && id && editable && (
+          <div className="employee-reset-field">
+            <label>
+              Reset password
+              <input
+                type="password"
+                value={resetPasswordValue}
+                onChange={(e) => setResetPasswordValue(e.target.value)}
+                placeholder="New temporary password"
+                autoComplete="new-password"
+                minLength={12}
+                maxLength={128}
+              />
+            </label>
+            <button
+              type="button"
+              className="button secondary employee-reset-inline"
+              disabled={resetBusy || resetPasswordValue.length < 12}
+              onClick={async () => {
+                setResetBusy(true);
+                setResetResult(null);
+                try {
+                  const response = await resetAccount(id, resetPasswordValue);
+                  setResetResult(response);
+                  if (response.ok) setResetPasswordValue("");
+                } finally {
+                  setResetBusy(false);
+                }
+              }}
+            >
+              {resetBusy ? "Resetting…" : "Reset password"}
+            </button>
+            <Result result={resetResult} />
+          </div>
+        )}
         {moduleKey === "projects" && (
           <div className="span-all">
             <h3>Contributing disciplines</h3>
@@ -306,51 +353,16 @@ export function RecordForm({
         )}
       </fieldset>
       {moduleKey === "users" && id && editable ? (
-        <>
-          <div className="employee-record-footer">
-            <div className="employee-password-reset">
-              <label>
-                Reset password
-                <input
-                  type="password"
-                  value={resetPasswordValue}
-                  onChange={(e) => setResetPasswordValue(e.target.value)}
-                  placeholder="New temporary password"
-                  autoComplete="new-password"
-                  minLength={12}
-                  maxLength={128}
-                />
-              </label>
-              <button
-                type="button"
-                className="button secondary employee-reset-inline"
-                disabled={resetBusy || resetPasswordValue.length < 12}
-                onClick={async () => {
-                  setResetBusy(true);
-                  setResetResult(null);
-                  try {
-                    const response = await resetAccount(id, resetPasswordValue);
-                    setResetResult(response);
-                    if (response.ok) setResetPasswordValue("");
-                  } finally {
-                    setResetBusy(false);
-                  }
-                }}
-              >
-                {resetBusy ? "Resetting…" : "Reset password"}
-              </button>
-            </div>
-            <div className="employee-record-actions">
-              <button type="button" className="button secondary" onClick={() => router.push("/portal/users")}>
-                Clear
-              </button>
-              <button className="button primary" disabled={busy}>
-                {busy ? "Saving…" : "Save record"}
-              </button>
-            </div>
+        <div className="employee-record-footer">
+          <div className="employee-record-actions">
+            <button type="button" className="button secondary" onClick={() => router.push("/portal/users")}>
+              Clear
+            </button>
+            <button className="button primary" disabled={busy}>
+              {busy ? "Saving…" : "Save record"}
+            </button>
           </div>
-          <Result result={resetResult} />
-        </>
+        </div>
       ) : editable ? (
         <button className="button primary" disabled={busy}>
           {busy ? "Saving…" : "Save record"}

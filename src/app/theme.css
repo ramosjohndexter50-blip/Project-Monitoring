@@ -1853,3 +1853,97 @@ html[data-theme="dark"] .employee-status.inactive{background:#273044;color:#b2bd
     width:100%;
   }
 }
+
+
+/* Employee details placement: keep the requested fields fixed and compact. */
+.employee-record-head{
+  justify-content:space-between!important;
+}
+.employee-record-title{
+  min-width:0;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.employee-add-user{
+  flex:0 0 auto;
+  min-height:34px!important;
+  height:34px!important;
+  padding:0 12px!important;
+  display:inline-flex!important;
+  align-items:center;
+  gap:6px;
+  font-size:9.5px!important;
+}
+.employee-record-fields{
+  align-items:end;
+}
+.employee-reset-field{
+  grid-column:2 / 4;
+  display:grid;
+  grid-template-columns:minmax(220px,1fr) auto;
+  align-items:end;
+  gap:8px;
+}
+.employee-reset-field>label{
+  display:grid;
+  gap:5px;
+  color:var(--pm-muted);
+  font-size:9px;
+  font-weight:650;
+}
+.employee-reset-field input{
+  width:100%!important;
+  height:38px!important;
+  min-height:38px!important;
+  padding:0 11px!important;
+  border:1px solid var(--pm-line)!important;
+  border-radius:8px!important;
+  background:var(--pm-input)!important;
+  color:var(--pm-text)!important;
+  font-size:10px!important;
+}
+.employee-reset-field .form-success,
+.employee-reset-field .form-error{
+  grid-column:1 / -1;
+  margin:0!important;
+}
+.employee-record-footer{
+  margin-top:10px!important;
+  padding-top:0!important;
+  border-top:0!important;
+  display:flex!important;
+  justify-content:flex-end!important;
+}
+.employee-record-actions{
+  margin-left:auto;
+}
+@media(max-width:1180px){
+  .employee-reset-field{
+    grid-column:1 / -1;
+  }
+}
+@media(max-width:760px){
+  .employee-record-head{
+    align-items:flex-start!important;
+    gap:10px;
+  }
+  .employee-record-title{
+    align-items:flex-start;
+  }
+  .employee-add-user{
+    min-width:38px;
+    width:38px;
+    padding:0!important;
+    justify-content:center;
+  }
+  .employee-add-user span+span{
+    display:none;
+  }
+  .employee-reset-field{
+    grid-template-columns:1fr;
+  }
+  .employee-reset-field .employee-reset-inline{
+    width:100%;
+  }
+}
