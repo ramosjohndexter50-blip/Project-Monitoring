@@ -836,8 +836,12 @@ await db.query(
   [d2, requiredOwnerD2],
 );
 await db.query(
-  "update public.project_members set discipline_id=$1 where project_id=$2 and user_id=$3",
-  [d2, p, requiredOwnerD2],
+  "delete from public.project_members where project_id=$1 and user_id=$2",
+  [p, requiredOwnerD2],
+);
+await db.query(
+  "insert into public.project_members(project_id,user_id,role_key,discipline_id) values($1,$2,'viewer',$3)",
+  [p, requiredOwnerD2, d2],
 );
 await db.query(
   "insert into public.project_members(project_id,user_id,role_key,discipline_id) values($1,$2,'team_member',$3) on conflict do nothing",
