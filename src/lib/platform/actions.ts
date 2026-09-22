@@ -116,7 +116,7 @@ export async function saveRecord(
       } else if (
         !id &&
         !value &&
-        ["color_code", "revision", "percent_complete", "progress"].includes(
+        ["color_code", "revision", "deliverable_type", "percent_complete", "progress"].includes(
           field.key,
         )
       )

@@ -95,6 +95,8 @@ export default function Workspace({ user, initialProfile }: { user: Pick<User, "
           <Link className="nav-item" href="/portal/projects">
             <span className="nav-icon">＋</span>Project registers
           </Link>
+          <Link className="nav-item" href="/portal/deliverables"><span className="nav-icon">◇</span>Deliverables</Link>
+          <Link className="nav-item" href="/portal/milestones"><span className="nav-icon">◆</span>Milestones</Link>
           <Link className="nav-item" href="/portal/rfis"><span className="nav-icon">?</span>RFIs</Link>
           <Link className="nav-item" href="/portal/reports"><span className="nav-icon">⌁</span>Gantt & reports</Link>
           <Link className="nav-item" href="/portal/documents"><span className="nav-icon">□</span>Documents</Link>
