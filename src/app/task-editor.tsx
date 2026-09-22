@@ -35,6 +35,7 @@ export default function TaskEditor({
     priority: task?.priority ?? "medium",
     progress_stage: task?.progress_stage ?? "",
     design_stage: task?.design_stage ?? "",
+    revision_no: task?.revision_no ?? 0,
     status: task?.status ?? "not_started",
     notes: task?.notes ?? "",
     progress_note: task?.progress_note ?? "",
@@ -49,6 +50,7 @@ export default function TaskEditor({
     if (!canManageTask && task) {
       await onSave({
         status: draft.status,
+        revision_no: draft.revision_no,
         progress_note: draft.progress_note,
       });
       return;
@@ -182,6 +184,17 @@ export default function TaskEditor({
               <option key={stage} value={stage}>{designStageLabels[stage]}</option>
             ))}
           </select>
+        </label>
+        <label>
+          Revision
+          <input
+            type="number"
+            min="0"
+            max="999"
+            required
+            value={draft.revision_no}
+            onChange={(e) => setDraft({ ...draft, revision_no: Number(e.target.value) })}
+          />
         </label>
         <label>
           Model

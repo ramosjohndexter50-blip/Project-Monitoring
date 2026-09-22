@@ -876,11 +876,11 @@ const requiredTaskColumns = (
     from information_schema.columns
     where table_schema='public'
       and table_name='tasks'
-      and column_name in ('progress_stage','design_stage','owner','start_date','due_date','notes','progress_note')
+      and column_name in ('progress_stage','design_stage','revision_no','owner','start_date','due_date','notes','progress_note')
     order by column_name
   `)
 ).rows;
-assert.equal(requiredTaskColumns.length, 7);
+assert.equal(requiredTaskColumns.length, 8);
 assert.ok(requiredTaskColumns.every((column) => column.is_nullable === "NO"));
 assert.equal(
   Number(
@@ -890,6 +890,7 @@ assert.equal(
         from public.tasks
         where progress_stage is null
            or design_stage is null
+           or revision_no is null
            or owner is null
            or start_date is null
            or due_date is null
@@ -938,5 +939,31 @@ const designStageConstraint = (
 for (const stage of ["concept", "schematic", "detailed", "tender"])
   assert.match(designStageConstraint, new RegExp(stage));
 console.log("PASS mandatory design stage options");
+
+const revisionConstraint = (
+  await db.query(`
+    select pg_get_constraintdef(oid) definition
+    from pg_constraint
+    where conrelid='public.tasks'::regclass and conname='tasks_revision_no_check'
+  `)
+).rows[0]?.definition ?? "";
+assert.match(revisionConstraint, /revision_no/);
+assert.match(revisionConstraint, /999/);
+await as("member", async () => {
+  await db.query("update public.tasks set revision_no=2 where id=$1", [t]);
+  assert.equal(
+    (await db.query("select revision_no from public.tasks where id=$1", [t])).rows[0].revision_no,
+    2,
+  );
+});
+assert.ok(
+  (
+    await db.query(
+      "select id from public.task_history where task_id=$1 and field_changed='revision_no' and new_value='2'",
+      [t],
+    )
+  ).rows.length > 0,
+);
+console.log("PASS manual task revision tracking");
 
 await db.close();

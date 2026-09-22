@@ -77,7 +77,7 @@ export const modules: Record<string, Module> = {
     permission: "tasks",
     project: true,
     search: "task_name",
-    columns: ["task_name", "discipline_id", "design_stage", "deliverable_id", "owner", "progress_stage", "status", "priority", "due_date", "percent_complete"],
+    columns: ["task_name", "discipline_id", "design_stage", "revision_no", "deliverable_id", "owner", "progress_stage", "status", "priority", "due_date", "percent_complete"],
     fields: [
       f("task_name", "Task", "text", { required: true }),
       f("notes", "Task description", "textarea"),
@@ -88,6 +88,7 @@ export const modules: Record<string, Module> = {
       ref("parent_task_id", "Parent task", "tasks"),
       priority,
       f("design_stage", "Design Stage", "select", { options: ["concept", "schematic", "detailed", "tender"], required: true }),
+      f("revision_no", "Revision", "number", { min: 0, max: 999, required: true }),
       f("progress_stage", "Model", "select", { options: ["model", "annotation", "coordination", "sheet"], required: true }),
       status(taskStatuses),
       f("start_date", "Start date", "date", { required: true }),
@@ -259,4 +260,4 @@ export function getModule(key: string) {
 }
 
 export const label = (value: string) =>
-  ({ project_id: "Project", discipline_id: "Discipline", deliverable_id: "Deliverable", milestone_id: "Milestone", parent_task_id: "Parent task", owner: "Assigned Employee", due_date: "Due date", start_date: "Start date", percent_complete: "Progress %", progress_stage: "Model", design_stage: "Design Stage", progress_note: "Progress update", task_name: "Task", client_name: "Client", project_code: "Project code", target_date: "Target completion", actual_completion_date: "Actual completion" } as Record<string, string>)[value] ?? value.replaceAll("_", " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  ({ project_id: "Project", discipline_id: "Discipline", deliverable_id: "Deliverable", milestone_id: "Milestone", parent_task_id: "Parent task", owner: "Assigned Employee", due_date: "Due date", start_date: "Start date", percent_complete: "Progress %", progress_stage: "Model", design_stage: "Design Stage", revision_no: "Revision", progress_note: "Progress update", task_name: "Task", client_name: "Client", project_code: "Project code", target_date: "Target completion", actual_completion_date: "Actual completion" } as Record<string, string>)[value] ?? value.replaceAll("_", " ").replace(/\b\w/g, (c) => c.toUpperCase());

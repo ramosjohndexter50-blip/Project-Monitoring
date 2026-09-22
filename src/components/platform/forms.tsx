@@ -79,7 +79,7 @@ export function RecordForm({
   const locked = (field: Field) =>
     moduleKey === "tasks" &&
     !projectAdmin &&
-    !["status", "progress_note"].includes(field.key);
+    !["status", "revision_no", "progress_note"].includes(field.key);
   return (
     <form
       className={moduleKey === "users" ? "register-form employee-record-form" : "register-form"}

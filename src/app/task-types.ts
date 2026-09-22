@@ -27,6 +27,7 @@ export type Task = {
   priority: "low" | "medium" | "high" | "critical";
   progress_stage: ProgressStage;
   design_stage: DesignStage;
+  revision_no: number;
   start_date: string | null;
   due_date: string | null;
   percent_complete: number;

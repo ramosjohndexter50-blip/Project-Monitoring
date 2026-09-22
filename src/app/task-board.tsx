@@ -28,7 +28,7 @@ type Props = {
   onlyMine: boolean;
 };
 const fields =
-  "id, task_name, discipline_id, owner, status, priority, progress_stage, design_stage, start_date, due_date, percent_complete, notes, progress_note, updated_at";
+  "id, task_name, discipline_id, owner, status, priority, progress_stage, design_stage, revision_no, start_date, due_date, percent_complete, notes, progress_note, updated_at";
 const errorText = (error: unknown) =>
   error && typeof error === "object" && "message" in error
     ? String(error.message)
@@ -512,6 +512,7 @@ export default function TaskBoard({
                     "Task",
                     "Discipline",
                     "Design Stage",
+                    "Revision",
                     "Owner",
                     "Status",
                     "Progress",
@@ -544,6 +545,7 @@ export default function TaskBoard({
                     </td>
                     <td>{disciplineName(task.discipline_id)}</td>
                     <td>{task.design_stage.replaceAll("_", " ")}</td>
+                    <td><span className="task-revision-badge">R{task.revision_no}</span></td>
                     <td>{personName(task.owner)}</td>
                     <td>{statusControl(task)}</td>
                     <td>
@@ -644,6 +646,10 @@ export default function TaskBoard({
                           <span>
                             <small>Design stage</small>
                             <b>{task.design_stage.replaceAll("_", " ")}</b>
+                          </span>
+                          <span>
+                            <small>Revision</small>
+                            <b className="task-revision-badge">R{task.revision_no}</b>
                           </span>
                         </div>
                         {statusControl(task)}

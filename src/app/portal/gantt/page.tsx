@@ -13,7 +13,7 @@ export default async function GanttPage() {
       .order("name"),
     db
       .from("tasks")
-      .select("id,project_id,task_name,discipline_id,owner,status,priority,progress_stage,design_stage,start_date,due_date,percent_complete,notes,progress_note,updated_at")
+      .select("id,project_id,task_name,discipline_id,owner,status,priority,progress_stage,design_stage,revision_no,start_date,due_date,percent_complete,notes,progress_note,updated_at")
       .order("start_date", { ascending: true, nullsFirst: false })
       .limit(1500),
     db

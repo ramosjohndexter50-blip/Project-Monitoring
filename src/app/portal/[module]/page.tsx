@@ -401,7 +401,7 @@ export default async function RegisterPage({
               <div><span>Sort by</span><button type="button">Due Date (Soonest)⌄</button></div>
             </div>
             <table className="register-table task-register-table">
-              <thead><tr><th className="select-col">□</th><th>Task</th><th>Discipline</th><th>Project</th><th>Assignee</th><th>Status</th><th>Priority</th><th>Due date</th><th>Progress</th><th>Actions</th></tr></thead>
+              <thead><tr><th className="select-col">□</th><th>Task</th><th>Discipline</th><th>Design Stage</th><th>Revision</th><th>Project</th><th>Assignee</th><th>Status</th><th>Priority</th><th>Due date</th><th>Progress</th><th>Actions</th></tr></thead>
               <tbody>
                 {rows.map((row, index) => {
                   const id = String(row.id ?? index);
@@ -414,6 +414,8 @@ export default async function RegisterPage({
                       <td className="select-col">□</td>
                       <td className="task-main-cell"><Link prefetch={false} href={link({ edit: id, new: "", project: String(row.project_id ?? project ?? "") })}>{String(row.task_name ?? "Untitled task")}</Link><small>{String(row.notes ?? "").slice(0, 72) || "No description added."}</small></td>
                       <td>{recordLabel("discipline_id", row.discipline_id, choices)}</td>
+                      <td>{String(row.design_stage ?? "—").replaceAll("_", " ")}</td>
+                      <td><span className="task-revision-badge">R{Number(row.revision_no ?? 0)}</span></td>
                       <td>{recordLabel("project_id", row.project_id, choices)}</td>
                       <td><span className="assignee-cell">{assignee !== "—" && <i>{assignee.split(/\s+/).slice(0,2).map((part: string) => part[0]).join("").toUpperCase()}</i>}{assignee}</span></td>
                       <td><span className={`status-badge ${statusValue}`}>{label(statusValue)}</span></td>
