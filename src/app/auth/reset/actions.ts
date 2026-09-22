@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 export async function changePassword(form: FormData) {
   const password = String(form.get("password") || "");
   if (password !== form.get("confirm")) return { ok: false, message: "Passwords do not match." };
-  if (password.length < 12 || password.length > 128) return { ok: false, message: "Use 12–128 characters for your new password." };
+  if (password.length < 6 || password.length > 128) return { ok: false, message: "Use 6–128 characters for your new password." };
   const db = await serverClient();
   const { data: { user }, error } = await db.auth.getUser();
   if (error || !user) return { ok: false, message: "Sign in with your temporary password first." };
