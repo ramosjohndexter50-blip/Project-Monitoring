@@ -312,7 +312,7 @@ export async function createAccount(form: FormData): Promise<ActionResult> {
     if (profile.role !== "super_admin")
       throw new Error("Super Admin required.");
     const password = String(form.get("password") || "");
-    if (password.length < 12 || password.length > 128) throw new Error("Use a temporary password with 12–128 characters.");
+    if (password.length < 6 || password.length > 128) throw new Error("Use a temporary password with 6–128 characters.");
     const email = String(form.get("email") || "")
       .trim()
       .toLowerCase();
@@ -401,7 +401,7 @@ export async function resetAccount(id: string, password: string): Promise<Action
     if (target.data.role === "super_admin" && profile.role !== "super_admin")
       throw new Error("Super Admin access required.");
     if (id === user.id) throw new Error("Use Change password for your own account.");
-    if (password.length < 12 || password.length > 128) throw new Error("Use a temporary password with 12–128 characters.");
+    if (password.length < 6 || password.length > 128) throw new Error("Use a temporary password with 6–128 characters.");
     const admin = authAdmin();
     const result = await admin.auth.admin.updateUserById(id, { password, email_confirm: true, app_metadata: { must_change_password: true } });
     if (result.error) throw result.error;
