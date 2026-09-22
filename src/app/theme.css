@@ -4860,3 +4860,18 @@ label[role="button"]:focus-visible{
 @media(max-width:1180px){.progress-dashboard-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.progress-dashboard-card.overall{grid-column:span 2}.progress-project-table{overflow-x:auto}.progress-project-head,.progress-project-row{min-width:820px}}
 @media(max-width:760px){.progress-dashboard-filter{grid-template-columns:1fr;padding:10px}.progress-dashboard-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.progress-dashboard-card{min-height:106px;padding:12px}.progress-dashboard-card.overall{grid-column:1 / -1}.progress-dashboard-card-head strong{font-size:23px}.progress-project-table{overflow-x:auto}}
 @media(max-width:420px){.progress-dashboard-grid{grid-template-columns:1fr 1fr}.progress-dashboard-card-head{display:block}.progress-dashboard-card-head strong{margin-top:7px}}
+
+
+/* Additional task workflow states. */
+html[data-theme="dark"] .status-select.submitted{background:#17355f;color:#a9cfff}
+html[data-theme="dark"] .status-select.for_resubmission{background:#4a2f1f;color:#ffc28e}
+.status-badge.submitted{background:#154398!important;color:#b9d1ff!important}
+.status-badge.for_resubmission{background:#6b3d1d!important;color:#ffd0a3!important}
+html[data-theme="light"] .status-badge.submitted{background:#dbeafe!important;color:#1d4ed8!important}
+html[data-theme="light"] .status-badge.for_resubmission{background:#ffedd5!important;color:#c2410c!important}
+.kanban-column.submitted{--status-color:#4d8dff;--status-soft:#4d8dff18}
+.kanban-column.for_resubmission{--status-color:#ef8a3f;--status-soft:#ef8a3f18}
+.gantt-task-bar.submitted{--bar:#4d8dff}
+.gantt-task-bar.for_resubmission{--bar:#ef8a3f}
+.gantt-pro-bar.task.submitted{background:#4d8dff}
+.gantt-pro-bar.task.for_resubmission{background:#ef8a3f}

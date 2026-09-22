@@ -200,6 +200,7 @@ export default function TaskEditor({
                     "approved",
                     "completed",
                     "revision_required",
+                    "for_resubmission",
                     "cancelled",
                   ].includes(s) ||
                   s === task?.status,

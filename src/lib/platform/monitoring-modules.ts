@@ -36,7 +36,7 @@ const owner = ref("owner", "Assigned employee", "profiles", true);
 const dates = [f("start_date", "Start date", "date"), f("due_date", "Due date", "date")];
 const project = ref("project_id", "Project", "projects", true);
 
-export const taskStatuses = ["not_started", "in_progress", "for_review", "revision_required", "approved", "completed", "blocked", "cancelled"];
+export const taskStatuses = ["not_started", "in_progress", "submitted", "for_review", "revision_required", "for_resubmission", "approved", "completed", "blocked", "cancelled"];
 
 export const modules: Record<string, Module> = {
   settings: {

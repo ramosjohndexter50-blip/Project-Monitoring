@@ -916,4 +916,15 @@ await as("admin", async () => {
 });
 console.log("PASS mandatory task fields and four-stage progress dashboard");
 
+const taskStatusConstraint = (
+  await db.query(`
+    select pg_get_constraintdef(oid) definition
+    from pg_constraint
+    where conrelid='public.tasks'::regclass and conname='tasks_status_check'
+  `)
+).rows[0]?.definition ?? "";
+assert.match(taskStatusConstraint, /submitted/);
+assert.match(taskStatusConstraint, /for_resubmission/);
+console.log("PASS submitted and resubmission task statuses");
+
 await db.close();

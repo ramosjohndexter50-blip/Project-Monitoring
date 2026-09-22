@@ -45,7 +45,9 @@ const statusHelp: Record<Status, string> = {
   not_started: "New work ready to be picked up.",
   in_progress: "Tasks currently being worked on.",
   for_review: "Work waiting for review or feedback.",
+  submitted: "Work submitted and waiting for the next review step.",
   revision_required: "Tasks that need another pass.",
+  for_resubmission: "Reviewed work that must be updated and submitted again.",
   approved: "Reviewed work that has been approved.",
   completed: "Finished work kept here for reference.",
   blocked: "Work waiting on an issue or dependency.",
@@ -324,6 +326,7 @@ export default function TaskBoard({
                 "approved",
                 "completed",
                 "revision_required",
+                "for_resubmission",
                 "cancelled",
               ].includes(status) ||
               status === task.status,

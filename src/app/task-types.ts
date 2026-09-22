@@ -9,7 +9,9 @@ export type Status =
   | "not_started"
   | "in_progress"
   | "for_review"
+  | "submitted"
   | "revision_required"
+  | "for_resubmission"
   | "approved"
   | "completed"
   | "blocked"
@@ -35,7 +37,9 @@ export const labels: Record<Status, string> = {
   not_started: "Assigned",
   in_progress: "In progress",
   for_review: "For review",
+  submitted: "Submitted",
   revision_required: "Revision required",
+  for_resubmission: "For Resubmission",
   approved: "Approved",
   completed: "Completed",
   blocked: "Blocked",
