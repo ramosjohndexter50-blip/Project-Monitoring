@@ -434,26 +434,28 @@ export default function TaskBoard({
       </div>
       <section className="task-panel">
         <div className="board-toolbar">
-          <label className="search-box">
-            <input
-              aria-label="Search tasks"
-              placeholder="Search tasks or people"
-              value={search}
-              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            />
-          </label>
-          <select
-            aria-label="Filter discipline"
-            value={disciplineFilter}
-            onChange={(e) => { setDisciplineFilter(e.target.value); setPage(1); }}
-          >
-            <option value="">All disciplines</option>
-            {disciplines.map((d) => (
-              <option key={d.id} value={d.id}>
-                {d.name}
-              </option>
-            ))}
-          </select>
+          <div className="board-toolbar-fields">
+            <label className="search-box">
+              <input
+                aria-label="Search tasks"
+                placeholder="Search tasks or people"
+                value={search}
+                onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+              />
+            </label>
+            <select
+              aria-label="Filter discipline"
+              value={disciplineFilter}
+              onChange={(e) => { setDisciplineFilter(e.target.value); setPage(1); }}
+            >
+              <option value="">All disciplines</option>
+              {disciplines.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.name}
+                </option>
+              ))}
+            </select>
+          </div>
           <button
             className="button secondary compact"
             disabled={saving}

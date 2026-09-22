@@ -3389,3 +3389,40 @@ label[role="button"]:focus-visible{
     grid-template-columns:1fr!important;
   }
 }
+
+
+/* Board search + discipline: two equal columns instead of stacked full-width rows. */
+.board-toolbar{
+  display:flex!important;
+  align-items:center!important;
+  gap:8px!important;
+}
+.board-toolbar-fields{
+  flex:1 1 auto;
+  min-width:0;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(220px,.42fr);
+  gap:8px;
+  align-items:center;
+}
+.board-toolbar-fields .search-box,
+.board-toolbar-fields select{
+  width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+}
+@media(max-width:760px){
+  .board-toolbar{
+    display:grid!important;
+    grid-template-columns:1fr!important;
+  }
+  .board-toolbar-fields{
+    grid-template-columns:1fr 1fr;
+    width:100%;
+  }
+}
+@media(max-width:430px){
+  .board-toolbar-fields{
+    grid-template-columns:1fr;
+  }
+}
