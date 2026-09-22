@@ -948,18 +948,19 @@ const revisionConstraint = (
   `)
 ).rows[0]?.definition ?? "";
 assert.match(revisionConstraint, /revision_no/);
-assert.match(revisionConstraint, /999/);
+assert.match(revisionConstraint, /'A'/);
+assert.match(revisionConstraint, /'L'/);
 await as("member", async () => {
-  await db.query("update public.tasks set revision_no=2 where id=$1", [t]);
+  await db.query("update public.tasks set revision_no='B' where id=$1", [t]);
   assert.equal(
     (await db.query("select revision_no from public.tasks where id=$1", [t])).rows[0].revision_no,
-    2,
+    "B",
   );
 });
 assert.ok(
   (
     await db.query(
-      "select id from public.task_history where task_id=$1 and field_changed='revision_no' and new_value='2'",
+      "select id from public.task_history where task_id=$1 and field_changed='revision_no' and new_value='B'",
       [t],
     )
   ).rows.length > 0,

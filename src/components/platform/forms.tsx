@@ -65,7 +65,7 @@ export function RecordForm({
   const defaultValue = (field: Field) =>
     String(
       row?.[field.key] ??
-        (["progress_stage", "design_stage"].includes(field.key) ? "" : field.options?.[0]) ??
+        (["progress_stage", "design_stage", "revision_no"].includes(field.key) ? "" : field.options?.[0]) ??
         (field.key === "project_id"
           ? (project ?? "")
           : field.key === "role"

@@ -545,7 +545,7 @@ export default function TaskBoard({
                     </td>
                     <td>{disciplineName(task.discipline_id)}</td>
                     <td>{task.design_stage.replaceAll("_", " ")}</td>
-                    <td><span className="task-revision-badge">R{task.revision_no}</span></td>
+                    <td><span className="task-revision-badge">Rev {task.revision_no}</span></td>
                     <td>{personName(task.owner)}</td>
                     <td>{statusControl(task)}</td>
                     <td>
@@ -649,7 +649,7 @@ export default function TaskBoard({
                           </span>
                           <span>
                             <small>Revision</small>
-                            <b className="task-revision-badge">R{task.revision_no}</b>
+                            <b className="task-revision-badge">Rev {task.revision_no}</b>
                           </span>
                         </div>
                         {statusControl(task)}

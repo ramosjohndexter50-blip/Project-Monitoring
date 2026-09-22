@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import type { FormEvent } from "react";
-import { designStageLabels, designStages, labels, progressStageLabels, progressStages, statuses, type DesignStage, type Status, type Task, type Discipline, type Profile, type ProgressStage } from "./task-types";
+import { designStageLabels, designStages, labels, progressStageLabels, progressStages, revisionCodes, statuses, type DesignStage, type RevisionCode, type Status, type Task, type Discipline, type Profile, type ProgressStage } from "./task-types";
 
 export default function TaskEditor({
   task,
@@ -35,7 +35,7 @@ export default function TaskEditor({
     priority: task?.priority ?? "medium",
     progress_stage: task?.progress_stage ?? "",
     design_stage: task?.design_stage ?? "",
-    revision_no: task?.revision_no ?? 0,
+    revision_no: task?.revision_no ?? "",
     status: task?.status ?? "not_started",
     notes: task?.notes ?? "",
     progress_note: task?.progress_note ?? "",
@@ -46,11 +46,11 @@ export default function TaskEditor({
   async function submit(event: FormEvent) {
     event.preventDefault();
     if (!draft.task_name.trim() || !editable) return;
-    if (!task && (!draft.progress_stage || !draft.design_stage || !draft.owner || !draft.start_date || !draft.due_date)) return;
+    if (!task && (!draft.progress_stage || !draft.design_stage || !draft.revision_no || !draft.owner || !draft.start_date || !draft.due_date)) return;
     if (!canManageTask && task) {
       await onSave({
         status: draft.status,
-        revision_no: draft.revision_no,
+        revision_no: draft.revision_no as RevisionCode,
         progress_note: draft.progress_note,
       });
       return;
@@ -63,6 +63,7 @@ export default function TaskEditor({
       due_date: draft.due_date,
       progress_stage: draft.progress_stage as ProgressStage,
       design_stage: draft.design_stage as DesignStage,
+      revision_no: draft.revision_no as RevisionCode,
     });
   }
   return (
@@ -187,14 +188,16 @@ export default function TaskEditor({
         </label>
         <label>
           Revision
-          <input
-            type="number"
-            min="0"
-            max="999"
+          <select
             required
             value={draft.revision_no}
-            onChange={(e) => setDraft({ ...draft, revision_no: Number(e.target.value) })}
-          />
+            onChange={(e) => setDraft({ ...draft, revision_no: e.target.value as RevisionCode })}
+          >
+            <option value="">Choose revision</option>
+            {revisionCodes.map((revision) => (
+              <option key={revision} value={revision}>Revision {revision}</option>
+            ))}
+          </select>
         </label>
         <label>
           Model

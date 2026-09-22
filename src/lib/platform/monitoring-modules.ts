@@ -88,7 +88,7 @@ export const modules: Record<string, Module> = {
       ref("parent_task_id", "Parent task", "tasks"),
       priority,
       f("design_stage", "Design Stage", "select", { options: ["concept", "schematic", "detailed", "tender"], required: true }),
-      f("revision_no", "Revision", "number", { min: 0, max: 999, required: true }),
+      f("revision_no", "Revision", "select", { options: ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"], required: true }),
       f("progress_stage", "Model", "select", { options: ["model", "annotation", "coordination", "sheet"], required: true }),
       status(taskStatuses),
       f("start_date", "Start date", "date", { required: true }),

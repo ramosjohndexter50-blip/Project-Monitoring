@@ -18,6 +18,7 @@ export type Status =
   | "cancelled";
 export type ProgressStage = "model" | "annotation" | "coordination" | "sheet";
 export type DesignStage = "concept" | "schematic" | "detailed" | "tender";
+export type RevisionCode = "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K" | "L";
 export type Task = {
   id: string;
   task_name: string;
@@ -27,7 +28,7 @@ export type Task = {
   priority: "low" | "medium" | "high" | "critical";
   progress_stage: ProgressStage;
   design_stage: DesignStage;
-  revision_no: number;
+  revision_no: RevisionCode;
   start_date: string | null;
   due_date: string | null;
   percent_complete: number;
@@ -65,3 +66,5 @@ export const designStageLabels: Record<DesignStage, string> = {
   tender: "Tender",
 };
 export const designStages = Object.keys(designStageLabels) as DesignStage[];
+
+export const revisionCodes: RevisionCode[] = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
