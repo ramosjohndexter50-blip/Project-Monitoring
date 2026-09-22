@@ -149,7 +149,7 @@ export function RecordForm({
               onClick={() => router.push("/portal/users")}
             >
               <span aria-hidden="true">＋</span>
-              Add new user
+              <span className="employee-add-user-label">Add new user</span>
             </button>
           )}
         </div>
