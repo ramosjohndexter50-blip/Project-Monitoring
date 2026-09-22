@@ -827,6 +827,35 @@ for(const name of ['admin','member','orgadmin']) {
 }
 await as('admin',async()=>assert.equal((await db.query("select public.has_permission('users.create') allowed")).rows[0].allowed,true));
 console.log('PASS password-change database gate, blocked active-employee deletion, unused deletion, historical preservation and reactivation guard');
+// Normalize intentionally sparse legacy fixtures before testing the newer
+// mandatory-task-field migration. Production rows are created through scoped forms,
+// but these early regression fixtures predate that contract.
+const requiredOwnerD2 = "10000000-0000-4000-8000-999999999999";
+await db.query(
+  "insert into auth.users(id,email,email_confirmed_at) values($1,'required-owner@example.invalid',now())",
+  [requiredOwnerD2],
+);
+await db.query(
+  "update public.profiles set role='team_member',discipline_id=$1,position='Fixture owner',is_active=true where id=$2",
+  [d2, requiredOwnerD2],
+);
+await db.query(
+  "insert into public.project_members(project_id,user_id,role_key,discipline_id) values($1,$2,'team_member',$3) on conflict do nothing",
+  [p, requiredOwnerD2, d2],
+);
+await db.query(
+  "insert into public.project_members(project_id,user_id,role_key,discipline_id) values($1,$2,'team_member',$3) on conflict do nothing",
+  [p2, ids.member, d],
+);
+await db.query(
+  "update public.tasks set owner=$1 where owner is null and project_id=$2 and discipline_id=$3",
+  [requiredOwnerD2, p, d2],
+);
+await db.query(
+  "update public.tasks set owner=$1 where owner is null and project_id=$2 and discipline_id=$3",
+  [ids.member, p2, d],
+);
+
 // Apply every migration added after the staged compatibility tests above. This prevents
 // new production migrations from silently escaping the regression suite.
 for (const file of migrations) await applyMigration(file);
