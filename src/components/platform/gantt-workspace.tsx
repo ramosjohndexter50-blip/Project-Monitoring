@@ -58,7 +58,7 @@ export default function GanttWorkspace({
     : "Overall accessible projects";
 
   return (
-    <>
+    <div className="gantt-workspace">
       <div className="platform-heading gantt-page-heading">
         <div>
           <p className="page-crumb">Project Monitor <span>/</span> Gantt</p>
@@ -97,6 +97,6 @@ export default function GanttWorkspace({
         overall={scope === "overall"}
         printable
       />
-    </>
+    </div>
   );
 }

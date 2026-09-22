@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Discipline, Profile, Status, Task } from "@/app/task-types";
 
 export type DetailedGanttTask = Task & {
@@ -27,6 +27,7 @@ type ModelRow = {
 };
 
 const DAY = 86_400_000;
+const ROW_HEIGHT = 40;
 const dateMs = (value: string) => Date.parse(`${value}T00:00:00Z`);
 const isoDay = (value: number) => new Date(value).toISOString().slice(0, 10);
 const shortDate = (value: number) =>
@@ -77,10 +78,23 @@ export default function DetailedGantt({
   newTabHref?: string;
 }) {
   const [zoom, setZoom] = useState<Zoom>(overall ? "month" : "week");
+  const [paneWidth, setPaneWidth] = useState(760);
   const timelineRef = useRef<HTMLDivElement | null>(null);
   const drag = useRef({ active: false, startX: 0, scrollLeft: 0 });
 
-  const disciplineMap = useMemo(() => new Map(disciplines.map((item) => [item.id, item.name])), [disciplines]);
+  useEffect(() => {
+    const pane = timelineRef.current;
+    if (!pane) return;
+
+    const update = () => setPaneWidth(Math.max(520, Math.round(pane.clientWidth)));
+    update();
+
+    const observer = new ResizeObserver(update);
+    observer.observe(pane);
+    return () => observer.disconnect();
+  }, []);
+
+    const disciplineMap = useMemo(() => new Map(disciplines.map((item) => [item.id, item.name])), [disciplines]);
   const peopleMap = useMemo(() => new Map(people.map((item) => [item.id, item.full_name || "Team member"])), [people]);
 
   const model = useMemo(() => {
@@ -169,9 +183,10 @@ export default function DetailedGantt({
     const rawEnd = rows.length ? Math.max(...rows.map((row) => row.due)) : now + (30 * DAY);
     const start = rawStart - (2 * DAY);
     const end = Math.max(rawEnd + (2 * DAY), start + (20 * DAY));
-    const dayWidth = zoom === "day" ? 28 : zoom === "week" ? 14 : 6;
+    const baseDayWidth = zoom === "day" ? 34 : zoom === "week" ? 18 : 9;
     const days = Math.max(1, Math.ceil((end - start) / DAY) + 1);
-    const width = Math.max(760, days * dayWidth);
+    const width = Math.max(paneWidth, days * baseDayWidth);
+    const dayWidth = width / days;
 
     const months: Array<{ key: string; label: string; left: number; width: number }> = [];
     let cursor = new Date(start);
@@ -206,7 +221,7 @@ export default function DetailedGantt({
     const todayLeft = ((now - start) / DAY) * dayWidth;
 
     return { rows, start, end, width, dayWidth, months, ticks, todayLeft };
-  }, [tasks, disciplineMap, peopleMap, overall, zoom]);
+  }, [tasks, disciplineMap, peopleMap, overall, zoom, paneWidth]);
 
   function pointerDown(event: React.PointerEvent<HTMLDivElement>) {
     if (event.pointerType !== "mouse" || event.button !== 0) return;
@@ -329,7 +344,7 @@ export default function DetailedGantt({
                 className="gantt-pro-timeline-body"
                 style={{
                   backgroundSize: `${model.dayWidth}px 100%`,
-                  height: model.rows.length * 34,
+                  height: model.rows.length * ROW_HEIGHT,
                 }}
               >
                 {model.todayLeft >= 0 && model.todayLeft <= model.width && (
@@ -339,7 +354,7 @@ export default function DetailedGantt({
                   const left = ((row.start - model.start) / DAY) * model.dayWidth;
                   const width = Math.max(row.type === "task" ? 8 : 14, ((row.due - row.start + DAY) / DAY) * model.dayWidth);
                   return (
-                    <div className={`gantt-pro-time-row ${row.type}`} key={row.key} style={{ top: index * 34 }}>
+                    <div className={`gantt-pro-time-row ${row.type}`} key={row.key} style={{ top: index * ROW_HEIGHT }}>
                       {row.type === "task" ? (
                         <span
                           className={`gantt-pro-bar task ${row.status ?? "not_started"}`}

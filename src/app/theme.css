@@ -4308,3 +4308,288 @@ label[role="button"]:focus-visible{
   .gantt-pro-left-row.project,
   .gantt-pro-left-row.discipline{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
+
+
+/* Gantt readability + viewport utilization.
+   Keep the desktop page itself compact and let the Gantt own the available workspace. */
+@media(min-width:841px){
+  .gantt-workspace{
+    height:calc(100dvh - 66px);
+    min-height:620px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    overflow:hidden;
+    box-sizing:border-box;
+  }
+  .gantt-workspace .gantt-page-heading{
+    flex:0 0 auto;
+    min-height:52px!important;
+    margin:0!important;
+    padding:0!important;
+    display:flex!important;
+    align-items:center!important;
+  }
+  .gantt-workspace .gantt-page-heading .page-crumb{
+    margin:0 0 3px!important;
+    font-size:9px!important;
+  }
+  .gantt-workspace .gantt-page-heading h1{
+    margin:0!important;
+    font-size:27px!important;
+    letter-spacing:-.7px!important;
+  }
+  .gantt-workspace .gantt-page-heading p{
+    margin:3px 0 0!important;
+    font-size:10px!important;
+  }
+  .gantt-workspace-controls{
+    flex:0 0 auto;
+    margin:0!important;
+    padding:8px 10px!important;
+    grid-template-columns:minmax(260px,.9fr) minmax(320px,1.25fr) auto!important;
+    gap:9px!important;
+  }
+  .gantt-workspace-controls label{
+    gap:4px!important;
+    font-size:9.5px!important;
+  }
+  .gantt-workspace-controls select,
+  .gantt-workspace-controls input{
+    height:38px!important;
+    min-height:38px!important;
+    font-size:10.5px!important;
+  }
+  .gantt-workspace-summary{
+    min-height:38px!important;
+  }
+  .gantt-workspace-summary span{
+    min-height:32px!important;
+    font-size:9px!important;
+  }
+  .gantt-workspace-summary b{
+    font-size:10.5px!important;
+  }
+  .gantt-workspace>.gantt-pro{
+    flex:1 1 auto;
+    min-height:0;
+  }
+}
+
+.gantt-pro{
+  --gantt-row:40px;
+  --gantt-left:720px;
+  display:flex;
+  flex-direction:column;
+  min-height:420px;
+}
+.gantt-pro-titlebar{
+  flex:0 0 auto;
+  min-height:56px!important;
+  padding:9px 12px!important;
+}
+.gantt-pro-titlebar b{
+  font-size:12.5px!important;
+}
+.gantt-pro-titlebar small{
+  margin-top:4px!important;
+  font-size:9.5px!important;
+}
+.gantt-pro-actions{
+  gap:8px!important;
+}
+.gantt-pro-zoom button{
+  min-height:32px!important;
+  padding:0 11px!important;
+  font-size:9px!important;
+}
+.gantt-pro-shell{
+  flex:1 1 auto;
+  min-height:0;
+  overflow-y:auto;
+  overflow-x:hidden;
+  overscroll-behavior:contain;
+  scrollbar-width:thin;
+  scrollbar-color:color-mix(in srgb,var(--hs-purple) 35%,var(--pm-line)) transparent;
+}
+.gantt-pro-shell::-webkit-scrollbar{
+  width:7px;
+}
+.gantt-pro-shell::-webkit-scrollbar-thumb{
+  border-radius:999px;
+  background:color-mix(in srgb,var(--hs-purple) 35%,var(--pm-line));
+}
+.gantt-pro-left,
+.gantt-pro-timeline-pane{
+  min-height:100%;
+}
+.gantt-pro-left-head{
+  height:64px!important;
+  grid-template-columns:50px minmax(230px,1.6fr) 120px 68px 88px 88px 68px!important;
+  background:color-mix(in srgb,var(--pm-panel-2) 92%,var(--hs-purple) 8%)!important;
+}
+.gantt-pro-left-head>span{
+  padding:0 9px!important;
+  font-size:9px!important;
+  letter-spacing:.42px!important;
+}
+.gantt-pro-left-row{
+  height:var(--gantt-row)!important;
+  grid-template-columns:50px minmax(230px,1.6fr) 120px 68px 88px 88px 68px!important;
+}
+.gantt-pro-left-row>span{
+  padding:0 9px!important;
+  font-size:9.5px!important;
+}
+.gantt-name{
+  gap:6px!important;
+}
+.gantt-name>b{
+  font-size:10.5px!important;
+}
+.gantt-pro-left-row.task .gantt-name>b{
+  font-weight:650!important;
+}
+.gantt-pro-left-row.project .gantt-name>b{
+  font-size:11px!important;
+}
+.gantt-pro-left-row.discipline .gantt-name>b{
+  font-size:10.5px!important;
+}
+.gantt-owner{
+  font-size:9.3px!important;
+}
+.gantt-progress-value{
+  font-size:10px!important;
+}
+.gantt-pro-calendar{
+  height:64px!important;
+  background:color-mix(in srgb,var(--pm-panel-2) 92%,var(--hs-purple) 8%)!important;
+}
+.gantt-pro-months{
+  height:32px!important;
+}
+.gantt-pro-months span{
+  height:32px!important;
+  font-size:9.5px!important;
+}
+.gantt-pro-ticks{
+  inset:32px 0 0!important;
+  height:32px!important;
+}
+.gantt-pro-ticks span{
+  height:32px!important;
+  padding-left:5px!important;
+  font-size:8.5px!important;
+}
+.gantt-pro-timeline{
+  min-width:100%!important;
+  min-height:100%;
+}
+.gantt-pro-timeline-body{
+  min-height:calc(100% - 64px);
+}
+.gantt-pro-timeline-body::after{
+  background:repeating-linear-gradient(
+    to bottom,
+    transparent 0 39px,
+    color-mix(in srgb,var(--pm-line) 72%,transparent) 39px 40px
+  )!important;
+}
+.gantt-pro-time-row{
+  height:40px!important;
+}
+.gantt-pro-bar{
+  top:10px!important;
+  height:20px!important;
+}
+.gantt-pro-bar.task{
+  border-radius:5px!important;
+}
+.gantt-pro-bar.task>b{
+  font-size:8px!important;
+}
+.gantt-pro-bar.summary{
+  top:16px!important;
+  height:8px!important;
+}
+.gantt-pro-today>b{
+  top:5px!important;
+  font-size:7.5px!important;
+}
+.gantt-pro-note{
+  flex:0 0 auto;
+  padding:8px 11px!important;
+  font-size:8.5px!important;
+  line-height:1.35!important;
+}
+.gantt-pro-empty{
+  flex:1 1 auto;
+  min-height:0!important;
+}
+.gantt-pro-empty b{
+  font-size:14px!important;
+}
+.gantt-pro-empty p{
+  font-size:10px!important;
+}
+
+@media(min-width:1181px) and (max-width:1500px){
+  .gantt-pro{--gantt-left:640px}
+  .gantt-pro-left-head,
+  .gantt-pro-left-row{
+    grid-template-columns:46px minmax(205px,1.5fr) 106px 62px 82px 82px 62px!important;
+  }
+}
+@media(min-width:841px) and (max-width:1180px){
+  .gantt-workspace{
+    height:auto;
+    min-height:0;
+    overflow:visible;
+  }
+  .gantt-pro{
+    --gantt-left:560px;
+    min-height:520px;
+  }
+  .gantt-pro-left-head,
+  .gantt-pro-left-row{
+    grid-template-columns:44px minmax(210px,1.5fr) 98px 60px 78px 78px!important;
+  }
+  .gantt-pro-left-head>span:nth-child(7),
+  .gantt-pro-left-row>span:nth-child(7){
+    display:none!important;
+  }
+}
+@media(max-width:760px){
+  .gantt-workspace{
+    display:block;
+  }
+  .gantt-pro{
+    --gantt-left:390px;
+    min-height:520px;
+  }
+  .gantt-pro-titlebar b{
+    font-size:12px!important;
+  }
+  .gantt-pro-titlebar small{
+    font-size:9px!important;
+  }
+  .gantt-pro-left-head,
+  .gantt-pro-left-row{
+    grid-template-columns:40px minmax(185px,1fr) 78px 78px!important;
+  }
+  .gantt-pro-left-head>span,
+  .gantt-pro-left-row>span{
+    font-size:9px!important;
+  }
+  .gantt-name>b{
+    font-size:10px!important;
+  }
+}
+@media(max-width:420px){
+  .gantt-pro{--gantt-left:330px}
+  .gantt-pro-left-head,
+  .gantt-pro-left-row{
+    grid-template-columns:36px minmax(160px,1fr) 66px 66px!important;
+  }
+}
