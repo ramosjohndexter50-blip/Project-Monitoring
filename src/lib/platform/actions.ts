@@ -319,9 +319,11 @@ export async function createAccount(form: FormData): Promise<ActionResult> {
     const name = String(form.get("full_name") || "").trim();
     const role = String(form.get("role") || "");
     const discipline = String(form.get("discipline_id") || "");
+    const employeeCode = String(form.get("employee_code") || "").trim();
     const position = String(form.get("position") || "").trim();
-    if (!role || !uuid.test(discipline) || !position)
-      throw new Error("Role, discipline and position are required.");
+    const company = String(form.get("company") || "").trim();
+    if (!role || !uuid.test(discipline) || !employeeCode || !position || !company)
+      throw new Error("Employee ID, position, company, role and discipline are required.");
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !name)
       throw new Error("Enter a valid name and email.");
     const existing = await db
@@ -346,9 +348,11 @@ export async function createAccount(form: FormData): Promise<ActionResult> {
       .insert({
         email,
         full_name: name,
+        employee_code: employeeCode,
         role_key: role,
         discipline_id: discipline,
         position,
+        company,
         is_active: form.get("is_active") === "on",
       })
       .select("token")

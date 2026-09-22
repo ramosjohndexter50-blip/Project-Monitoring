@@ -381,6 +381,18 @@ export function AccountForm({ choices }: { choices: Choices }) {
           <input name="email" type="email" required />
         </label>
         <label>
+          Employee ID
+          <input name="employee_code" required maxLength={100} />
+        </label>
+        <label>
+          Position
+          <input name="position" required maxLength={200} />
+        </label>
+        <label>
+          Company
+          <input name="company" required maxLength={200} />
+        </label>
+        <label>
           Temporary password
           <input name="password" type="password" autoComplete="new-password" minLength={12} maxLength={128} required />
           <small>The user must replace this password at first login.</small>
@@ -406,10 +418,6 @@ export function AccountForm({ choices }: { choices: Choices }) {
               </option>
             ))}
           </select>
-        </label>
-        <label>
-          Position
-          <input name="position" required />
         </label>
         <label>
           Active account

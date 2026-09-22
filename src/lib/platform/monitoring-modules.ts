@@ -188,11 +188,9 @@ export const modules: Record<string, Module> = {
     columns: ["full_name", "email", "role", "discipline_id", "position", "is_active", "last_login_at"],
     fields: [
       f("full_name", "Full name", "text", { required: true }),
-      f("employee_code", "Employee ID"),
+      f("employee_code", "Employee ID", "text", { required: true }),
       f("position", "Position", "text", { required: true }),
-      f("company", "Company"),
-      f("department", "Department"),
-      f("phone", "Phone"),
+      f("company", "Company", "text", { required: true }),
       ref("discipline_id", "Discipline", "disciplines", true),
       ref("role", "Global role", "roles", true),
       f("is_active", "Active account", "checkbox"),

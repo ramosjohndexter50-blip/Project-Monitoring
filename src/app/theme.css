@@ -1079,3 +1079,56 @@ html[data-theme="light"] .gantt-detail{box-shadow:0 10px 26px #1b2a4510}
   .kanban-column{flex-basis:268px!important;min-width:268px!important}
   .gantt-detail-title{align-items:flex-start;flex-direction:column}
 }
+
+
+/* Shared account footer: clean sign-out action across every portal dashboard. */
+.platform-user{
+  grid-template-columns:34px minmax(0,1fr)!important;
+  row-gap:10px!important;
+}
+.platform-signout-form{
+  grid-column:1/-1;
+  width:100%;
+  margin:2px 0 0!important;
+  display:block!important;
+}
+.platform-user .portal-signout{
+  width:100%;
+  min-height:38px;
+  margin:0!important;
+  padding:0 11px!important;
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  gap:9px;
+  border:1px solid var(--pm-line)!important;
+  border-radius:9px!important;
+  background:var(--pm-panel-2)!important;
+  color:var(--pm-muted)!important;
+  font-size:10.5px!important;
+  font-weight:650;
+  cursor:pointer;
+  transition:background .16s ease,border-color .16s ease,color .16s ease;
+}
+.platform-user .portal-signout svg{
+  width:16px;
+  height:16px;
+  flex:0 0 16px;
+}
+.platform-user .portal-signout:hover{
+  background:color-mix(in srgb,#e45161 8%,var(--pm-panel-2))!important;
+  border-color:color-mix(in srgb,#e45161 40%,var(--pm-line))!important;
+  color:#e45161!important;
+}
+@media(max-width:840px){
+  .platform-user{grid-template-columns:1fr!important;justify-items:center!important}
+  .platform-signout-form{grid-column:auto;width:auto;display:block!important}
+  .platform-user .portal-signout{
+    width:38px;
+    height:38px;
+    min-height:38px;
+    padding:0!important;
+    justify-content:center;
+  }
+  .platform-user .portal-signout span{display:none}
+}
