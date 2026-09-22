@@ -66,6 +66,7 @@ export default function PortalBoardClient({
             role={profile.role}
             disciplineId={profile.discipline_id}
             projectId={project.id}
+            projectName={project.name}
             userId={userId}
             onlyMine={false}
           />

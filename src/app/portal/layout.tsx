@@ -6,7 +6,7 @@ import ThemeToggle from "@/components/theme-toggle";
 import PortalNavigationBehavior from "@/components/platform/portal-navigation-behavior";
 import { session } from "@/lib/platform/auth";
 
-type IconName = "home" | "tasks" | "projects" | "board" | "updates" | "guide" | "people" | "roles" | "permissions" | "settings";
+type IconName = "home" | "tasks" | "projects" | "board" | "gantt" | "updates" | "guide" | "people" | "roles" | "permissions" | "settings";
 
 function Icon({ name }: { name: IconName }) {
   const paths: Record<IconName, React.ReactNode> = {
@@ -14,6 +14,7 @@ function Icon({ name }: { name: IconName }) {
     tasks: <><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M8 11h8M8 15h5"/></>,
     projects: <><path d="M3.5 7h6l1.6 2H20.5v10H3.5z"/><path d="M3.5 7V5h6l1.5 2"/></>,
     board: <><rect x="4" y="4" width="6" height="16" rx="1.5"/><rect x="14" y="4" width="6" height="16" rx="1.5"/></>,
+    gantt: <><path d="M4 5v14M4 8h16M4 13h16M4 18h16"/><path d="M8 6h7v4H8zM11 11h8v4h-8zM6 16h9v4H6z"/></>,
     updates: <><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></>,
     guide: <><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M8 8h7M8 12h7M8 16h4"/></>,
     people: <><path d="M8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM16 10a2.5 2.5 0 1 0 0-5"/><path d="M3 20v-2a5 5 0 0 1 10 0v2M14 14a4 4 0 0 1 7 3v2"/></>,
@@ -50,6 +51,7 @@ export default async function PortalLayout({ children }: { children: React.React
           <Item href={taskHref} icon="tasks">{["super_admin", "admin"].includes(profile.role) ? "Tasks" : "My Tasks"}</Item>
           <Item href="/portal/projects" icon="projects">Projects</Item>
           <Item href="/portal/board" icon="board">Board</Item>
+          <Item href="/portal/gantt" icon="gantt">Gantt</Item>
           <Item href="/portal/notifications" icon="updates">Updates</Item>
           <Item href="/portal/workflow" icon="guide">Workflow Guide</Item>
         </nav>

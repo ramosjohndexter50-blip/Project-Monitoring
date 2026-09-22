@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import dynamic from "next/dynamic";
 import { useDebouncedValue } from "@/lib/use-debounced-value";
 import LoadingSkeleton from "@/components/platform/loading-skeleton";
+import DetailedGantt from "@/components/platform/detailed-gantt";
 import { labels, statuses, type Status, type Task, type Discipline } from "./task-types";
 const TaskEditor = dynamic(() => import("./task-editor"), { loading: () => <p role="status">Loading task details…</p> });
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -22,6 +23,7 @@ type Props = {
   role: Profile["role"];
   disciplineId: string | null;
   projectId: string;
+  projectName: string;
   userId: string;
   onlyMine: boolean;
 };
@@ -35,9 +37,6 @@ function today() {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
-const dayMs = 86_400_000;
-const dateMs = (value: string) => Date.parse(`${value}T00:00:00Z`);
-const isoDay = (value: number) => new Date(value).toISOString().slice(0, 10);
 const shortDate = (value: string | null) =>
   value
     ? new Intl.DateTimeFormat("en", { month: "short", day: "numeric" }).format(new Date(`${value}T00:00:00Z`))
@@ -58,6 +57,7 @@ export default function TaskBoard({
   role,
   disciplineId,
   projectId,
+  projectName,
   userId,
   onlyMine,
 }: Props) {
@@ -197,38 +197,6 @@ export default function TaskBoard({
   const currentPage = resolvedPage;
   const displayed = tasks;
   const { done, progress } = summary;
-  const ganttModel = useMemo(() => {
-    const now = dateMs(today());
-    const rows = displayed.map((task) => {
-      let start = task.start_date ? dateMs(task.start_date) : task.due_date ? dateMs(task.due_date) - (6 * dayMs) : now;
-      let due = task.due_date ? dateMs(task.due_date) : task.start_date ? dateMs(task.start_date) + (6 * dayMs) : now + (6 * dayMs);
-      if (due < start) [start, due] = [due, start];
-      return { task, start, due };
-    });
-    const rawStart = rows.length ? Math.min(...rows.map((row) => row.start)) : now;
-    const rawEnd = rows.length ? Math.max(...rows.map((row) => row.due)) : now + (14 * dayMs);
-    const start = rawStart - dayMs;
-    const end = Math.max(rawEnd + dayMs, start + (14 * dayMs));
-    const span = Math.max(dayMs, end - start);
-    const ticks = Array.from({ length: 6 }, (_, index) => {
-      const at = start + ((span * index) / 5);
-      return { at, label: shortDate(isoDay(at)) };
-    });
-    const todayPosition = ((now - start) / span) * 100;
-    return {
-      start,
-      end,
-      span,
-      ticks,
-      todayPosition: Math.max(0, Math.min(100, todayPosition)),
-      rows: rows.map((row) => ({
-        ...row,
-        left: Math.max(0, ((row.start - start) / span) * 100),
-        width: Math.max(2.2, ((Math.max(dayMs, row.due - row.start + dayMs)) / span) * 100),
-      })),
-    };
-  }, [displayed]);
-
   function startBoardDrag(event: React.PointerEvent<HTMLDivElement>) {
     if (event.pointerType !== "mouse" || event.button !== 0) return;
     const target = event.target as HTMLElement;
@@ -607,65 +575,14 @@ export default function TaskBoard({
             </table>
           </div>
         ) : view === "gantt" ? (
-          <div className="gantt-detail">
-            <div className="gantt-detail-title">
-              <div>
-                <b>Task timeline</b>
-                <small>{shortDate(isoDay(ganttModel.start))} – {shortDate(isoDay(ganttModel.end))} · one row per task</small>
-              </div>
-              <div className="gantt-legend" aria-label="Gantt status legend">
-                <span className="in_progress">In progress</span>
-                <span className="for_review">For review</span>
-                <span className="blocked">Blocked</span>
-                <span className="completed">Completed</span>
-              </div>
-            </div>
-            <div className="gantt-detail-scroll">
-              <div className="gantt-detail-head">
-                <span>Task</span>
-                <span>Owner</span>
-                <span>Status</span>
-                <span>Schedule</span>
-                <span>Progress</span>
-                <div className="gantt-axis">
-                  {ganttModel.ticks.map((tick) => <span key={tick.at}>{tick.label}</span>)}
-                </div>
-              </div>
-              {ganttModel.rows.map(({ task, start, due, left, width }) => (
-                <div className="gantt-task-row" key={task.id}>
-                  <button className="gantt-task-cell" onClick={() => setEditor(task)}>
-                    <b>{task.task_name}</b>
-                    <small>{disciplineName(task.discipline_id)} · {task.priority} priority</small>
-                  </button>
-                  <div className="gantt-owner-cell">
-                    <i>{personInitials(task.owner)}</i>
-                    <span>{personName(task.owner)}</span>
-                  </div>
-                  <span className={`status-badge ${task.status}`}>{labels[task.status]}</span>
-                  <div className="gantt-date-cell">
-                    <b>{shortDate(isoDay(start))} → {shortDate(isoDay(due))}</b>
-                    <small>{task.start_date ? "Planned start" : "Start estimated"} · {task.due_date ? "Due date set" : "Due estimated"}</small>
-                  </div>
-                  <div className="gantt-progress-cell">
-                    <b>{task.percent_complete}%</b>
-                    <i><em style={{ width: `${task.percent_complete}%` }} /></i>
-                  </div>
-                  <div className="gantt-timeline">
-                    {ganttModel.todayPosition > 0 && ganttModel.todayPosition < 100 && (
-                      <span className="gantt-today" style={{ left: `${ganttModel.todayPosition}%` }} title="Today" />
-                    )}
-                    <i
-                      className={`gantt-task-bar ${task.status}`}
-                      style={{ left: `${left}%`, width: `${Math.min(width, 100 - left)}%` }}
-                      title={`${task.task_name}: ${shortDate(isoDay(start))} to ${shortDate(isoDay(due))}`}
-                    >
-                      <em style={{ width: `${task.percent_complete}%` }} />
-                    </i>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          <DetailedGantt
+            tasks={displayed}
+            disciplines={disciplines}
+            people={people}
+            scopeLabel={projectName}
+            overall={false}
+            newTabHref={`/portal/gantt?project=${projectId}`}
+          />
         ) : (
           <div
             className="kanban draggable-kanban"
