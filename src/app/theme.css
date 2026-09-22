@@ -3121,3 +3121,193 @@ label[role="button"]:focus-visible{
     grid-template-columns:1fr!important;
   }
 }
+
+
+/* Desktop workspace maximization:
+   move utilities into the sidebar and keep list screens pagination-first. */
+.sidebar-utility{
+  margin-top:auto;
+  padding:10px 0 9px;
+  border-top:1px solid var(--pm-line);
+  display:grid;
+  grid-template-columns:38px minmax(0,1fr);
+  gap:7px;
+}
+.sidebar-utility .theme-toggle{
+  position:static!important;
+  width:38px!important;
+  height:38px!important;
+  min-height:38px!important;
+  padding:8px!important;
+  display:grid!important;
+  place-items:center!important;
+  border:1px solid var(--pm-line)!important;
+  border-radius:9px!important;
+  background:var(--pm-panel-2)!important;
+  color:var(--pm-text)!important;
+  box-shadow:none!important;
+}
+.sidebar-utility .theme-toggle span{
+  display:none!important;
+}
+.sidebar-notification{
+  min-width:0;
+  min-height:38px;
+  padding:0 10px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  border:1px solid var(--pm-line);
+  border-radius:9px;
+  background:var(--pm-panel-2);
+  color:var(--pm-muted)!important;
+  text-decoration:none;
+  font-size:9.5px;
+  font-weight:650;
+  transition:background .16s ease,border-color .16s ease,color .16s ease,transform .16s ease;
+}
+.sidebar-notification .portal-nav-icon{
+  width:16px;
+  height:16px;
+}
+.sidebar-notification:hover{
+  transform:translateY(-1px);
+  background:color-mix(in srgb,var(--hs-purple) 7%,var(--pm-panel-2));
+  border-color:color-mix(in srgb,var(--hs-purple) 32%,var(--pm-line));
+  color:var(--pm-text)!important;
+}
+
+@media(min-width:841px){
+  .platform-topbar{
+    display:none!important;
+  }
+  .platform-body{
+    min-height:100vh!important;
+    padding:12px 20px 18px!important;
+  }
+  .platform-heading{
+    min-height:0!important;
+    margin-bottom:10px!important;
+  }
+  .platform-heading h1{
+    font-size:25px!important;
+  }
+  .platform-heading p{
+    margin-top:4px!important;
+    line-height:1.35!important;
+  }
+  .task-kpi-grid{
+    gap:10px!important;
+    margin:6px 0 10px!important;
+  }
+  .dashboard-kpis .task-kpi,
+  .task-kpi{
+    min-height:88px!important;
+    padding:13px 14px!important;
+  }
+  .task-kpi-icon{
+    width:30px!important;
+    height:30px!important;
+    font-size:13px!important;
+  }
+  .task-kpi strong{
+    font-size:25px!important;
+  }
+  .task-kpi div>span{
+    margin-top:4px!important;
+  }
+  .dashboard-kpis .task-kpi small{
+    margin-top:5px!important;
+  }
+  .overview-main-grid{
+    gap:10px!important;
+    margin-bottom:10px!important;
+  }
+  .overview-progress-card,
+  .overview-work-card{
+    padding:14px!important;
+  }
+  .overview-card-head{
+    margin-bottom:10px!important;
+  }
+  .overview-progress-list{
+    gap:8px!important;
+  }
+  .overview-progress-row{
+    min-height:28px;
+  }
+  .overview-mini-grid{
+    margin-bottom:9px!important;
+  }
+  .overview-mini-grid>div{
+    padding:9px 10px!important;
+  }
+  .overview-mini-grid strong{
+    font-size:19px!important;
+  }
+  .overview-primary-link{
+    min-height:36px!important;
+    padding:8px 11px!important;
+  }
+  .dashboard-grid-consistent{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:10px!important;
+  }
+  .dashboard-grid-consistent .register-card{
+    padding:13px!important;
+  }
+  .dashboard-row{
+    min-height:34px!important;
+    padding:8px 0!important;
+  }
+  .register-filters{
+    margin-bottom:10px!important;
+  }
+  .register-card{
+    margin-bottom:10px!important;
+  }
+  .register-table th{
+    padding:8px 10px!important;
+  }
+  .register-table td{
+    padding:9px 10px!important;
+  }
+  .pagination{
+    margin-top:8px!important;
+  }
+  .employee-account-form,
+  .employee-record-form{
+    padding:10px 12px!important;
+  }
+  .employee-account-fields,
+  .employee-record-fields{
+    gap:7px 9px!important;
+  }
+  .employee-account-fields input:not([type="checkbox"]),
+  .employee-account-fields select,
+  .employee-record-fields input:not([type="checkbox"]),
+  .employee-record-fields select{
+    height:34px!important;
+    min-height:34px!important;
+  }
+}
+
+/* Tablet/mobile still use the top bar and drawer. */
+@media(max-width:840px){
+  .sidebar-utility{
+    margin-top:auto;
+    grid-template-columns:1fr;
+    justify-items:center;
+  }
+  .sidebar-utility .sidebar-notification{
+    width:38px;
+    padding:0!important;
+    justify-content:center;
+  }
+  .sidebar-utility .sidebar-notification span{
+    display:none;
+  }
+  .platform-topbar{
+    display:flex!important;
+  }
+}

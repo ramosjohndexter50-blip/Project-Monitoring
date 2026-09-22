@@ -170,7 +170,7 @@ export default async function Dashboard({
               </div>
             </div>
             {recentProgress.length ? (
-              recentProgress.map((h) => (
+              recentProgress.slice(0, 3).map((h) => (
                 <Link className="summary-row dashboard-row" key={h.id} href={`/portal/tasks?edit=${h.task_id}`}>
                   <b>{h.field_changed.replaceAll("_", " ")}</b>
                   <span>{h.old_value ?? "Empty"} → {h.new_value ?? "Empty"}</span>
@@ -189,7 +189,7 @@ export default async function Dashboard({
             <Link href="/portal/projects">View all →</Link>
           </div>
           {projects.length ? (
-            projects.map((p) => (
+            projects.slice(0, 3).map((p) => (
               <Link className="summary-row dashboard-row" key={p.id} href={`/portal/projects?edit=${p.id}`}>
                 <b>{p.name}</b>
                 <span className={`status-badge ${p.status}`}>{p.status.replaceAll("_", " ")}</span>
@@ -204,9 +204,10 @@ export default async function Dashboard({
         <section className="register-card">
           <div className="overview-card-head compact">
             <div><h2>Upcoming milestones</h2><p>Next project checkpoints.</p></div>
+            <Link href="/portal/milestones">View all →</Link>
           </div>
           {milestones.length ? (
-            milestones.map((m) => (
+            milestones.slice(0, 3).map((m) => (
               <Link className="summary-row dashboard-row" key={m.id} href={`/portal/milestones?project=${m.project_id}&edit=${m.id}`}>
                 <b>{m.name}</b>
                 <span className={m.due_date && m.due_date < today ? "overdue" : ""}>{m.due_date ?? "No target date"}</span>
@@ -220,9 +221,10 @@ export default async function Dashboard({
         <section className="register-card">
           <div className="overview-card-head compact">
             <div><h2>What I need to do</h2><p>Your current assigned tasks.</p></div>
+            <Link href={admin ? "/portal/tasks" : `/portal/tasks?owner=${user.id}`}>View all →</Link>
           </div>
           {work.length ? (
-            work.map((t) => (
+            work.slice(0, 3).map((t) => (
               <Link className="summary-row dashboard-row" key={t.id} href={`/portal/tasks?project=${t.project_id}&edit=${t.id}`}>
                 <b>{t.task_name}</b>
                 <span className={`status-badge ${t.status}`}>{t.status.replaceAll("_", " ")}</span>
@@ -241,7 +243,7 @@ export default async function Dashboard({
             <Link href="/portal/notifications">View all →</Link>
           </div>
           {notifications.length ? (
-            notifications.map((n) => (
+            notifications.slice(0, 3).map((n) => (
               <p className="summary-row dashboard-row" key={n.id}>
                 <b>{n.title}</b>
                 <small>{new Date(n.created_at).toLocaleString()}</small>
@@ -255,9 +257,10 @@ export default async function Dashboard({
         <section className="register-card">
           <div className="overview-card-head compact">
             <div><h2>My deliverables</h2><p>Deliverables currently visible to you.</p></div>
+            <Link href="/portal/deliverables">View all →</Link>
           </div>
           {mine.length ? (
-            mine.map((d) => (
+            mine.slice(0, 3).map((d) => (
               <Link className="summary-row dashboard-row" key={d.id} href={`/portal/deliverables?project=${d.project_id}&edit=${d.id}`}>
                 <b>{d.title}</b>
                 <span className={`status-badge ${d.status}`}>{d.status.replaceAll("_", " ")}</span>

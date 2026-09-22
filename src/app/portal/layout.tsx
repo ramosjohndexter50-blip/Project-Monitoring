@@ -63,6 +63,14 @@ export default async function PortalLayout({ children }: { children: React.React
           </nav>
         )}
 
+        <div className="sidebar-utility">
+          <ThemeToggle />
+          <Link className="sidebar-notification notification-dot" href="/portal/notifications" aria-label="Notifications">
+            <Icon name="updates" />
+            <span>Notifications</span>
+          </Link>
+        </div>
+
         <div className="platform-user">
           <span className="platform-avatar">{initials || "TM"}</span>
           <div><b>{profile.full_name ?? "Team member"}</b><small>{profile.role.replaceAll("_", " ")}</small></div>
