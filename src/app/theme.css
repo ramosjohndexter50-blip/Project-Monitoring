@@ -3033,3 +3033,91 @@ label[role="button"]:focus-visible{
     transform:none!important;
   }
 }
+
+
+/* Employee management baseline correction:
+   keep the account fields visible and compact at every breakpoint. */
+.employee-create-shell{
+  display:block!important;
+  margin:0 0 10px!important;
+}
+.employee-create-shell>.employee-account-form{
+  display:block!important;
+  margin:0!important;
+}
+.employee-create-mobile-summary{
+  display:none!important;
+}
+.employee-account-form{
+  padding:12px 14px!important;
+}
+.employee-account-head{
+  min-height:36px!important;
+  margin-bottom:9px!important;
+}
+.employee-account-fields{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:8px 10px!important;
+}
+.employee-account-fields label{
+  gap:4px!important;
+  font-size:8.8px!important;
+}
+.employee-account-fields input:not([type="checkbox"]),
+.employee-account-fields select{
+  height:36px!important;
+  min-height:36px!important;
+  padding:0 10px!important;
+  font-size:9.5px!important;
+}
+.employee-active-control{
+  min-height:36px!important;
+}
+.employee-create-submit{
+  display:inline-flex!important;
+  min-height:34px!important;
+  height:34px!important;
+}
+.employee-create-submit-mobile{
+  display:none!important;
+}
+@media(max-width:1180px){
+  .employee-account-fields{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+}
+@media(max-width:760px){
+  .employee-create-shell{
+    margin-bottom:9px!important;
+  }
+  .employee-account-form{
+    padding:12px!important;
+    border-radius:12px!important;
+  }
+  .employee-account-head{
+    align-items:flex-start!important;
+  }
+  .employee-account-fields{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:9px!important;
+  }
+  .employee-account-fields .employee-active-field{
+    grid-column:1 / -1!important;
+  }
+  .employee-create-submit{
+    display:none!important;
+  }
+  .employee-create-submit-mobile{
+    display:flex!important;
+    width:100%!important;
+    min-height:42px!important;
+    margin-top:10px!important;
+    justify-content:center!important;
+  }
+}
+@media(max-width:430px){
+  .employee-account-fields{
+    grid-template-columns:1fr!important;
+  }
+}

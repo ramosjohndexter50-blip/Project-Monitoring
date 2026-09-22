@@ -439,11 +439,7 @@ export function AccountForm({ choices }: { choices: Choices }) {
   const [result, setResult] = useState<ActionResult | null>(null);
   const [busy, setBusy] = useState(false);
   return (
-    <details className="employee-create-shell" id="employee-create-form">
-      <summary className="employee-create-mobile-summary">
-        <span aria-hidden="true">♙</span>
-        Create employee account
-      </summary>
+    <section className="employee-create-shell" id="employee-create-form">
       <form
         className="register-form employee-account-form"
         onSubmit={async (e) => {
@@ -468,8 +464,8 @@ export function AccountForm({ choices }: { choices: Choices }) {
           <div className="employee-account-title">
             <span className="employee-account-icon" aria-hidden="true">♙</span>
             <div>
-              <h2>Create employee account</h2>
-              <p>Choose the account role and home discipline. Admin manages projects; Super Admin manages accounts and web settings.</p>
+              <h2>Record details</h2>
+              <p>Create a new employee account with complete required details.</p>
             </div>
           </div>
           <button className="button primary employee-create-submit" disabled={busy}>
@@ -539,7 +535,7 @@ export function AccountForm({ choices }: { choices: Choices }) {
         </button>
         <Result result={result} />
       </form>
-    </details>
+    </section>
   );
 }
 
