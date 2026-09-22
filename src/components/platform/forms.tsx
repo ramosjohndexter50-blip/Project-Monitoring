@@ -78,9 +78,14 @@ export function RecordForm({
     !projectAdmin &&
     !["status", "percent_complete", "progress_note"].includes(field.key);
   return (
-    <form
-      className="register-form"
-      onSubmit={async (e) => {
+    <details className="employee-create-shell">
+      <summary className="employee-create-mobile-summary">
+        <span aria-hidden="true">♙</span>
+        Create employee account
+      </summary>
+      <form
+        className="register-form employee-account-form"
+        onSubmit={async (e) => {
         e.preventDefault();
         if (
           row &&
@@ -331,7 +336,7 @@ export function ActionButton({
 function TemporaryPasswordForm({ id }: { id: string }) {
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<ActionResult | null>(null);
-  return <details><summary>Set temporary password</summary><form onSubmit={async e => {
+  return <details className="employee-reset-menu"><summary aria-label="Account actions" title="Account actions">⋮</summary><form onSubmit={async e => {
     e.preventDefault();
     const form = e.currentTarget;
     setBusy(true);
@@ -340,7 +345,7 @@ function TemporaryPasswordForm({ id }: { id: string }) {
       setResult(response);
       if (response.ok) form.reset();
     } finally { setBusy(false); }
-  }}><label>Temporary password<input name="password" type="password" autoComplete="new-password" required minLength={12} maxLength={128} /></label><button className="button secondary" disabled={busy}>Set password</button><Result result={result} /></form></details>;
+  }}><b>Set temporary password</b><label>Temporary password<input name="password" type="password" autoComplete="new-password" required minLength={12} maxLength={128} /></label><button className="button secondary" disabled={busy}>Set password</button><Result result={result} /></form></details>;
 }
 export function AccountForm({ choices }: { choices: Choices }) {
   const [result, setResult] = useState<ActionResult | null>(null);
@@ -365,13 +370,21 @@ export function AccountForm({ choices }: { choices: Choices }) {
           setBusy(false);
         }
       }}
-    >
-      <h2>Create employee account</h2>
-      <p>
-        Choose the account role and home discipline. Admin manages projects;
-        Super Admin manages accounts and web settings. Project membership is assigned by Admin.
-      </p>
-      <fieldset disabled={busy}>
+      >
+        <div className="employee-account-head">
+          <div className="employee-account-title">
+            <span className="employee-account-icon" aria-hidden="true">♙</span>
+            <div>
+              <h2>Create employee account</h2>
+              <p>Choose the account role and home discipline. Admin manages projects; Super Admin manages accounts and web settings.</p>
+            </div>
+          </div>
+          <button className="button primary employee-create-submit" disabled={busy}>
+            <span aria-hidden="true">＋</span>
+            Create account
+          </button>
+        </div>
+        <fieldset className="employee-account-fields" disabled={busy}>
         <label>
           Full name
           <input name="full_name" required />
@@ -419,16 +432,22 @@ export function AccountForm({ choices }: { choices: Choices }) {
             ))}
           </select>
         </label>
-        <label>
+        <label className="employee-active-field">
           Active account
-          <input name="is_active" type="checkbox" defaultChecked />
+          <span className="employee-active-control">
+            <input name="is_active" type="checkbox" defaultChecked />
+            <i aria-hidden="true" />
+            <small>Account will be able to login</small>
+          </span>
         </label>
-      </fieldset>
-      <button className="button primary" disabled={busy}>
-        Create account
-      </button>
-      <Result result={result} />
-    </form>
+        </fieldset>
+        <button className="button primary employee-create-submit-mobile" disabled={busy}>
+          <span aria-hidden="true">＋</span>
+          Create account
+        </button>
+        <Result result={result} />
+      </form>
+    </details>
   );
 }
 export function ApprovalForm({

@@ -127,14 +127,14 @@ export default async function RegisterPage({
 
   return (
     <>
-      <div className="platform-heading">
+      <div className={moduleKey === "users" ? "platform-heading employee-page-heading" : "platform-heading"}>
         <div>
-          <p className="page-crumb">Project Monitor <span>/</span> {config.title}</p>
+          {moduleKey !== "users" && <p className="page-crumb">Project Monitor <span>/</span> {config.title}</p>}
           <h1>{config.title}</h1>
-          <p>{moduleKey === "tasks" ? "Monitor and manage all project tasks in one place." : `${records.count ?? 0} accessible records · page ${page}`}</p>
+          <p>{moduleKey === "users" ? "Manage team members, their roles and access. Create new accounts and monitor activity." : moduleKey === "tasks" ? "Monitor and manage all project tasks in one place." : `${records.count ?? 0} accessible records · page ${page}`}</p>
         </div>
         <div className="heading-actions">
-          {canCreate && (!config.project || project) && (
+          {moduleKey !== "users" && canCreate && (!config.project || project) && (
             <Link className="button primary" href={link({ new: "1", edit: "" })}>+ {moduleKey === "projects" ? "New Project" : moduleKey === "tasks" ? "Create Task" : moduleKey === "teams" ? "Assign Employee" : "New Record"}</Link>
           )}
         </div>
@@ -158,67 +158,135 @@ export default async function RegisterPage({
         </section>
       )}
 
-      <Form className="register-filters" action={`/portal/${moduleKey}`}>
-        {!config.admin && config.project && (
+      {moduleKey === "users" ? (
+        <details className="employee-filter-shell">
+          <summary>
+            <span>⌁</span>
+            Filters
+          </summary>
+          <Form className="register-filters employee-filters" action={`/portal/${moduleKey}`}>
+            {!config.admin && config.project && (
+              <label>
+                Project
+                <select name="project" defaultValue={project ?? ""}>
+                  <option value="">All accessible projects</option>
+                  {choices.projects?.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
+                </select>
+              </label>
+            )}
+            <label>
+              Search
+              <input name="q" placeholder={moduleKey === "users" ? "Search by name, email or ID..." : `Search ${label(config.search).toLowerCase()}`} defaultValue={filters.q} />
+            </label>
+            {config.fields.find((field) => field.key === "status")?.options && (
+              <label>
+                Status
+                <select name="status" defaultValue={filters.status ?? ""}>
+                  <option value="">All statuses</option>
+                  {config.fields.find((field) => field.key === "status")!.options!.map((statusValue) => <option key={statusValue} value={statusValue}>{label(statusValue)}</option>)}
+                </select>
+              </label>
+            )}
+            {config.columns.includes("discipline_id") && (
+              <label>
+                Discipline
+                <select name="discipline" defaultValue={filters.discipline ?? ""}>
+                  <option value="">All disciplines</option>
+                  {choices.disciplines?.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
+                </select>
+              </label>
+            )}
+            {config.columns.includes("owner") && ["admin", "super_admin"].includes(profile.role) && (
+              <label>
+                Assignee
+                <select name="owner" defaultValue={filters.owner ?? ""}>
+                  <option value="">All employees</option>
+                  {choices.profiles?.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
+                </select>
+              </label>
+            )}
+            {config.columns.includes("due_date") && (moduleKey === "tasks" ? (
+              <label>Due date<input name="to" type="date" defaultValue={filters.to} /></label>
+            ) : (
+              <>
+                <label>Due from<input name="from" type="date" defaultValue={filters.from} /></label>
+                <label>Due to<input name="to" type="date" defaultValue={filters.to} /></label>
+              </>
+            ))}
+            {moduleKey === "users" && (
+              <>
+                <label>Role<select name="role" defaultValue={filters.role ?? ""}><option value="">All roles</option>{choices.roles?.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label>
+                <label>Position<input name="position" placeholder="All positions" defaultValue={filters.position} /></label>
+                <label>Account status<select name="status" defaultValue={filters.status ?? ""}><option value="">All accounts</option><option value="active">Active</option><option value="inactive">Inactive</option></select></label>
+              </>
+            )}
+            <button className="button secondary">Apply filters</button>
+            <Link href={`/portal/${moduleKey}`}>Clear</Link>
+          </Form>
+        </details>
+      ) : (
+        <Form className="register-filters" action={`/portal/${moduleKey}`}>
+          {!config.admin && config.project && (
+            <label>
+              Project
+              <select name="project" defaultValue={project ?? ""}>
+                <option value="">All accessible projects</option>
+                {choices.projects?.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
+              </select>
+            </label>
+          )}
           <label>
-            Project
-            <select name="project" defaultValue={project ?? ""}>
-              <option value="">All accessible projects</option>
-              {choices.projects?.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
-            </select>
+            Search
+            <input name="q" placeholder={`Search ${label(config.search).toLowerCase()}`} defaultValue={filters.q} />
           </label>
-        )}
-        <label>
-          Search
-          <input name="q" placeholder={`Search ${label(config.search).toLowerCase()}`} defaultValue={filters.q} />
-        </label>
-        {config.fields.find((field) => field.key === "status")?.options && (
-          <label>
-            Status
-            <select name="status" defaultValue={filters.status ?? ""}>
-              <option value="">All statuses</option>
-              {config.fields.find((field) => field.key === "status")!.options!.map((statusValue) => <option key={statusValue} value={statusValue}>{label(statusValue)}</option>)}
-            </select>
-          </label>
-        )}
-        {config.columns.includes("discipline_id") && (
-          <label>
-            Discipline
-            <select name="discipline" defaultValue={filters.discipline ?? ""}>
-              <option value="">All disciplines</option>
-              {choices.disciplines?.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
-            </select>
-          </label>
-        )}
-        {config.columns.includes("owner") && ["admin", "super_admin"].includes(profile.role) && (
-          <label>
-            Assignee
-            <select name="owner" defaultValue={filters.owner ?? ""}>
-              <option value="">All employees</option>
-              {choices.profiles?.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
-            </select>
-          </label>
-        )}
-        {config.columns.includes("due_date") && (moduleKey === "tasks" ? (
-          <label>Due date<input name="to" type="date" defaultValue={filters.to} /></label>
-        ) : (
-          <>
-            <label>Due from<input name="from" type="date" defaultValue={filters.from} /></label>
-            <label>Due to<input name="to" type="date" defaultValue={filters.to} /></label>
-          </>
-        ))}
-        {moduleKey === "users" && (
-          <>
-            <label>Role<select name="role" defaultValue={filters.role ?? ""}><option value="">All roles</option>{choices.roles?.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label>
-            <label>Position<input name="position" defaultValue={filters.position} /></label>
-            <label>Account status<select name="status" defaultValue={filters.status ?? ""}><option value="">All accounts</option><option value="active">Active</option><option value="inactive">Inactive</option></select></label>
-          </>
-        )}
-        <button className="button secondary">Apply filters</button>
-        <Link href={`/portal/${moduleKey}`}>Clear</Link>
-      </Form>
+          {config.fields.find((field) => field.key === "status")?.options && (
+            <label>
+              Status
+              <select name="status" defaultValue={filters.status ?? ""}>
+                <option value="">All statuses</option>
+                {config.fields.find((field) => field.key === "status")!.options!.map((statusValue) => <option key={statusValue} value={statusValue}>{label(statusValue)}</option>)}
+              </select>
+            </label>
+          )}
+          {config.columns.includes("discipline_id") && (
+            <label>
+              Discipline
+              <select name="discipline" defaultValue={filters.discipline ?? ""}>
+                <option value="">All disciplines</option>
+                {choices.disciplines?.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
+              </select>
+            </label>
+          )}
+          {config.columns.includes("owner") && ["admin", "super_admin"].includes(profile.role) && (
+            <label>
+              Assignee
+              <select name="owner" defaultValue={filters.owner ?? ""}>
+                <option value="">All employees</option>
+                {choices.profiles?.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
+              </select>
+            </label>
+          )}
+          {config.columns.includes("due_date") && (moduleKey === "tasks" ? (
+            <label>Due date<input name="to" type="date" defaultValue={filters.to} /></label>
+          ) : (
+            <>
+              <label>Due from<input name="from" type="date" defaultValue={filters.from} /></label>
+              <label>Due to<input name="to" type="date" defaultValue={filters.to} /></label>
+            </>
+          ))}
+          {moduleKey === "users" && (
+            <>
+              <label>Role<select name="role" defaultValue={filters.role ?? ""}><option value="">All roles</option>{choices.roles?.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label>
+              <label>Position<input name="position" defaultValue={filters.position} /></label>
+              <label>Account status<select name="status" defaultValue={filters.status ?? ""}><option value="">All accounts</option><option value="active">Active</option><option value="inactive">Inactive</option></select></label>
+            </>
+          )}
+          <button className="button secondary">Apply filters</button>
+          <Link href={`/portal/${moduleKey}`}>Clear</Link>
+        </Form>
+      )}
 
-      {moduleKey === "users" && profile.role === "super_admin" && <AccountForm choices={choices} />}
+      {moduleKey === "users" && profile.role === "super_admin" && !selected && <AccountForm choices={choices} />}
       {(selected || filters.new) && !config.readOnly && (
         <RecordForm
           key={String(selected?.id ?? selected?.key ?? "new")}
@@ -232,8 +300,82 @@ export default async function RegisterPage({
         />
       )}
 
-      <div className={moduleKey === "tasks" ? "register-card table-wrap task-register-card" : "register-card table-wrap"}>
-        {moduleKey === "tasks" ? (
+      <div className={moduleKey === "tasks" ? "register-card table-wrap task-register-card" : moduleKey === "users" ? "register-card employee-list-card" : "register-card table-wrap"}>
+        {moduleKey === "users" ? (
+          <>
+            <div className="employee-list-head">
+              <div className="employee-list-title">
+                <span className="employee-list-icon" aria-hidden="true">♙</span>
+                <div>
+                  <h2>Employees ({records.count ?? 0})</h2>
+                  <p>View and manage all team members in your organization.</p>
+                </div>
+              </div>
+            </div>
+            <div className="employee-table-wrap">
+              <table className="register-table employee-table">
+                <thead><tr><th>#</th><th>Full Name</th><th>Email</th><th>Role</th><th>Discipline</th><th>Position</th><th>Status</th><th>Last Login</th><th>Actions</th></tr></thead>
+                <tbody>
+                  {rows.map((row, index) => {
+                    const id = String(row.id ?? index);
+                    const roleValue = String(row.role ?? "viewer");
+                    const active = Boolean(row.is_active);
+                    const lastLogin = row.last_login_at ? new Date(String(row.last_login_at)).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "Never";
+                    return (
+                      <tr key={id}>
+                        <td className="employee-index">{(page - 1) * pageSize + index + 1}</td>
+                        <td className="employee-name-cell"><b>{String(row.full_name ?? "Unnamed employee")}</b></td>
+                        <td className="employee-email-cell">{String(row.email ?? "—")}</td>
+                        <td><span className={`role-badge ${roleValue}`}>{label(roleValue)}</span></td>
+                        <td>{recordLabel("discipline_id", row.discipline_id, choices)}</td>
+                        <td>{String(row.position ?? "—")}</td>
+                        <td><span className={active ? "employee-status active" : "employee-status inactive"}><i />{active ? "Active" : "Inactive"}</span></td>
+                        <td className="employee-last-login">{lastLogin}</td>
+                        <td>
+                          <div className="employee-row-actions">
+                            <Link className="employee-details-button" prefetch={false} href={link({ edit: id, new: "" })}>Details</Link>
+                            <ActionButton kind="reset" id={id} />
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <div className="employee-mobile-list">
+              {rows.map((row, index) => {
+                const id = String(row.id ?? index);
+                const roleValue = String(row.role ?? "viewer");
+                const active = Boolean(row.is_active);
+                const lastLogin = row.last_login_at ? new Date(String(row.last_login_at)).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "Never";
+                return (
+                  <article className="employee-mobile-card" key={id}>
+                    <div className="employee-mobile-card-top">
+                      <div>
+                        <b>{String(row.full_name ?? "Unnamed employee")}</b>
+                        <small>{String(row.email ?? "—")}</small>
+                      </div>
+                      <ActionButton kind="reset" id={id} />
+                    </div>
+                    <div className="employee-mobile-badges">
+                      <span className={`role-badge ${roleValue}`}>{label(roleValue)}</span>
+                      <span className={active ? "employee-status active" : "employee-status inactive"}><i />{active ? "Active" : "Inactive"}</span>
+                    </div>
+                    <div className="employee-mobile-meta">
+                      <span>{recordLabel("discipline_id", row.discipline_id, choices)}</span>
+                      <span>{String(row.position ?? "—")}</span>
+                    </div>
+                    <div className="employee-mobile-footer">
+                      <small>Last login: {lastLogin}</small>
+                      <Link prefetch={false} href={link({ edit: id, new: "" })}>Details</Link>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          </>
+        ) : moduleKey === "tasks" ? (
           <>
             <div className="task-table-head">
               <b>{records.count ?? 0} tasks found</b>
