@@ -78,14 +78,9 @@ export function RecordForm({
     !projectAdmin &&
     !["status", "percent_complete", "progress_note"].includes(field.key);
   return (
-    <details className="employee-create-shell">
-      <summary className="employee-create-mobile-summary">
-        <span aria-hidden="true">♙</span>
-        Create employee account
-      </summary>
-      <form
-        className="register-form employee-account-form"
-        onSubmit={async (e) => {
+    <form
+      className="register-form"
+      onSubmit={async (e) => {
         e.preventDefault();
         if (
           row &&
@@ -351,25 +346,30 @@ export function AccountForm({ choices }: { choices: Choices }) {
   const [result, setResult] = useState<ActionResult | null>(null);
   const [busy, setBusy] = useState(false);
   return (
-    <form
-      className="register-form"
-      onSubmit={async (e) => {
-        e.preventDefault();
-        setBusy(true);
-        try {
-          const form = new FormData(e.currentTarget);
-          if (
-            form.get("role") === "super_admin" &&
-            !confirm("Create a Super Admin who can manage accounts, roles and web settings?")
-          )
-            return;
-          const response = await createAccount(form);
-          setResult(response);
-          if (response.ok) (e.target as HTMLFormElement).reset();
-        } finally {
-          setBusy(false);
-        }
-      }}
+    <details className="employee-create-shell">
+      <summary className="employee-create-mobile-summary">
+        <span aria-hidden="true">♙</span>
+        Create employee account
+      </summary>
+      <form
+        className="register-form employee-account-form"
+        onSubmit={async (e) => {
+          e.preventDefault();
+          setBusy(true);
+          try {
+            const form = new FormData(e.currentTarget);
+            if (
+              form.get("role") === "super_admin" &&
+              !confirm("Create a Super Admin who can manage accounts, roles and web settings?")
+            )
+              return;
+            const response = await createAccount(form);
+            setResult(response);
+            if (response.ok) (e.target as HTMLFormElement).reset();
+          } finally {
+            setBusy(false);
+          }
+        }}
       >
         <div className="employee-account-head">
           <div className="employee-account-title">
@@ -385,61 +385,60 @@ export function AccountForm({ choices }: { choices: Choices }) {
           </button>
         </div>
         <fieldset className="employee-account-fields" disabled={busy}>
-        <label>
-          Full name
-          <input name="full_name" required />
-        </label>
-        <label>
-          Email
-          <input name="email" type="email" required />
-        </label>
-        <label>
-          Employee ID
-          <input name="employee_code" required maxLength={100} />
-        </label>
-        <label>
-          Position
-          <input name="position" required maxLength={200} />
-        </label>
-        <label>
-          Company
-          <input name="company" required maxLength={200} />
-        </label>
-        <label>
-          Temporary password
-          <input name="password" type="password" autoComplete="new-password" minLength={12} maxLength={128} required />
-          <small>The user must replace this password at first login.</small>
-        </label>
-        <label>
-          Role
-          <select name="role" required defaultValue="employee">
-            <option value="">Choose role</option>
-            {choices.roles?.map((r) => (
-              <option key={r.value} value={r.value}>
-                {r.label}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          Discipline
-          <select name="discipline_id" required>
-            <option value="">Choose discipline</option>
-            {choices.disciplines?.map((d) => (
-              <option key={d.value} value={d.value}>
-                {d.label}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="employee-active-field">
-          Active account
-          <span className="employee-active-control">
-            <input name="is_active" type="checkbox" defaultChecked />
-            <i aria-hidden="true" />
-            <small>Account will be able to login</small>
-          </span>
-        </label>
+          <label>
+            Full name
+            <input name="full_name" placeholder="Enter full name" required />
+          </label>
+          <label>
+            Email
+            <input name="email" type="email" placeholder="name@company.com" required />
+          </label>
+          <label>
+            Employee ID
+            <input name="employee_code" placeholder="e.g. EMP-001" required maxLength={100} />
+          </label>
+          <label>
+            Position
+            <input name="position" placeholder="Enter position" required maxLength={200} />
+          </label>
+          <label>
+            Company
+            <input name="company" placeholder="Enter company" required maxLength={200} />
+          </label>
+          <label>
+            Temporary password
+            <input name="password" type="password" placeholder="Minimum 12 characters" autoComplete="new-password" minLength={12} maxLength={128} required />
+          </label>
+          <label>
+            Role
+            <select name="role" required defaultValue="employee">
+              <option value="">Select role</option>
+              {choices.roles?.map((r) => (
+                <option key={r.value} value={r.value}>
+                  {r.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Discipline
+            <select name="discipline_id" required>
+              <option value="">Choose discipline</option>
+              {choices.disciplines?.map((d) => (
+                <option key={d.value} value={d.value}>
+                  {d.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="employee-active-field">
+            Active account
+            <span className="employee-active-control">
+              <input name="is_active" type="checkbox" defaultChecked />
+              <i aria-hidden="true" />
+              <small>Account will be able to login</small>
+            </span>
+          </label>
         </fieldset>
         <button className="button primary employee-create-submit-mobile" disabled={busy}>
           <span aria-hidden="true">＋</span>
@@ -450,6 +449,7 @@ export function AccountForm({ choices }: { choices: Choices }) {
     </details>
   );
 }
+
 export function ApprovalForm({
   deliverables,
   workflows,
