@@ -1937,7 +1937,7 @@ html[data-theme="dark"] .employee-status.inactive{background:#273044;color:#b2bd
     padding:0!important;
     justify-content:center;
   }
-  .employee-add-user span+span{
+  .employee-add-user-label{
     display:none;
   }
   .employee-reset-field{
