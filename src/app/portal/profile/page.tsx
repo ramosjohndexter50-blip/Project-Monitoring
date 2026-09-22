@@ -38,7 +38,7 @@ export default async function ProfilePage() {
   const initials = (profile.full_name || "Employee")
     .split(/\s+/)
     .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
+    .map((part: string) => part[0]?.toUpperCase())
     .join("");
 
   return (
