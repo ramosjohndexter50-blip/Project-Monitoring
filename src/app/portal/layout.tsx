@@ -3,6 +3,7 @@ import Image from "next/image";
 import projectLogo from "../../../image/project.png";
 import NavLink from "@/components/platform/nav-link";
 import ThemeToggle from "@/components/theme-toggle";
+import PortalNavigationBehavior from "@/components/platform/portal-navigation-behavior";
 import { session } from "@/lib/platform/auth";
 
 type IconName = "home" | "tasks" | "projects" | "board" | "updates" | "guide" | "people" | "roles" | "permissions" | "settings";
@@ -111,7 +112,10 @@ export default async function PortalLayout({ children }: { children: React.React
             </div>
           </div>
         </header>
-        <div className="platform-body">{children}</div>
+        <div className="platform-body">
+          <PortalNavigationBehavior />
+          {children}
+        </div>
       </main>
     </div>
   );

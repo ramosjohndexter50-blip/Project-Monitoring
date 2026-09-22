@@ -3426,3 +3426,62 @@ label[role="button"]:focus-visible{
     grid-template-columns:1fr;
   }
 }
+
+
+/* Shared page navigation:
+   every portal subpage gets a compact back action and mobile drawer links close immediately. */
+.portal-back-row{
+  min-height:30px;
+  margin:0 0 6px;
+  display:flex;
+  align-items:center;
+}
+.portal-back-button{
+  min-height:30px;
+  padding:0 9px 0 7px;
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  border:1px solid var(--pm-line);
+  border-radius:8px;
+  background:var(--pm-panel);
+  color:var(--pm-muted);
+  font-size:9.5px;
+  font-weight:700;
+  cursor:pointer;
+  transition:background .16s ease,border-color .16s ease,color .16s ease,transform .16s ease,box-shadow .16s ease;
+}
+.portal-back-button svg{
+  width:14px;
+  height:14px;
+}
+.portal-back-button:hover{
+  transform:translateX(-2px);
+  border-color:color-mix(in srgb,var(--hs-purple) 36%,var(--pm-line));
+  background:color-mix(in srgb,var(--hs-purple) 6%,var(--pm-panel));
+  color:var(--pm-text);
+  box-shadow:0 5px 14px rgba(92,54,229,.10);
+}
+.portal-back-button:active{
+  transform:translateX(-1px) scale(.985);
+}
+@media(max-width:840px){
+  .portal-back-row{
+    min-height:34px;
+    margin-bottom:7px;
+  }
+  .portal-back-button{
+    min-height:34px;
+    padding:0 10px 0 8px;
+    font-size:10px;
+  }
+  .portal-back-button svg{
+    width:15px;
+    height:15px;
+  }
+}
+@media(hover:none){
+  .portal-back-button:hover{
+    transform:none;
+  }
+}
