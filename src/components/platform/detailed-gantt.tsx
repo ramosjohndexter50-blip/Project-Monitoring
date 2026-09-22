@@ -84,11 +84,6 @@ export default function DetailedGantt({
   const drag = useRef({ active: false, startX: 0, scrollLeft: 0 });
 
   useEffect(() => {
-    const mobile = window.matchMedia("(max-width: 760px)");
-    if (mobile.matches) setDetailsCollapsed(true);
-  }, []);
-
-  useEffect(() => {
     const pane = timelineRef.current;
     if (!pane) return;
 
@@ -286,10 +281,10 @@ export default function DetailedGantt({
             className="gantt-details-toggle"
             type="button"
             onClick={() => setDetailsCollapsed((value) => !value)}
-            aria-pressed={!detailsCollapsed}
+            aria-label="Toggle task details"
           >
             <span className="gantt-details-toggle-desktop">{detailsCollapsed ? "Show details" : "Hide details"}</span>
-            <span className="gantt-details-toggle-mobile">{detailsCollapsed ? "Task details" : "Timeline"}</span>
+            <span className="gantt-details-toggle-mobile">{detailsCollapsed ? "Timeline" : "Task details"}</span>
           </button>
           <div className="gantt-pro-zoom" aria-label="Gantt zoom">
             {(["day", "week", "month"] as Zoom[]).map((item) => (

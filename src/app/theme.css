@@ -4730,23 +4730,25 @@ label[role="button"]:focus-visible{
     overflow-x:hidden!important;
   }
   .gantt-pro-left{
-    display:block!important;
+    display:none!important;
     width:100%!important;
     min-width:0!important;
     border-right:0!important;
   }
   .gantt-pro-timeline-pane{
-    display:none!important;
+    display:block!important;
     width:100%!important;
     min-width:0!important;
     overflow-x:auto!important;
+    visibility:visible!important;
   }
   .gantt-pro.details-collapsed .gantt-pro-left{
-    display:none!important;
+    display:block!important;
+    width:100%!important;
+    visibility:visible!important;
   }
   .gantt-pro.details-collapsed .gantt-pro-timeline-pane{
-    display:block!important;
-    visibility:visible!important;
+    display:none!important;
   }
   .gantt-pro-left-head,
   .gantt-pro-left-row{
@@ -4795,7 +4797,7 @@ label[role="button"]:focus-visible{
     font-size:8.7px!important;
   }
 
-  .gantt-pro.details-collapsed .gantt-pro-timeline{
+  .gantt-pro:not(.details-collapsed) .gantt-pro-timeline{
     width:max(100%,680px)!important;
     min-width:680px!important;
   }
