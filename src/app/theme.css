@@ -1685,3 +1685,171 @@ html[data-theme="dark"] .employee-status.inactive{background:#273044;color:#b2bd
     width:auto;
   }
 }
+
+
+/* Compact employee detail editor matching the employee-management reference. */
+.employee-record-form{
+  margin:0 0 10px!important;
+  padding:12px 14px!important;
+  border-radius:11px!important;
+  box-shadow:0 7px 20px #1c2c4a09!important;
+}
+.employee-record-head{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:10px;
+}
+.employee-record-icon{
+  display:grid;
+  place-items:center;
+  flex:0 0 34px;
+  width:34px;
+  height:34px;
+  border-radius:10px;
+  background:color-mix(in srgb,#6f4bf2 11%,var(--pm-panel));
+  color:#7047f5;
+  font-size:19px;
+  font-weight:800;
+}
+.employee-record-head h2{
+  margin:0!important;
+  color:var(--pm-text)!important;
+  font-size:14px!important;
+  line-height:1.2!important;
+  font-weight:760!important;
+}
+.employee-record-head p{
+  margin:2px 0 0!important;
+  color:var(--pm-muted)!important;
+  font-size:9px!important;
+  line-height:1.35!important;
+}
+.employee-record-fields{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:9px 14px!important;
+  padding:0!important;
+  margin:0!important;
+  border:0!important;
+}
+.employee-record-fields>label{
+  display:grid!important;
+  gap:5px!important;
+  color:var(--pm-muted)!important;
+  font-size:9px!important;
+  font-weight:650!important;
+}
+.employee-record-fields input:not([type="checkbox"]),
+.employee-record-fields select{
+  width:100%!important;
+  height:38px!important;
+  min-height:38px!important;
+  padding:0 11px!important;
+  border-radius:8px!important;
+  font-size:10px!important;
+}
+.employee-record-fields .employee-active-field{
+  grid-column:1 / 2;
+  align-content:start;
+}
+.employee-record-fields .employee-active-control{
+  min-height:38px;
+}
+.employee-record-footer{
+  margin-top:11px;
+  padding-top:11px;
+  border-top:1px solid var(--pm-line);
+  display:flex;
+  align-items:end;
+  justify-content:space-between;
+  gap:14px;
+}
+.employee-password-reset{
+  min-width:0;
+  display:flex;
+  align-items:end;
+  gap:8px;
+}
+.employee-password-reset label{
+  min-width:230px;
+  display:grid;
+  gap:5px;
+  color:var(--pm-muted);
+  font-size:9px;
+  font-weight:650;
+}
+.employee-password-reset input{
+  width:100%;
+  height:36px!important;
+  min-height:36px!important;
+  padding:0 10px!important;
+  border:1px solid var(--pm-line)!important;
+  border-radius:8px!important;
+  background:var(--pm-input)!important;
+  color:var(--pm-text)!important;
+  font-size:9.5px!important;
+}
+.employee-reset-inline{
+  min-height:36px!important;
+  height:36px!important;
+  padding:0 12px!important;
+  white-space:nowrap;
+  font-size:9.5px!important;
+}
+.employee-record-actions{
+  flex:0 0 auto;
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:8px;
+}
+.employee-record-actions .button{
+  min-height:36px!important;
+  height:36px!important;
+  padding:0 15px!important;
+  font-size:9.5px!important;
+}
+@media(max-width:1180px){
+  .employee-record-fields{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+  .employee-record-footer{
+    align-items:stretch;
+    flex-direction:column;
+  }
+  .employee-password-reset{
+    width:100%;
+  }
+  .employee-password-reset label{
+    flex:1;
+  }
+}
+@media(max-width:760px){
+  .employee-record-form{
+    padding:11px!important;
+  }
+  .employee-record-fields{
+    grid-template-columns:1fr!important;
+  }
+  .employee-record-fields .employee-active-field{
+    grid-column:auto;
+  }
+  .employee-password-reset{
+    align-items:stretch;
+    flex-direction:column;
+  }
+  .employee-password-reset label{
+    min-width:0;
+  }
+  .employee-reset-inline{
+    width:100%;
+  }
+  .employee-record-actions{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+  }
+  .employee-record-actions .button{
+    width:100%;
+  }
+}

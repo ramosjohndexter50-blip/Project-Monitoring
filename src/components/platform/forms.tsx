@@ -55,6 +55,9 @@ export function RecordForm({
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<ActionResult | null>(null);
+  const [resetPasswordValue, setResetPasswordValue] = useState("");
+  const [resetBusy, setResetBusy] = useState(false);
+  const [resetResult, setResetResult] = useState<ActionResult | null>(null);
   const id = row ? String(row[config.key ?? "id"]) : null;
   const [selectedDiscipline, setSelectedDiscipline] = useState(
     String(row?.discipline_id ?? ""),
@@ -79,7 +82,7 @@ export function RecordForm({
     !["status", "percent_complete", "progress_note"].includes(field.key);
   return (
     <form
-      className="register-form"
+      className={moduleKey === "users" ? "register-form employee-record-form" : "register-form"}
       onSubmit={async (e) => {
         e.preventDefault();
         if (
@@ -130,9 +133,17 @@ export function RecordForm({
         }
       }}
     >
-      <h2>
-        {row ? "Record details" : `New ${config.title.toLowerCase()} record`}
-      </h2>
+      {moduleKey === "users" ? (
+        <div className="employee-record-head">
+          <span className="employee-record-icon" aria-hidden="true">♙</span>
+          <div>
+            <h2>Record details</h2>
+            <p>{row ? "Update employee account details and access." : "Create a new employee account."}</p>
+          </div>
+        </div>
+      ) : (
+        <h2>{row ? "Record details" : `New ${config.title.toLowerCase()} record`}</h2>
+      )}
       {row?.updated_at && (
         <input
           type="hidden"
@@ -140,11 +151,17 @@ export function RecordForm({
           value={String(row.updated_at)}
         />
       )}
-      <fieldset disabled={!editable || busy}>
+      <fieldset className={moduleKey === "users" ? "employee-record-fields" : ""} disabled={!editable || busy}>
         {config.fields.map((field) => (
           <label
             key={field.key}
-            className={field.type === "textarea" ? "span-all" : ""}
+            className={
+              moduleKey === "users" && field.type === "checkbox"
+                ? "employee-active-field"
+                : field.type === "textarea"
+                  ? "span-all"
+                  : ""
+            }
           >
             {field.label}
             {field.required ? " *" : ""}
@@ -158,16 +175,33 @@ export function RecordForm({
                 maxLength={10000}
               />
             ) : field.type === "checkbox" ? (
-              <input
-                name={field.key}
-                type="checkbox"
-                disabled={locked(field)}
-                defaultChecked={
-                  row
-                    ? Boolean(row[field.key])
-                    : ["is_active", "allowed"].includes(field.key)
-                }
-              />
+              moduleKey === "users" ? (
+                <span className="employee-active-control">
+                  <input
+                    name={field.key}
+                    type="checkbox"
+                    disabled={locked(field)}
+                    defaultChecked={
+                      row
+                        ? Boolean(row[field.key])
+                        : ["is_active", "allowed"].includes(field.key)
+                    }
+                  />
+                  <i aria-hidden="true" />
+                  <small>Account will be able to login</small>
+                </span>
+              ) : (
+                <input
+                  name={field.key}
+                  type="checkbox"
+                  disabled={locked(field)}
+                  defaultChecked={
+                    row
+                      ? Boolean(row[field.key])
+                      : ["is_active", "allowed"].includes(field.key)
+                  }
+                />
+              )
             ) : field.type === "select" ? (
               <select
                 name={field.key}
@@ -271,12 +305,59 @@ export function RecordForm({
           </label>
         )}
       </fieldset>
-      {editable && (
+      {moduleKey === "users" && id && editable ? (
+        <>
+          <div className="employee-record-footer">
+            <div className="employee-password-reset">
+              <label>
+                Reset password
+                <input
+                  type="password"
+                  value={resetPasswordValue}
+                  onChange={(e) => setResetPasswordValue(e.target.value)}
+                  placeholder="New temporary password"
+                  autoComplete="new-password"
+                  minLength={12}
+                  maxLength={128}
+                />
+              </label>
+              <button
+                type="button"
+                className="button secondary employee-reset-inline"
+                disabled={resetBusy || resetPasswordValue.length < 12}
+                onClick={async () => {
+                  setResetBusy(true);
+                  setResetResult(null);
+                  try {
+                    const response = await resetAccount(id, resetPasswordValue);
+                    setResetResult(response);
+                    if (response.ok) setResetPasswordValue("");
+                  } finally {
+                    setResetBusy(false);
+                  }
+                }}
+              >
+                {resetBusy ? "Resetting…" : "Reset password"}
+              </button>
+            </div>
+            <div className="employee-record-actions">
+              <button type="button" className="button secondary" onClick={() => router.push("/portal/users")}>
+                Clear
+              </button>
+              <button className="button primary" disabled={busy}>
+                {busy ? "Saving…" : "Save record"}
+              </button>
+            </div>
+          </div>
+          <Result result={resetResult} />
+        </>
+      ) : editable ? (
         <button className="button primary" disabled={busy}>
           {busy ? "Saving…" : "Save record"}
         </button>
+      ) : (
+        <p>Read-only access.</p>
       )}
-      {!editable && <p>Read-only access.</p>}
       <Result result={result} />
     </form>
   );
