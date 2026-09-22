@@ -1,5 +1,9 @@
 begin;
 
+-- Provisioning rows are temporary reservations. Clear any pre-migration
+-- reservations so every future account must supply the new required fields.
+delete from public.employee_provisioning;
+
 alter table public.employee_provisioning
   add column employee_code text not null check(length(trim(employee_code))>0),
   add column company text not null check(length(trim(company))>0);
