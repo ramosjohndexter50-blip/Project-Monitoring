@@ -15,7 +15,7 @@ The database enforces this separation even if someone calls the API directly or 
 ## Super Admin: provision an Admin
 
 1. Sign in. The landing page is **Super Admin Control Center**.
-2. Open **Employee management**. For a new account, enter name, email, discipline, position, a temporary password (12–128 characters), and select **Admin** as the global role. Existing users can be edited to use **Admin**.
+2. Open **Employee management**. For a new account, enter name, email, discipline, position, a temporary password (6–128 characters), and select **Admin** as the global role. Existing users can be edited to use **Admin**.
 3. Share the email and temporary password privately. No setup link or email is generated. First login requires a new password before any project access. For existing accounts, use **Set temporary password** in the user row.
 4. Keep at least one Super Admin. Self-demotion and self-deactivation remain blocked.
 5. Use **Web settings** for system configuration, and **Disciplines** for the organization-wide discipline catalog.
