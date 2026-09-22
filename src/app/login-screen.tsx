@@ -120,6 +120,15 @@ export default function LoginScreen() {
 
       <aside className="login-aside">
         <div className="login-aside-content">
+          <div className="login-aside-brand">
+            <span className="login-aside-logo-wrap">
+              <Image src={projectLogo} alt="Hamdan Studio logo" priority />
+            </span>
+            <span>
+              <strong>Hamdan Studio</strong>
+              <small>PROJECT MONITOR</small>
+            </span>
+          </div>
           <span className="login-aside-eyebrow">HAMDAN STUDIO · PROJECT MONITOR</span>
           <h2>One clean workspace for every project team.</h2>
           <p>Track projects, tasks, deliverables, RFIs, milestones and approvals from one consistent system.</p>
