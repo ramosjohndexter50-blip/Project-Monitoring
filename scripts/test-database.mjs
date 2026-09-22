@@ -840,4 +840,51 @@ await as("orgadmin", async () => {
   await denied("select public.remove_role('viewer')");
 });
 console.log("PASS every migration and protected role-removal boundary");
+
+const requiredTaskColumns = (
+  await db.query(`
+    select column_name,is_nullable
+    from information_schema.columns
+    where table_schema='public'
+      and table_name='tasks'
+      and column_name in ('progress_stage','owner','start_date','due_date','notes','progress_note')
+    order by column_name
+  `)
+).rows;
+assert.equal(requiredTaskColumns.length, 6);
+assert.ok(requiredTaskColumns.every((column) => column.is_nullable === "NO"));
+assert.equal(
+  Number(
+    (
+      await db.query(`
+        select count(*) n
+        from public.tasks
+        where progress_stage is null
+           or owner is null
+           or start_date is null
+           or due_date is null
+           or notes is null
+           or progress_note is null
+      `)
+    ).rows[0].n,
+  ),
+  0,
+);
+await as("admin", async () => {
+  const progress = (
+    await db.query("select public.progress_dashboard(null) p")
+  ).rows[0].p;
+  assert.deepEqual(
+    progress.categories.map((category) => category.key),
+    ["model", "annotation", "coordination", "sheet"],
+  );
+  assert.equal(
+    progress.overall_percent,
+    Math.round(
+      progress.categories.reduce((sum, category) => sum + Number(category.percent), 0) / 4,
+    ),
+  );
+});
+console.log("PASS mandatory task fields and four-stage progress dashboard");
+
 await db.close();
